@@ -785,6 +785,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   completely DROPPED and REPLACED by the summary → no bit-rot from a
   compaction chain, only from an N-summarized summary (the budget cap's
   rationale — his review).
+- **Close note (2026-09-26, worker-24, commit b95d532):** metric fixed → raw part mass (bytes/4), usage-field fallback kept (all pins updated; gate 340/340 + 74/74 + 17/17 + 459+1w + F=0). The live fork-test acceptance stays OPEN.
 
 ## #100. (LANDED 2026-09-26, plan18, worker-18 `worker_Q3S_245K_slow`, commit bc374b2; direct session 2026-09-25; maintainer GO 2026-09-25) remove the numword escape channel — bit-drift solved backend-side, the escape's use-case is gone
 - **Problem / evidence:** the escape sentinel (`[<incident>:<safe-form>:esc]` in

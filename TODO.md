@@ -1,14 +1,20 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #101, new
-entries start at #102 (closed IDs stay reserved in `todo_records.md`).
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #103, new
+entries start at #104 (closed IDs stay reserved in `todo_records.md`).
 Closed entries live in `todo_records.md` (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
 
 ## Maintainer calls (open, in order)
 
 1. (none open as of 2026-09-15 — the #11 call was resolved by his ruling D1-A in the consolidated decision file)
-2. Resolved calls (records): v1.3 log-growth confirmation → #17 CLOSED (one-shot read
+2. #99 follow-up (2026-09-27): ruling on the keep-knob design — accept the
+   config `compaction.keep.tokens` as the live knob (planner recommendation —
+   his file) with the plugin's computed value kept advisory (the COMPACT line
+   `tok=`), and DEFER the "how to correctly input keep.token into the summarize
+   function" research (with the N=10 discriminator + summarize-scope probe),
+   OR fund the research first.
+3. Resolved calls (records): v1.3 log-growth confirmation → #17 CLOSED (one-shot read
    executed); v2.5 nudge target scope ruling → #33 (per-session read); Deferred FST
    behavior batch → all 5 Recs approved + LANDED on `fst_work` (unit A `4b93d37` +
    unit B `2891dab`, proposal in `implemented/`); build schedule → complete;
@@ -81,6 +87,14 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
   + `worker_Q4_120K` roster; a comparison notes file in the loop folder.
 - **Status:** DEFERRED — picked up only when the maintainer lifts the
   `--defer` marker in `priority.md` (# 3 3) or re-prioritizes it.
+  **Still DEFERRED 2026-09-27 (direct session ses_f20d1b39…) — REWORK
+  PENDING before any runs: the idea is to be clarified first — per-agent-
+  type distill (planner/worker/explorer/…) gathering friction points +
+  undocumented knowledge/memory (behaviors, repeatedly re-derived
+  methods/tricks) into per-agent memories (memories not yet seeded for all
+  roles); the gemma speedup is nullified by cache invalidation on every
+  model switch (the planner re-prefills per delegation) → gemma only for
+  preliminary scanning. The `--defer` stays.**
 - an option is also; fuzzy name resolution search on read or when searching in files. or num_to_word autoreplace as intercept plugin on hook.execute.before to combine both and make tools calls more reliable even with bitshifts in numbers. worthwhile thing to research. but dont save research in your nap. make e.g. a agent/research folder if you want. see ideas #5 #6 #7
 
 ## 39. (closed 2026-09-10, see todo_records.md) — Looprunner prompt v2 proposal — applied + smoke test clean (2026-09-10)
@@ -89,13 +103,8 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 
 ## Plugin & gauge (open)
 
-## 74. (open, 2026-09-21, planner; flagged by his --info note in priority.md + the 2026-09-19..21 worker feedback entries) — **Write tool fails on long content payloads on this host**
+## 74. (closed 2026-09-27, direct session ses_f20d1b39… — backend no longer on ik_llama, the offending PR was reverted — non-issue; full text in todo_records.md) — **Write tool fails on long content payloads on this host**
 
-**Problem / evidence:** JSON parse errors ("Text: {." / "Expected '}'"), once even on a 3-line file — logged by four worker sessions (2026-09-19 long multi-paragraph args; 2026-09-20 Deep-Dive B run #4; 2026-09-21 run #6 "write failed for every payload"; 2026-09-21 run #7_1 three long-content failures). His --info note pointed at the fuzzy_numword intercept path-resolution — CORRECTED same day by him: the intercept is actually live, and two extra test rounds (his handover-file overwrite runs, direct-message specs writing other files) show the write still failing WITH the intercept deactivated; no opencode changes made; the problem predates the new model set (surfaced in Deep-Dive B run 2 with the old models) — so the intercept is NOT the root cause and this is a host-side issue independent of our models; 2026-09-21 (planner direct session): the SAME signature ("JSON parsing failed: Text: {.") hit a GREP tool call — scope extends beyond write; machine check: both error strings are embedded in the installed `opencode.exe` (v1.18.31: "JSON parsing failed: Text" x8, "Invalid input for tool" x2) → the failing parse is inside the opencode server, upstream of every plugin hook (intercept is log-only and sees already-parsed args); candidate captures: provider-side raw response log (maintainer) + `opencode --log-level DEBUG --print-logs` stderr capture (agent-side, flags verified); HIS HYPOTHESIS (2026-09-21, direct): the truncation began after his llama.cpp update — his bit-drift-countermeasure fork `ik_llama` — and OTHER PEOPLE report the same issue → suspected fork-side (provider) bug; isolation test = direct-to-server long-JSON probe bypassing opencode; SECOND LIVE DATA POINT same session: a webfetch call with SHORT args failed with the identical signature → the signature is "assistant response stream cut mid tool-call JSON", long payload is a risk factor, not the sole cause; fork identified as `ikawrakow/ik_llama.cpp` (issue #380 "Drop at the start of generation" confirms known fork-side streaming bugs); ROOT-CAUSE CANDIDATE (his link 2026-09-21): issue #2492 "Truncated tool calls on qwen3.8-flash-next" (opened 2026-09-20, open) — regression attributed to PR #2470; its raw SSE dump shows the tool-call arguments JSON closed MID-VALUE (finish_reason=tool_calls on an incomplete JSON) = exactly our signature; his timeline caveat: PR ~18h old vs his problem ~48h old → "might be not connected"; BISECTION POINT (this session): 4 live failures pre-reload (grep, webfetch, two writes — incl. the short-arg webfetch — all served under the buggy build); after his unload + fresh reload to the old ik_llama: 2 short writes clean + byte-verified (scratchpad flaky_t1/t2.txt); CONSTRAINT (his): agents never send direct requests to the inference server — single slot unloads the session's model (also logged in knowledge_tools.md single-slot section). POST-RELOAD RESULTS (old ik_llama, same session — natural A/B against the 4 pre-reload failures): 70B write clean, 156B write clean, 10,095B write clean (101 lines, tail-verified — far past the 4k acceptance bar; caveat: repetitive filler content — a non-repetitive variant + cross-model coverage remain). NEXT: optional — one non-repetitive ~10k write + one run on another model, then the entry can move toward close pending the fork's #2470 fix.
-**Outcome:** host-side fix (maintainer domain); if not fixed, codify the workaround (create via bash printf/heredoc, then small write/edit append batches — see knowledge_tools.md) in the repo docs so runs don't re-discover it.
-**Acceptance:** a ~4k+ char write payload succeeds without parse errors (tested across models), OR the workaround is documented and the next long-file run completes with no write-tool failure.
-**Suggested scope:** opencode host (maintainer) + repo docs/prompts (agent-side).
-**Status:** open; root cause CONFIRMED per timeline (his 2026-09-21: PR #2470 merged ~4 days ago ≈ his ~48h onset; #2492 = same signature) — old ik_llama in place, workaround stays until the fork patches #2470; his update discipline: never adopt a fresh ik_llama build immediately — let it rest so others find the bugs first.
 
 ## 17. (closed 2026-09-11, see todo_records.md) — v1.3 log-growth CONFIRMATION — one-shot read, deferred by the no-`plugin.log` constraint (2026-09-08)
 
@@ -389,52 +398,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 
 ## 82. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — scope toggle (last-toggle-wins, own-line anchor, bidirectional) LANDED as #85 part 1 (97fccfc) + the unit-2 suppression ruling (Direct suppresses Unit 2 = the already-landed #85 part 3 behavior, no code change); FULL live acceptance 2026-09-23 on the #90 spawn tail (own-line toggle judged scope=autorun, route= restart spawn, successor's first message carries the own-line marker, trigger deactivate=).
 
-## 83. (open, 2026-09-22, planner; maintainer call — enabler for a ~0.98 threshold) unit-2 backstop: catch the ACTUAL context-limit hit cleanly (revive context_recovery.ts)
-- **Problem + evidence:** the pre-emptive trigger (now configurable, default
-  0.95 via the #82-adjacent change) still fires BEFORE the limit, so a
-  chunk of the window is never used. He wants to "use as much of the
-  context window as possible" → move the threshold toward ~0.98 and rely
-  on a CLEAN catch of the real limit hit. That mechanism ALREADY EXISTS
-  (verified 2026-09-22): `.opencode/plugin/deactivated/context_recovery.ts`
-  (324 lines, T5 approved design 2026-09-11, built on the maintainer's
-  prototype) — a hook firing on the overflow `session.error` (activation
-  flag `emergencyRecovery: true` in opencode.jsonc, read per fire; only
-  `true` enables it), which compacts with an informed keep (30k tokens /
-  12 messages), appends its COMPACT line to ctx.log, injects the
-  re-application directive, and returns `{handled:true, action:"retry"}` —
-  a SINGLE clean retry that replaces the slow "opencode removes the tail
-  (last message in generation) and retries 5-6 times" loop. Over budget →
-  CLEAN FAIL (returns unhandled, the error propagates). Budget: the SAME
-  `compact_budget.json`, ≤2 per session id (self + emergency combined).
-  A smoke test exists: `tests/context_recovery.smoke.mjs`. It is
-  currently DEACTIVATED.
-- **Desired outcome:** the pre-emptive threshold can be raised toward ~0.98
-  (configurable) because the actual limit hit is caught cleanly (one
-  compact + single retry) instead of the slow tail-removal loop; and an
-  over-budget session gets a clean STOP (no runaway retries).
-- **Acceptance criteria:** `emergencyRecovery: true` activates it; on an
-  overflow `session.error` it compacts + returns a single retry (not 5-6
-  tail loops); over budget → clean fail (error propagates; the -WARNING is
-  the looprunner's/protocol's job); the shared ≤2/session budget is
-  respected (re-read-then-write, no await between); smoke green.
-- **Suggested scope:** re-activate + adapt
-  `.opencode/plugin/deactivated/context_recovery.ts` to the CURRENT
-  compact_memory summarize path (v1-generation client, config-resolved
-  summarizer); wire the `emergencyRecovery` flag. KEY UNCERTAINTY: the
-  host must actually CALL this hook on overflow — needs a LIVE
-  verification (the prototype was working at build time, but the build
-  changed since). Effort MEDIUM (the code exists but predates the current
-  compact_memory design and is deactivated).
-- **Status:** the paired configurable-threshold change LANDED
-  (2026-09-22, worker: `saturationThreshold` (0 < t < 1, default 0.95) +
-  `outputReserve` (>= 0, default 20_000) as per-tick fail-open keys in the
-  budget file; smoke 89/89 + full gate green; commit hash recorded in the
-   planner's follow-up bookkeeping). The BACKSTOP part remains open —
-   maintainer call (needs his flag in the live opencode.jsonc + the live
-   host-call verification). This is the enabler for raising the threshold
-   to ~0.98. NOTE (2026-09-22, #84): the `emergencyRecovery` flag now lives
-   in the shared compact_budget.json (not opencode.jsonc) — the live-flag
-   part of this entry must be set there.
+## 83. (closed 2026-09-27, direct session ses_f20d1b39… — his autoCompact question answered: nudge gate only, no autocompact; backstop live-verified via #93; the threshold knob = nudge position, stays in the budget file; full text in todo_records.md) — unit-2 backstop: catch the ACTUAL context-limit hit cleanly
 
 ## 84. (LANDED 2026-09-22, worker `worker_Q3S_170K`) — Compaction config consolidation: ALL compaction config in the shared `compact_budget.json` (replaces the `QUANT_CLASS_RULES` substring table + the opencode.jsonc emergency flag + the hardcoded recovery keeps)
 
@@ -534,12 +498,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 
 ## #90. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — spawned successors inherit the trigger's Autorun state + the trigger deactivates (Parts A+B+C, commit c4b244d, worker_Q3S_170K) — FULL live acceptance 2026-09-23 (planner-13, build v=7d2e6207): `route= restart spawn` + `spawn= agent=planner_Q3S_170K ident=autorun-2026-09-21_15-33 planner-13` + `deactivate=` (19:20:55Z) + the restartText own-line `<|autonom|>` as the successor's first message + zero `skip=` depth-cap lines; subsumes #87 (closed).
 
-## 93. Emergency compact backstop: port context_recovery.ts to the `event` hook (2026-09-24 direct; maintainer-ordered next unit)
-- **Problem / evidence:** context_recovery.ts (the T5 emergency overflow recovery — the backstop for when the agent fails to self-compact in time) registers a `"session.error"` plugin hook that does NOT exist in the current `@opencode-ai/plugin` SDK (zero matches in the node_modules d.ts) → the hook never fires (silent). Live fork test 2026-09-23 (ses_f2fee1f3fffej3GlGz8jJ5iGwb "compaction agent and context limit testing", fork of planner-13, Qwen3.8-27B-Compaction): 4× overflow errors `request (148149 tokens) exceeds the available context size (131072 tokens)` reached the event stream with `emergencyRecovery: true` ON + the plugin loaded — no COMPACT line, no budget increment, the session died at the wall (`MessageAbortedError`).
-- **Outcome:** the backstop fires on an overflow session.error (compact with the configured keep → COMPACT line → reload directive → `{handled:true, action:"retry"}`) + a diagnostic line on EVERY fire (so a future silent failure is visible in one file).
-- **Acceptance:** live overflow on a driven/forked session → COMPACT line + budget increment + the session retries and continues (log evidence); smoke pin for the event-hook path (extend the existing probe's faked client to the event shape); standard gate green.
-- **Scope:** `.opencode/plugin/deactivated/context_recovery.ts` → `event` hook (`event.properties.sessionID` — capital D — + the `ContextOverflowError` union); flag/budget/keep/COMPACT/directive logic unchanged; move back to `.opencode/plugin/` at landing. PRESTEP to the maintainer's planned integration of context_recovery + compact_memory into ONE plugin (shared compaction functionality) — the integration itself is a separate follow-up task.
-- **Status:** LANDED 2026-09-25 (worker, `worker_Q3S_170K`): the event-hook port lives at `.opencode/plugin/context_recovery.ts` (the deactivated copy is removed) — `event` hook (no `"session.error":` key — that hook does not exist in the current SDK), capital-D `sessionID`, the overflow markers, the v1 summarize path with the config-resolved pair (self-contained local copies — no runtime import from compact_memory.ts), the v2 budget gate (normal / emergency-1 / exhausted CLEAN FAIL), the once-per-overflow guard (cleared on EventSessionIdle), the COMPACT line per the current tool's writer (messages-only + the ` emergency` suffix), and the spec-2+11 post-compaction directive via promptAsync (the retry vehicle — the hook returns void, so the old `{handled, action:"retry"}` return is gone). Smoke re-pinned 15/15, probe S11 re-pinned (11 checks: 76-81 + 257-261) — probe 257/257, gate green (commit hash recorded in the planner's follow-up bookkeeping commit — no self-reference). REMAINING (maintainer domain, verbatim): (1) the host restart (plugin activation), (2) the live overflow acceptance on a driven/forked session as the 2026-09-23 fork test (expect: ONE COMPACT line + the budget increment + the session survives/continues — the flag is already `true` in the budget file, no flag work needed). FOLLOW-UP (out of scope): the context_recovery + compact_memory ONE-plugin integration is the next candidate. Architecture ruling: host auto-compaction stays DEACTIVATED by design (`"auto": false` — it fired uncontrollably, `buffer` never worked); the host `compaction` config only supplies defaults (model + keep); the agent-driven compaction stays primary; the emergency compact is the remaining piece. Keep-values (CLARIFIED 2026-09-24 — no drift, by design): our plugins (compact_memory + the emergency backstop) read `compact_budget.json` (keepMessages 12); the host MANUAL compact (usable on any session any time, independent of `auto`) reads the opencode.json `compaction` block (keep.messages 18) — each system its own store; tokens agree (30000).
+## 93. (closed 2026-09-27, direct session ses_f20d1b39… — live-verified by his repeated overflow tests: recovery fires on overflow, compacts, no resume, session continues; full text in todo_records.md) — Emergency compact backstop: port context_recovery.ts to the `event` hook
 
 ## #91. (open, 2026-09-23, planner-12 direct; live incident 14:44–14:46Z; HIGH) compaction summary leaks into spawn identity + unit-4 routing (agent=compaction successor; mis-route on a quoted action line)
 - **Problem / evidence:** live incident 2026-09-23 14:44–14:46Z (pre-#90 build d2b9d510): planner-11 (ses_f318f0d77…) self-compacted (14:44:19Z) → the compaction summary is stored as an ASSISTANT message with info.agent=compaction + info.model=<session model> (the same-model fallback — agent.compaction.model is commented out). The summary text QUOTES "Previous planner-10 … closed with `action: restart`" (6612 chars). The unit-4 tick (14:46:06Z) then: (1) `lastAssistantAction` scanned the summary (the last assistant message) → found the QUOTED `action: restart` → ROUTE= RESTART SPAWN (mis-route — the planner's actual last real turn, 14:44:12Z, was a 76-char no-action-line close; the loop log records "self-compact + unit-4 resume per maintainer inbox"); (2) `resolveInjectIdentity` → the summary's info → the spawn body agent=compaction + model=Qwen3.8-27B-Q3S-170K (the spawn= line 14:46:06.647Z). "compaction" is NOT an agent defined in the live opencode.jsonc → the successor (ses_f3144d9d6…, ident=…planner-12) ran with the WRONG agent + mode (maintainer: "i started the session prior with autorun but the wrong agent and mode. thus reverted and then started you with direct"). DB evidence: the ses_f318f0d77 message 14:44:19.866Z (assistant / agent=compaction) + the auto_resume.log lines 14:46:06.629–647Z.
@@ -555,7 +514,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** every pre-compaction dump writes BOTH: the lossless full markdown (current) + a raw `--json` snapshot (the lossless master — any later filtered view re-derivable from it).
 - **Acceptance criteria:** two DUMP-OK lines per dump (md + json); both files land in the archive dir; the #78 diagnostics (ms= / DUMP-RETRY= / DUMP-FAIL + stderr) + the 120 s budget + one retry apply to BOTH dumps; compact_memory smoke re-pinned; gate green.
 - **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the preCompactionDump call site — the dump script already has `--json`), `.opencode/plugin/tests/compact_memory.smoke.mjs`.
-- **Status:** OPEN — his call (planner recommendation: YES, save both — the measured cost is trivial, < 0.2 s + ~1-2 MB per dump).
+- **Status:** RULING 2026-09-27 (direct session ses_f20d1b39…): YES — save both. Implementation = next unit (spec = this entry's acceptance criteria; scope: `preCompactionDump` in compact_memory.ts L183 + the call site L380 + the compact_memory smoke re-pin + the probe pin).
 
 ## #95. (open, 2026-09-25, planner direct; his rulings 2026-09-25) fuzzy edit-oldstring track — PARENT entry (replaces the stale #67 references — that ID never existed in the committed TODO.md)
 - **Problem / evidence:** edit oldString exact-match failure is a very regular problem (his priority.md "fuzzy matching of edit oldstring" + ideas.md L143-158); the #94 worker's anchor-semantics drift finding is queued here (todo_inbox 2026-09-25). Track state: R1/R2 live, R4/R7 landed, R6 STAGED (gate cleared), R3 STAGED, R8 + the escape return-info not staged.
@@ -787,6 +746,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   rationale — his review).
 - **Close note (2026-09-26, worker-24, commit b95d532):** metric fixed → raw part mass (bytes/4), usage-field fallback kept (all pins updated; gate 340/340 + 74/74 + 17/17 + 459+1w + F=0). The live fork-test acceptance stays OPEN.
 - **Close note (2026-09-27, worker_Q3S_245K_slow, commit dcad3d1):** metric v2: S-diff provider-true primary (S = input+output+cache.read per assistant; window mass = S[last assistant in window] − S[last assistant before window]), bytes/4 part mass kept as the fallback (no assistant in window / diff ≤ 0) — all pins machine-recomputed + updated (smoke 76/76 + 17/17, probe 340/340 count unchanged, 459+1w, F=0). The live fork-test acceptance stays OPEN.
+- **Status (2026-09-27, direct session ses_f20d1b39…): LIVE TESTS COMPLETE (maintainer, 2026-09-26/27, `.opencode/maintainer/draft/compaction_guide/compaction_tests.md`): the body `keep.tokens` is NOT honored by the installed host — retention always tracks opencode.json `compaction.keep.tokens` (now 40000); `keep.messages` ignored; measured floor = 25.8-25.9k (system + summary). Metric v2 (S-diff, dcad3d1) stands as the computed advisory (the COMPACT line `tok=`). OPEN follow-up (deferred research/design): 'how to correctly input keep.token into the summarize function' — the installed summarize path appears to read keep from the config only (host-map §compaction; the static SDK body schema = {providerID, modelID} only); the N=10 discriminator + the summarize-scope probe (fork session) ride the same follow-up.**
 
 ## #100. (LANDED 2026-09-26, plan18, worker-18 `worker_Q3S_245K_slow`, commit bc374b2; direct session 2026-09-25; maintainer GO 2026-09-25) remove the numword escape channel — bit-drift solved backend-side, the escape's use-case is gone
 - **Problem / evidence:** the escape sentinel (`[<incident>:<safe-form>:esc]` in

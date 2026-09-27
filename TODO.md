@@ -873,10 +873,16 @@ All those IDs stay reserved — see the numbering rule in the header.
   tail-trim tool; a `submit` memory channel; the messages.updated
   real-time gauge), 4 new TODO entries filed (#109-#112), 2 items are
   maintainer-domain backend (NAP note only), the rest are already covered
-  (full triage in the plan28 summary + the loop folder). Remaining: (b)
-  keepTokens fork effort, (c) v2 branch/hardening, (d) compaction-summary
-  customization, (e) explorer/researcher makeover (his opencode.jsonc
-  write-access tightening pending — his domain).
+  (full triage in the plan28 summary + the loop folder).
+   **Part (b) DONE (plan28, 2026-09-28, explorer-28):** the keepTokens fork
+   effort is estimated — research doc
+   `.opencode/agent/research/2026-09-28_keeptokens-fork-effort.md`: change set
+   ~11 lines / 6 files (all line refs grep-verified vs the 1.18.32 dev tree),
+   phased estimate ~3-5 h wall, plugin-side work = 0 (the body field is already
+   sent), recommendation = fork (b) now, scoped Phase 1-3; wait-for-upstream is
+   undecidable from the pinned tree. Remaining: (c) v2 branch/hardening,
+   (d) compaction-summary customization, (e) explorer/researcher makeover
+   (his opencode.jsonc write-access tightening pending — his domain).
 
 ## #106. (open, 2026-09-28, plan28 feedback review; pre-approved class — agent-usage friction removal) edit-fuzzy hint line should state APPLIED vs REJECTED
 - **Problem / evidence:** agent_feedback 2026-09-26_12-15 (planner): a NAP

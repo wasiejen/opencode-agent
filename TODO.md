@@ -8,12 +8,11 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 ## Maintainer calls (open, in order)
 
 1. (none open as of 2026-09-15 — the #11 call was resolved by his ruling D1-A in the consolidated decision file)
-2. #99 follow-up (2026-09-27): ruling on the keep-knob design — accept the
-   config `compaction.keep.tokens` as the live knob (planner recommendation —
-   his file) with the plugin's computed value kept advisory (the COMPACT line
-   `tok=`), and DEFER the "how to correctly input keep.token into the summarize
-   function" research (with the N=10 discriminator + summarize-scope probe),
-   OR fund the research first.
+2. (resolved 2026-09-27, direct session ses_f20d1b39…) #99 follow-up — his
+   ruling: PURSUE the flexible per-dispatch keepToken (research + wire it if
+   it exists in the installed host; the config knob stays the fallback; the
+   fixed global 40k is "too much in most cases, too little in some" — not the
+   answer).
 3. Resolved calls (records): v1.3 log-growth confirmation → #17 CLOSED (one-shot read
    executed); v2.5 nudge target scope ruling → #33 (per-session read); Deferred FST
    behavior batch → all 5 Recs approved + LANDED on `fst_work` (unit A `4b93d37` +
@@ -398,7 +397,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 
 ## 82. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — scope toggle (last-toggle-wins, own-line anchor, bidirectional) LANDED as #85 part 1 (97fccfc) + the unit-2 suppression ruling (Direct suppresses Unit 2 = the already-landed #85 part 3 behavior, no code change); FULL live acceptance 2026-09-23 on the #90 spawn tail (own-line toggle judged scope=autorun, route= restart spawn, successor's first message carries the own-line marker, trigger deactivate=).
 
-## 83. (closed 2026-09-27, direct session ses_f20d1b39… — his autoCompact question answered: nudge gate only, no autocompact; backstop live-verified via #93; the threshold knob = nudge position, stays in the budget file; full text in todo_records.md) — unit-2 backstop: catch the ACTUAL context-limit hit cleanly
+## 83. (closed 2026-09-27, direct session ses_f20d1b39… — his autoCompact question answered: nudge gate only, no autocompact; backstop live-verified via #93; the threshold knob = nudge position, stays in the budget file (0.85 confirmed by his 2026-09-27 ruling); full text in todo_records.md) — unit-2 backstop: catch the ACTUAL context-limit hit cleanly
 
 ## 84. (LANDED 2026-09-22, worker `worker_Q3S_170K`) — Compaction config consolidation: ALL compaction config in the shared `compact_budget.json` (replaces the `QUANT_CLASS_RULES` substring table + the opencode.jsonc emergency flag + the hardcoded recovery keeps)
 
@@ -746,7 +745,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   rationale — his review).
 - **Close note (2026-09-26, worker-24, commit b95d532):** metric fixed → raw part mass (bytes/4), usage-field fallback kept (all pins updated; gate 340/340 + 74/74 + 17/17 + 459+1w + F=0). The live fork-test acceptance stays OPEN.
 - **Close note (2026-09-27, worker_Q3S_245K_slow, commit dcad3d1):** metric v2: S-diff provider-true primary (S = input+output+cache.read per assistant; window mass = S[last assistant in window] − S[last assistant before window]), bytes/4 part mass kept as the fallback (no assistant in window / diff ≤ 0) — all pins machine-recomputed + updated (smoke 76/76 + 17/17, probe 340/340 count unchanged, 459+1w, F=0). The live fork-test acceptance stays OPEN.
-- **Status (2026-09-27, direct session ses_f20d1b39…): LIVE TESTS COMPLETE (maintainer, 2026-09-26/27, `.opencode/maintainer/draft/compaction_guide/compaction_tests.md`): the body `keep.tokens` is NOT honored by the installed host — retention always tracks opencode.json `compaction.keep.tokens` (now 40000); `keep.messages` ignored; measured floor = 25.8-25.9k (system + summary). Metric v2 (S-diff, dcad3d1) stands as the computed advisory (the COMPACT line `tok=`). OPEN follow-up (deferred research/design): 'how to correctly input keep.token into the summarize function' — the installed summarize path appears to read keep from the config only (host-map §compaction; the static SDK body schema = {providerID, modelID} only); the N=10 discriminator + the summarize-scope probe (fork session) ride the same follow-up.**
+- **Status (2026-09-27, direct session ses_f20d1b39…): LIVE TESTS COMPLETE (maintainer, 2026-09-26/27, `.opencode/maintainer/draft/compaction_guide/compaction_tests.md`): the body `keep.tokens` is NOT honored by the installed host — retention always tracks opencode.json `compaction.keep.tokens` (now 40000); `keep.messages` ignored; measured floor = 25.8-25.9k (system + summary). Metric v2 (S-diff, dcad3d1) stands as the computed advisory (the COMPACT line `tok=`). FOLLOW-UP RESEARCH APPROVED (his ruling 2026-09-27 direct: "if there is a way to set keeptoken flexibly, it should be used" — compact_memory must keep control over WHAT to keep, not just WHEN; a fixed global 40k is "too much in most cases, too little in some"): map the installed host's summarize path for a per-call keep input — the dev-branch source has `preserve_recent_tokens ?? clamp(0.25*usable, 2k..15k)` + `tail_turns`, but host-map §compaction does NOT trace where `preserve_recent_tokens` is read from (config vs per-call body — the gap); his fork-test matrix is the decider (undocumented body field variants vs the config value → measured post-compaction retention; the body `keep.tokens` we send is measured-IGNORED on this build — config wins twice: 44865 vs 30000/44878, 45005 vs 1 → floor). If a per-call field exists → wire the computed keepTokens into it; if none → the config `compaction.keep.tokens` (his file) is the only control, the computed value stays advisory (the COMPACT line `tok=`). The N=10 discriminator + the summarize-scope probe (fork session) ride this research.**
 
 ## #100. (LANDED 2026-09-26, plan18, worker-18 `worker_Q3S_245K_slow`, commit bc374b2; direct session 2026-09-25; maintainer GO 2026-09-25) remove the numword escape channel — bit-drift solved backend-side, the escape's use-case is gone
 - **Problem / evidence:** the escape sentinel (`[<incident>:<safe-form>:esc]` in

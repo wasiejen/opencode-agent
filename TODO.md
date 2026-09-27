@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #103, new
-entries start at #104 (closed IDs stay reserved in `todo_records.md`).
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #105, new
+entries start at #106 (closed IDs stay reserved in `todo_records.md`).
 Closed entries live in `todo_records.md` (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
 
@@ -515,7 +515,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the preCompactionDump call site — the dump script already has `--json`), `.opencode/plugin/tests/compact_memory.smoke.mjs`.
 - **Status:** LANDED 2026-09-27 (worker-26, plan26 — per the 2026-09-27 ruling "save both"): `preCompactionDump` now writes BOTH artifacts — the lossless md (first) + the raw `--json` snapshot (the lossless master) — each INDEPENDENTLY (the same attempt → DUMP-RETRY=1 → one retry → DUMP-FAIL per artifact, the #78 120 s budget + stderr capture on both); the DUMP-RETRY=/DUMP-FAIL lines gain the artifact relFile; the hook returns `{ ok, files, error }` (files = the landed paths, md first; error = `<md|json>: <detail>` per failed artifact, joined by " | "); the no-overwrite stamp stays MD-base-driven (both artifacts share the stamped base); the dispatch call site reads only ok/error (unchanged). The probe S14 checks 104/105/106/107 re-pinned + NEW check 345 (the json naming byte-exact) — 345/345 (header self-annotated); the compact_memory smoke +2 (78/78: the json artifact exists + the json DUMP-OK line byte-exact); gate green (all smokes, pytest 459 passed + 1 warning, ruff F=0). **Closed (planner-26 bookkeeping, 2026-09-27):** commits `11f4a12` (code) / `5a6e842` (probe) / `e2a1a52` (smoke) / `86bda25` (this status + handover) — planner-verified by own re-run (probe 345/345 + compact_memory smoke 78/78, exit 0). **LIVE-ACCEPTED (planner-27, 2026-09-27, verified from files):** the first real compaction under the #92 build was the planner-27 part-2 self-compact (ctx.log 2026-09-27_15-42/15-45, ses_f1d198b41): TWO DUMP-OK lines (`…_c0.md` ms=49 + `…_c0.json` ms=50) + the COMPACT line (keep=12m tok=29498 computed); both artifacts on disk in `.opencode/archive/sessions/compaction_dumps/` — the md (616,987 B, correct session/title/agent header) and the json (1,216,263 B, valid JSON, top keys `session,messages,orphan_parts`).
 
-## #95. (open, 2026-09-25, planner direct; his rulings 2026-09-25) fuzzy edit-oldstring track — PARENT entry (replaces the stale #67 references — that ID never existed in the committed TODO.md)
+## #95. (CLOSED 2026-09-28, plan28 maintenance pass; was open, 2026-09-25, planner direct; his rulings 2026-09-25) fuzzy edit-oldstring track — PARENT entry (replaces the stale #67 references — that ID never existed in the committed TODO.md)
 - **Problem / evidence:** edit oldString exact-match failure is a very regular problem (his priority.md "fuzzy matching of edit oldstring" + ideas.md L143-158); the #94 worker's anchor-semantics drift finding is queued here (todo_inbox 2026-09-25). Track state: R1/R2 live, R4/R7 landed, R6 STAGED (gate cleared), R3 STAGED, R8 + the escape return-info not staged.
 - **Sub-items (order):** (1) R6 as-is (pre-approved per its spec: payload journal + edit hints, observation-only); (2) the MUTATING edit-fuzzy (design pinned below — spec at launch); (3) R3 (gate CLEARED by his ruling 2026-09-25 — bitdrift retired, no correction data, R4 mining retired; absorbs the anchor-drift fix: existing block_transfer modes `includes` + no unique-check → startsWith+unique per #94); (4) R8 sandbox redirect + escape return-info.
 - **Pinned design for (2) (agreed 2026-09-25 direct):** oldString miss → the R6 content-locator candidates (anchors = distinctive lines of the oldString) → **normalize BOTH sides before comparing** (`\r\n`→`\n` + strip per-line trailing whitespace) → d=0 normalized → mutate oldString to the file's exact bytes (the CRLF/LF + trailing-whitespace class is unbounded in length — a proportional bar like 1-in-100 REJECTED: a 40-line CRLF drift = 39 chars, far beyond any proportional cap, while normalization removes it exactly); d≤1 normalized → mutate ONLY on exactly-one candidate (typo tolerance, the #72/M1 strict bar); else fail-closed + the edit-hint line; mandatory log line kind=fuzzy-edit orig=/value= (his return-info ruling); no auto-retry beyond the mutation; the R6 journal stays the recovery fallback.
@@ -587,7 +587,15 @@ All those IDs stay reserved — see the numbering rule in the header.
    S27's 8; the S26 re-pins 271/275/276), intercept_observer smoke 55/55
    (from 48/48), pytest 459+1w, ruff F=0. Docs:
    spec_sub2_edit_fuzzy_oldstring.md + decision-record §8.2 addendum.
-   Next: sub-item (3) R3 (gate cleared — absorbs the anchor-drift fix).
+    Next: sub-item (3) R3 (gate cleared — absorbs the anchor-drift fix).
+   **CLOSED (plan28 maintenance pass, 2026-09-28):** all four sub-items
+   LANDED 2026-09-26 — (1) R6 `acb6323`, (2) edit-fuzzy `15761d8`+`78b68e7`,
+   (3) R3 `3ec1c5c`/`44c50a2`/`20d5a48`, (4) R8 + return-info `#97`
+   `07bdd56`/`0d9b8e6` — + the R3 live-acceptance is COMPLETE for this
+   model class (plan23 2026-09-26 re-test: grep/glob pair + bash quoted-
+   form + bt anchor-marker pair live-accepted; section-anchor pinned-only,
+   schema-shadowed — see the status text above). Entry complete; full text
+   now in `todo_records.md`.
 
 ## #94. (LANDED 2026-09-25, planner direct; his approval 2026-09-25) block_transfer REPLACE mode — line-anchored span replacement from a buffer (edit-like, no exact oldString)
 - **Problem / evidence:** edit oldString exact-match is a very regular failure (his priority.md "fuzzy matching of edit oldstring"; ideas.md L153-158: "what would be needed to make block_transfer as versatile as edit but less prone to oldstring mismatch?"); block_transfer PASTE is insert-only (append after targetMarker / EOF) — a slot/region replacement needs a MOVE+DELETE composition (two calls, intermediate state); the 2026-09-24 slot-clobber incident (agent_feedback) showed PASTE-as-slot-replacement is a trap.
@@ -859,3 +867,167 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Acceptance criteria:** a research doc per target (`.opencode/agent/research/` or per-research folders); the ideas.md scan triage recorded in the summary/NAP with actionable items placed (agent_ideas.md / TODO / proposals); a recommendation (effort phase + estimate) per target; the stale-summary question (d) answers whether the summarize call accepts any instruction/prompt override (measured from the dev copy).
 - **Scope (suggested):** `.opencode/maintainer/ideas/ideas.md` (READ-ONLY), the temp opencode copies (the opencode:dev copy + `C:\Users\Wasiejen\AppData\Local\Temp\opencode\opencode-auto-resume-master` — paths in the host-map knowledge), `.opencode/maintainer/draft/compaction_guide/` (READ-ONLY), `.opencode/plugin/compact_memory.ts` (the summarize call surface), and for (e) `.opencode/agent/prompts/` (the explorer + worker prompt files + the `roles/` folder — read the current combination structure first).
 - **Status:** open — next maintenance pass (counter-triggered, every 5th iteration); (b)+(d) are explorer-shaped research; (a)+(c) planner-direct or explorer.
+  **Part (a) DONE (plan28, 2026-09-28, planner-direct):** the ideas.md scan
+  is triaged — 4 ideas submitted to `agent_ideas.md` (ctx-gauge
+  config-derived window + session/role attribution; the context-erase/
+  tail-trim tool; a `submit` memory channel; the messages.updated
+  real-time gauge), 4 new TODO entries filed (#109-#112), 2 items are
+  maintainer-domain backend (NAP note only), the rest are already covered
+  (full triage in the plan28 summary + the loop folder). Remaining: (b)
+  keepTokens fork effort, (c) v2 branch/hardening, (d) compaction-summary
+  customization, (e) explorer/researcher makeover (his opencode.jsonc
+  write-access tightening pending — his domain).
+
+## #106. (open, 2026-09-28, plan28 feedback review; pre-approved class — agent-usage friction removal) edit-fuzzy hint line should state APPLIED vs REJECTED
+- **Problem / evidence:** agent_feedback 2026-09-26_12-15 (planner): a NAP
+  edit returned `hint reason=d-too-high best-d=24` yet the edit WAS applied
+  (the file carried the new text) — the hint reads like a rejection, so an
+  agent may uselessly retry/verify; the R6/edit-fuzzy hint channel does not
+  state whether the fuzzy resolution was APPLIED (and at what d) or
+  REJECTED.
+- **Desired outcome:** the edit-hint / edit-fuzzy feedback line distinguishes
+  APPLIED (carrying the resolved d) from REJECTED (carrying the best
+  candidate d) — one unambiguous token per outcome.
+- **Acceptance criteria:** the line format carries the outcome token;
+  affected smoke/probe pins re-pinned (the hint lines are byte-pinned);
+  standard gate green.
+- **Suggested scope:** `.opencode/plugin/intercept_observer_core.ts` (the
+  hint construction) + `intercept_observer.ts` (the edit-fuzzy feedback
+  line), `.opencode/plugin/tests/`, `.opencode/plugin/probes/handover_probe.mjs`.
+- **Status:** OPEN (pre-approved per the 2026-09-27 approval-boundary ruling
+  — agent-usage-facing truthfulness improvement).
+
+## #107. (open, 2026-09-28, plan28 feedback review; pre-approved class) DUMP-OK / COMPACT ctx.log lines should carry the FULL repo-relative directory
+- **Problem / evidence:** agent_feedback 2026-09-27_16-20 (planner): the
+  #92 live-acceptance verification cost two extra probes — the ctx.log
+  DUMP-OK line carries only the archive-RELATIVE path
+  (`compaction_dumps/…_c0.md`) but the real dir is
+  `.opencode/archive/sessions/compaction_dumps/`; the TODO/summary now names
+  the full dir, but the log line itself still forces the re-discovery.
+- **Desired outcome:** the DUMP-OK / DUMP-FAIL / DUMP-RETRY lines (and the
+  COMPACT line where a file path is named) carry the full repo-relative
+  path — a live acceptance is a single `ls`.
+- **Acceptance criteria:** the line format change pinned (probe S14
+  byte-exact pins + compact_memory smoke re-pins); gate green.
+- **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the dump-hook
+  log lines), `.opencode/plugin/probes/handover_probe.mjs` (S14),
+  `.opencode/plugin/tests/compact_memory.smoke.mjs`.
+- **Status:** OPEN (pre-approved — agent-usage friction removal).
+
+## #108. (open, 2026-09-28, plan28 feedback review; pre-approved class) auto_resume smoke: programmatic pair-block fixture builder
+- **Problem / evidence:** agent_feedback 2026-09-27_20-49 (planner): hand-
+  re-typing the 10-pair `#96 (c)` trim-restore fixture was error-prone — 19
+  lines written for 10 pairs (one `route=` line dropped), caught by the
+  smoke only after 2 runs + a standalone repro.
+- **Desired outcome:** the multi-pair fixture blocks are generated
+  programmatically (a loop building the string, not literal lines) + a
+  pair-count assert so a dropped line fails instantly with the count.
+- **Acceptance criteria:** the #96 (c) fixture (and any sibling multi-pair
+  fixtures) built by the generator; a pair-count assert present; the smoke
+  re-runs green with identical pin coverage.
+- **Suggested scope:** `.opencode/plugin/tests/auto_resume.smoke.mjs` (the
+  #96 (c) fixture block + the generator helper).
+- **Status:** OPEN (pre-approved — test/tool improvement).
+
+## #109. (open, 2026-09-28, plan28 ideas.md scan; research → design) silent context-limit stops carry NO signal — a worker dying at the wall without self-compaction returns an empty result with no log line
+- **Problem / evidence:** ideas.md 2026-09-25_18-01 (maintainer) + the
+  submit feedback in that entry: a worker session that stops at the context
+  wall WITHOUT triggering a self-compaction returns only an EMPTY Task
+  result (no error, no Work State, no loop-log line) — recovery required
+  full file forensics (git log + status + in-progress handover). MEASURED
+  twice: the 2026-09-25_18-01 episode + MEM-0104/0109 (limit deaths where
+  the signal is a failure MESSAGE — the silent variant is worse: not even
+  that).
+- **Desired outcome:** a SILENT limit-stop becomes visible — either a
+  plugin-side detection (the auto_resume tick or a hook checks the DB/gauge
+  for a session whose last step is a limit stop — `reason=length` /
+  `tokens.total` at the window — with NO ctx.log COMPACT line → a
+  `-WARNING` loop-log line + optionally a compaction dispatch) or a
+  result-channel stop reason. Design the cheapest reliable detector first.
+- **Acceptance criteria:** a research note with the chosen detector design
+  (where it hooks, what it reads, the false-positive risk) + a small build
+  spec (or a maintainer call if the design touches observable behavior).
+- **Suggested scope:** `.opencode/plugin/auto_resume.ts` (the tick) or
+  `.opencode/plugin/compact_memory.ts` (the dispatch path),
+  `.opencode/agent/scripts/db/` (the step-meta read), the research doc in
+  `.opencode/agent/research/`.
+- **Status:** OPEN (research first — detector design; pre-approved class
+  once designed, agent-usage-facing).
+
+## #110. (open, 2026-09-28, plan28 ideas.md scan; pre-approved — docs) per-plugin README files for `.opencode/plugin/`
+- **Problem / evidence:** ideas.md 2026-09-22_17-53 (maintainer): "might be
+  a good idea to create separate README.md files for each plugin we have
+  written — general explanation what it does and how it is implemented;
+  might contain gotchas encountered — lessons learned and what not to do
+  with reasoning; this might be better in another gotchas file specific to
+  plugins."
+- **Desired outcome:** one README per our plugin (auto_resume,
+  compact_memory, context_recovery, intercept_observer, gauge/ctx nudge
+  family, block_transfer/loop_log/submit tool plugins where they live in
+  the plugin dir) — what it does, how it is implemented (hook surface +
+  key files), the gotchas/lessons (from knowledge entries + session
+  incidents); each ≤ ~60 lines, pointer-only (no restatement of the
+  knowledge base).
+- **Acceptance criteria:** the READMEs present in the plugin folder; every
+  plugin in `.opencode/plugin/` covered; content spot-checked against the
+  code (no stale hook names); the folder README (if any) indexes them.
+- **Suggested scope:** `.opencode/plugin/` (new README files, one per
+  plugin), `.opencode/agent/knowledge/knowledge_plugins.md` (source of the
+  gotchas).
+- **Status:** OPEN (docs — pre-approved).
+
+## #111. (open, 2026-09-28, plan28 feedback review; pre-approved — small doc/prompt batch) doc/prompt friction batch from the plan28 review
+- **Problem / evidence:** three small pre-approved doc items from the
+  feedback review that are NOT in the prompt/spec docs yet: (1)
+  ideas.md 2026-09-22_12-03 — the worker "burned 10k tokens and 6.5 minutes
+  to decide to look up how others" referenced the git hash in his closing
+  commit (happens nearly every time); the task-spec doc carries the
+  commit-hash DoD RULE (codified 2026-09-22) but the worker prompt has no
+  short working example of the closing-commit message form (what goes in,
+  what the hash line says — "hash recorded in the planner's follow-up
+  bookkeeping"); (2) agent_feedback 2026-09-27_15-55 — a probe-comment
+  syntax slip survived to the ~2-min gate run: a cheap `node --check
+  .opencode/plugin/probes/handover_probe.mjs` after each probe edit batch
+  would catch token slips early; (3) agent_feedback 2026-09-26_15-13 — the
+  intercept smoke's module-state flip (the second factory call re-points
+  module state to proj2) is easy to miss on a fresh read: a header-level
+  note in the smoke file naming the before2/read2 convention for sections
+  after the R8 config-read block (~L712).
+- **Desired outcome:** the three one-liner doc fixes in place (worker
+  prompt commit-message example; `node --check` line in the test-gate doc;
+  smoke header convention note).
+- **Acceptance criteria:** the three lines present (worker prompt,
+  `repo_testgate.md` or the worker prompt, the intercept smoke header);
+  no behavior change.
+- **Suggested scope:** `.opencode/agent/prompts/agents/prompt_agent_task.md`,
+  `.opencode/agent/prompts/repo/repo_testgate.md`,
+  `.opencode/plugin/tests/intercept_observer.smoke.mjs` (header comment only).
+- **Status:** OPEN (pre-approved — friction removal; the spec-doc half of
+  this class already landed inline in plan28).
+
+## #112. (open, 2026-09-28, plan28 ideas.md scan; pre-approved — docs) auto-resume explainer for the compaction handout + knowledge (compact, unit-by-unit)
+- **Problem / evidence:** ideas.md 2026-09-24_21-13 (maintainer): "include
+  infos about auto-resume in the compaction handout and system prompt —
+  e.g. what unit 2 and 4 actually do, how the restart of the planner after
+  compaction works, how a new planner is started; move it to knowledge
+  folder together." The knowledge base has the deep-dives (vendored
+  upstream reference) + our unit surface reports, but NO single compact
+  "what our auto_resume plugin does, unit by unit, in 1 page" explainer —
+  the compaction handout (the maintainer's draft) carries none of it.
+- **Desired outcome:** one compact knowledge entry (≤ ~80 lines) — unit 1
+  (skeleton/logging), unit 2 (context-limit nudge — the passive ctx-line
+  suffix, what the threshold gates), unit 3 (new-planner spawn helper),
+  unit 4 (liveness watchdog — the restart→spawn branch + the recovery
+  continue + the lineage cap + deactivation) — each: what it does, what
+  triggers it, the log lines it emits; pointer-only to the deep-dives /
+  surface reports for detail. The handout inclusion itself is the
+  maintainer's paste (his draft file).
+- **Acceptance criteria:** the knowledge entry present (dated, pointer-
+  only); the unit descriptions spot-checked against auto_resume.ts (no
+  stale hook names); the handout inclusion noted in the summary as
+  maintainer-pending.
+- **Suggested scope:** `.opencode/agent/knowledge/knowledge_plugins.md` or
+  a new dated file in `opencode-plugins/`, `.opencode/plugin/auto_resume.ts`
+  (read-only reference).
+- **Status:** OPEN (docs — pre-approved; the handout paste is maintainer-
+  domain).

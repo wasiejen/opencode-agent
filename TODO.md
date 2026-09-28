@@ -938,8 +938,8 @@ All those IDs stay reserved — see the numbering rule in the header.
   emits the injected line + the ctx_gauge tool/gauge core),
   `.opencode/temp/compact_budget.json` (the store both read), the knowledge
   base (dated note).
-- **Status:** OPEN (research first — pre-approved class, agent-usage-facing
-  truthfulness per the 2026-09-27 approval-boundary ruling).
+- **Status:** LANDED (2026-09-28, plan31, worker-31 — hash recorded in the
+  planner's follow-up bookkeeping commit).
 - **Status note (2026-09-28, plan31, planner-31): ROOT CAUSE IDENTIFIED
   (planner-measured — knowledge_plugins.md entry "Gauge budget suffix:
   no-total reads…"): a gauge read with no finished step yet (a fresh session

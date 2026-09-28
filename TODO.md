@@ -1017,3 +1017,39 @@ All those IDs stay reserved — see the numbering rule in the header.
   12e3262; live acceptance remains pending the maintainer's host restart
   (a fresh session's injected line should then read "5 compactions
   left").
+
+## #115. (open, 2026-09-28, plan34 idle-lane — agent_ideas.md triage, idea 1; pre-approved class — bookkeeping reduction) the gauge window resolves from the model-ID name marker only — it should be config-first (root opencode.jsonc `limit.context`), name parse as fallback
+- **Problem / evidence:** `gauge.mjs` `parseWindow` (L242-250) derives the
+  context window ONLY from a trailing `<N>K`/`<N>M` marker in the model id —
+  a model rename (or a backend limit move without a marker update) → window
+  UNKNOWN → the readout loses `(pct%)/REM` on BOTH surfaces (the injected
+  ctx: line via ctx_watchdog + the ctx_gauge tool — the shared
+  `gaugeFromRaw`). The declarative source of truth already exists: the live
+  `opencode.jsonc` declares `provider.<pid>.models.<mid>.limit.context` per
+  model (e.g. "Qwen3.8-27B-Q3S-245K-slow" → 245000, L111-114). The auto_resume
+  saturation path already resolves limits via `client.provider.list()`
+  (`getModelLimits`, auto_resume.ts L478) — only the gauge surfaces use the
+  name parse. Origin: agent_ideas.md 2026-09-28_01-22 idea (1) (from the
+  maintainer's ideas.md 2026-09-23_04-53 + 2026-09-22_17-41 — "derive the
+  context limit from opencode.jsonc instead of the model-ID name, so the
+  model can be renamed freely without syncing name→limit").
+- **Desired outcome:** a model rename no longer degrades the gauge readout —
+  the window resolves config-first (the root opencode.jsonc `limit.context`),
+  with the existing name-marker parse as fallback.
+- **Acceptance criteria:** the config-first chain pinned in the gauge_core
+  smoke (config hit beats the name marker; no-marker model + config →
+  config value; not-in-config / missing config / no provider prefix → the
+  parseWindow fallback; a JSONC (comments) config parses, incl. a `//`
+  inside a string literal); the `formatGauge` readout format UNCHANGED (the
+  existing fixture bytes identical); standard gate green (probe self-
+  annotated total + the other smokes at baseline + ruff F=0; the pytest
+  half is BLOCKED by #113 — reported, not fixed); the dated knowledge
+  one-liner appended (knowledge_plugins.md).
+- **Suggested scope:** `.opencode/plugin/scripts/gauge.mjs` (the new
+  `resolveWindow` + the per-call config read + the `setConfigFileForTest`
+  hook + the string-aware JSONC strip per auto_resume.ts L1098
+  `parseJsonc`), `.opencode/plugin/tests/gauge_core.smoke.mjs`,
+  `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (re-pin only if affected),
+  `.opencode/plugin/probes/handover_probe.mjs` (re-pin only if affected),
+  `.opencode/agent/knowledge/knowledge_plugins.md` (one-liner).
+- **Status:** open — spec committed plan34 (worker launching).

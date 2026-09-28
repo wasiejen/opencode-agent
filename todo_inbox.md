@@ -177,3 +177,6 @@ R3 live-acceptance gap: item 1.3 (section-anchor resolver, read string offset) a
 ## 2026-09-28_01-50 explorer_Q3S_245K_slow ses_f1ac80746ffelkelB0h9zwQ4go
 Unresolved source-tree quirk found while tracing the keepTokens change set (opencode-dev 1.18.32, read-only): packages/core/src/v1/session.ts line 1 is `export * as SessionV1 from "./session"` — a path that appears to resolve to the file itself (self-reference); the file then also imports from `@opencode-ai/schema/session-v1` and re-exports CompactionPart. Could not determine from the tree whether this is a dead/odd barrel line or a shadowed resolution (a `v1/session/` dir would need checking). No behavior impact observed; flagging for a future opencode-internals audit so an editor of the CompactionPart schema isn't confused about which file is canonical (the canonical def is packages/schema/src/v1/session.ts L195).
 
+## 2026-09-28_04-25 worker_Q3S_245K_slow ses_f1a403aecffeP658IC4yNdEFdr
+Stale DoD baseline in plan31 spec (handover_task.md): the gate list says `submit 20/20` but the committed submit smoke currently reports 23/23 (green, untouched by the #114 task). Not a regression — just the spec number predates the smoke growth. No action beyond awareness; close at curation.
+

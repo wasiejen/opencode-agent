@@ -967,5 +967,12 @@ All those IDs stay reserved — see the numbering rule in the header.
   data point (this session: injected "1 compaction left" vs ctx_gauge self-
   read "5 compactions left", same session, no compaction between). FIX
   DELEGATED (worker spec plan31_ho_task.md — session-row model as the
-  no-total fallback; pins re-pinned to exercise the new behavior + keep the
-  default-1 fallback pin).**
+   no-total fallback; pins re-pinned to exercise the new behavior + keep the
+   default-1 fallback pin).**
+- **Live check 2026-09-28 (plan32, 4th data point):** a fresh session
+  (ses_f19fdb571ffeb0aoqGGu62wbzo) carried the injected `ctx:` line
+  "1 compactions left" while its ctx_gauge self-read showed "5
+  compactions left" — the live host process still PREDATES the fix
+  12e3262; live acceptance remains pending the maintainer's host restart
+  (a fresh session's injected line should then read "5 compactions
+  left").

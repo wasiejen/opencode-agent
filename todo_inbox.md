@@ -174,3 +174,6 @@ R3 live-acceptance gap: item 1.3 (section-anchor resolver, read string offset) a
   status; completion path = the maintainer's next restart (the same one
   pending for #99/#98/compaction-unification) + a re-test of the two channels.
 
+## 2026-09-28_01-50 explorer_Q3S_245K_slow ses_f1ac80746ffelkelB0h9zwQ4go
+Unresolved source-tree quirk found while tracing the keepTokens change set (opencode-dev 1.18.32, read-only): packages/core/src/v1/session.ts line 1 is `export * as SessionV1 from "./session"` — a path that appears to resolve to the file itself (self-reference); the file then also imports from `@opencode-ai/schema/session-v1` and re-exports CompactionPart. Could not determine from the tree whether this is a dead/odd barrel line or a shadowed resolution (a `v1/session/` dir would need checking). No behavior impact observed; flagging for a future opencode-internals audit so an editor of the CompactionPart schema isn't confused about which file is canonical (the canonical def is packages/schema/src/v1/session.ts L195).
+

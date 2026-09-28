@@ -833,7 +833,30 @@ All those IDs stay reserved — see the numbering rule in the header.
   agent-facing; the plugin writes the file); build spec sketch in doc §5
   (6 smoke pins, ~90-130 lines, ~0.5-1 day; detector + -WARNING =
   pre-approved agent-usage class; a compaction DISPATCH on detection =
-  maintainer call). OPEN for the build (delegable per doc §5).
+  maintainer call).
+- **Status:** LANDED (plan33 unit 1, 2026-09-28, worker-33): the
+  detector is built per the research doc — the zero-IO `limitStopCheck()`
+  leg in the auto_resume tick (5 new `Watch` fields; the 5-clause
+  signature verbatim from doc §2; leg order = AFTER `tailCompactRearm`,
+  BEFORE the routing loop, own try/catch); fire = ONE `-WARNING` line per
+  episode appended to the current looprun's `loop_log.md` (the plugin
+  writes the file itself — `auto_resume` in the role slot, the shared
+  `currentLoopFolder()` resolution — no folder → `auto_resume.log`
+  only) + ONE `limit-stop= sid=… total=…` line in `auto_resume.log`; NO
+  action on the session (no dispatch/send/resume — that part stays a
+  maintainer call). Verification: auto_resume smoke 140 → 146 (6 pins;
+  the 60 s silence gate tested with a global `Date.now` warp — no real
+  60 s waits); every other smoke at baseline UNCHANGED (block_transfer
+  131/131 + 64/64, intercept_observer 78/78 — the spec DoD's "77" is
+  stale, the baseline was already 78 since #106 `cbbebf8`, compact_memory
+  78/78, context_recovery 17/17, submit 23/23); probe 346 = 335 pass +
+  11 ENVIRONMENTAL #113 failures 136-146 (`No Python at python312` — the
+  venv NOT fixed, per spec: MAINTAINER CALL); ruff F=0; the pytest half
+  of the standard gate is BLOCKED by #113 (exit 103, reported in the
+  handover, not fixed). LIVE acceptance PENDING the maintainer's host
+  restart (one worker dying at the wall → the `-WARNING` line lands in
+  `loop_log.md` within ~65 s — doc §5 DoD). (Commit hashes recorded in
+  the planner's follow-up bookkeeping commit — no self-reference.)
 
 ## #110. (open, 2026-09-28, plan28 ideas.md scan; pre-approved — docs) per-plugin README files for `.opencode/plugin/`
 - **Problem / evidence:** ideas.md 2026-09-22_17-53 (maintainer): "might be

@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #105, new
-entries start at #106 (closed IDs stay reserved in `todo_records.md`).
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #113, new
+entries start at #114 (closed IDs stay reserved in `todo_records.md`).
 Closed entries live in `todo_records.md` (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
 
@@ -918,7 +918,18 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the dump-hook
   log lines), `.opencode/plugin/probes/handover_probe.mjs` (S14),
   `.opencode/plugin/tests/compact_memory.smoke.mjs`.
-- **Status:** OPEN (pre-approved — agent-usage friction removal).
+- **Status:** LANDED (plan29, 2026-09-28, planner-29 planner-direct —
+  pre-approved class): the three DUMP-* lines (DUMP-OK / DUMP-RETRY= /
+  DUMP-FAIL) now carry the FULL repo-relative dump path
+  (`.opencode/archive/sessions/` + name — the `DUMP_ARCHIVE_REL` constant
+  shared with the archive-dir join) so a live acceptance is a single `ls`;
+  the spawn's `--out` keeps the corpus-relative name (the script's
+  OUT_DIR-relative arg); the COMPACT line names no file path (checked —
+  unchanged). Pins re-pinned: probe S14 check 104 (4 includes()) + S25
+  check 255 (regex + label) + the compact_memory smoke's two DUMP-OK pins
+  (md + json). Measured: compact_memory smoke 78/78; probe all green
+  except the 11 pre-existing python312 environmental failures (see #113).
+  Hash in the plan29 bookkeeping commit.
 
 ## #108. (open, 2026-09-28, plan28 feedback review; pre-approved class) auto_resume smoke: programmatic pair-block fixture builder
 - **Problem / evidence:** agent_feedback 2026-09-27_20-49 (planner): hand-
@@ -933,7 +944,18 @@ All those IDs stay reserved — see the numbering rule in the header.
   re-runs green with identical pin coverage.
 - **Suggested scope:** `.opencode/plugin/tests/auto_resume.smoke.mjs` (the
   #96 (c) fixture block + the generator helper).
-- **Status:** OPEN (pre-approved — test/tool improvement).
+- **Status:** LANDED (plan29, 2026-09-28, planner-29 planner-direct —
+  pre-approved class): the #96 (c) trim-restore fixture's 10 pairs are now
+  generated PROGRAMMATICALLY in the child script (`L(i) = charCode 97+i` +
+  `Array.from({length: 10})` loop — the same pattern the cap-config
+  sibling already carried) + a PAIR-COUNT assert (`pairCount !== 10` →
+  `console.log("PAIR_COUNT " + pairCount)` + non-zero exit BEFORE the log
+  is seeded — a dropped pair fails instantly with the count in the smoke
+  detail). The sibling multi-pair fixture (cap-config child) was already
+  programmatic (checked — no other hand-typed pair blocks exist).
+  Measured: auto_resume smoke 140/140 (the 140 = 139 baseline + the
+  3914181 cap-config check — the NAP baseline was stale, corrected in
+  plan29 bookkeeping). Hash in the plan29 bookkeeping commit.
 
 ## #109. (open, 2026-09-28, plan28 ideas.md scan; research → design) silent context-limit stops carry NO signal — a worker dying at the wall without self-compaction returns an empty result with no log line
 - **Problem / evidence:** ideas.md 2026-09-25_18-01 (maintainer) + the
@@ -1008,8 +1030,17 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/agent/prompts/agents/prompt_agent_task.md`,
   `.opencode/agent/prompts/repo/repo_testgate.md`,
   `.opencode/plugin/tests/intercept_observer.smoke.mjs` (header comment only).
-- **Status:** OPEN (pre-approved — friction removal; the spec-doc half of
-  this class already landed inline in plan28).
+- **Status:** LANDED (plan29, 2026-09-28, planner-29 planner-direct —
+  pre-approved, no behavior change): (1) worker prompt `Checkpoint &
+  handoff` gains the commit-message worked example (subject + ~3 body
+  lines; the hash NEVER in the commit — `LANDED` (hash recorded in the
+  planner's follow-up bookkeeping commit), the spec doc's hash DoD rule);
+  (2) `repo_testgate.md` Test conventions gains the `node --check`
+  probe-syntax line (run before the gate after each probe edit batch);
+  (3) the intercept smoke header gains the MODULE-STATE FLIP note
+  ((12f) second factory re-points the shared module state to proj2 —
+  from (12f) on only `before2`/`read2` may be used). Hash in the plan29
+  bookkeeping commit.
 
 ## #112. (open, 2026-09-28, plan28 ideas.md scan; pre-approved — docs) auto-resume explainer for the compaction handout + knowledge (compact, unit-by-unit)
 - **Problem / evidence:** ideas.md 2026-09-24_21-13 (maintainer): "include
@@ -1037,3 +1068,29 @@ All those IDs stay reserved — see the numbering rule in the header.
   (read-only reference).
 - **Status:** OPEN (docs — pre-approved; the handout paste is maintainer-
   domain).
+
+## #113. (open, 2026-09-28, plan29 planner gate run — ENVIRONMENT break, maintainer call) the repo venv's python.exe is broken — the base interpreter it points at is gone, so the standard gate's pytest + the probe's numword python checks are unrunnable
+- **Problem / evidence:** the plan29 gate run (2026-09-28) measured:
+  `./.venv/Scripts/python.exe -c "print(...)"` fails with
+  `No Python at '"C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312\python.exe"'`
+  (the error text carries an embedded quote). `.venv/pyvenv.cfg` points
+  `home`/`executable` at `C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312`
+  (ONE level above the repo root); that `python312` dir exists but holds
+  only `Doc` — `python.exe` is ABSENT. Consequence measured in the same
+  run: the probe's 11 numword python checks (136-146, `runPyW2n` over
+  VENV_PY) all FAIL with that message; the standard gate's pytest half is
+  unrunnable (the venv is the only python with the repo deps — bare PATH
+  `python` = 3.14 without deps per repo_commands.md). The 2026-09-27
+  baselines (probe 345, pytest 459+1w) predate the break.
+- **Desired outcome:** the venv's python works again (re-pointed or
+  rebuilt by the maintainer — repo_commands.md forbids agents from
+  reinstalling the venv from scratch); then one full standard-gate re-run
+  to re-establish the baselines (probe total + pytest count).
+- **Acceptance:** `./.venv/Scripts/python.exe -c "print(...)"` works;
+  standard gate green (probe self-annotated total + pytest count) with the
+  fresh counts recorded in the NAP Standing baselines.
+- **Suggested scope:** maintainer domain (the venv + the base python
+  install); the planner re-baselines on the next gate run.
+- **Status:** OPEN — MAINTAINER CALL (environment fix). Until then: the
+  probe's 11 numword-python failures (136-146) are environmental, NOT
+  regressions; the pytest half of the standard gate is unrunnable.

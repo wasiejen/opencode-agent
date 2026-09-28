@@ -830,9 +830,18 @@ All those IDs stay reserved — see the numbering rule in the header.
   fresh counts recorded in the NAP Standing baselines.
 - **Suggested scope:** maintainer domain (the venv + the base python
   install); the planner re-baselines on the next gate run.
-- **Status:** OPEN — MAINTAINER CALL (environment fix). Until then: the
-  probe's 11 numword-python failures (136-146) are environmental, NOT
-  regressions; the pytest half of the standard gate is unrunnable.
+- **Status:** OPEN — ENVIRONMENT FIXED BY MAINTAINER (2026-09-29),
+  RE-BASELINE PENDING. The venv was REPLACED, not repaired: the current
+  `.venv/pyvenv.cfg` `command` line records a fresh creation with
+  `C:\Users\Wasiejen\AppData\Local\Programs\Python\Python314\python.exe -m
+  venv` (python 3.14.3 — measured working, 459 tests collect); the old
+  `..\python312` base dir is GONE from disk. Discrepancy vs intent: the
+  maintainer wanted 3.12 (same as before); bare `python`/`py` resolves to
+  3.14 (the `py -0` default), and CI pins 3.12 (`ci.yml:17`) + the
+  established baselines are 3.12-era → recommended: rebuild with
+  `py -3.12 -m venv .venv` + reinstall requirements (3.12 IS installed per
+  `py -0`), then the full standard-gate re-run re-baselines and closes
+  this. Until then: treat 3.14 results as provisional.
 ## #114. (open, 2026-09-28, plan30 maintenance pass — feedback review; pre-approved class — truthfulness) the injected ctx: line's budget suffix disagrees with the ctx_gauge self-read (1 vs 5 compactions left — same session, no compaction in between)
 - **Problem / evidence:** agent_feedback 2026-09-28_02-40 (planner-29): at
   session start the injected `ctx:` line read

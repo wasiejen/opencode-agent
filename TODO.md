@@ -940,3 +940,14 @@ All those IDs stay reserved — see the numbering rule in the header.
   base (dated note).
 - **Status:** OPEN (research first — pre-approved class, agent-usage-facing
   truthfulness per the 2026-09-27 approval-boundary ruling).
+- **Status note (2026-09-28, plan31, planner-31): ROOT CAUSE IDENTIFIED
+  (planner-measured — knowledge_plugins.md entry "Gauge budget suffix:
+  no-total reads…"): a gauge read with no finished step yet (a fresh session
+  at session start) resolves the model to "" (the model comes only from the
+  finished-step row) → model_budget.default (=1) instead of the session's
+  real cap (5) — the session row's own model column is never read. 3rd live
+  data point (this session: injected "1 compaction left" vs ctx_gauge self-
+  read "5 compactions left", same session, no compaction between). FIX
+  DELEGATED (worker spec plan31_ho_task.md — session-row model as the
+  no-total fallback; pins re-pinned to exercise the new behavior + keep the
+  default-1 fallback pin).**

@@ -724,8 +724,26 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/plugin/intercept_observer_core.ts` (the
   hint construction) + `intercept_observer.ts` (the edit-fuzzy feedback
   line), `.opencode/plugin/tests/`, `.opencode/plugin/probes/handover_probe.mjs`.
-- **Status:** OPEN (pre-approved per the 2026-09-27 approval-boundary ruling
-  — agent-usage-facing truthfulness improvement).
+- **Status:** LANDED (worker-31, 2026-09-28, plan31 unit 2 — spec ea730f9):
+  the mutating edit-fuzzy evidence now reads
+  `fuzzy-edit applied orig=<t40> len=<n> d=<0|1> value=<t40>` and is
+  STORED + DELIVERED on the (successful) tool result (the delivered
+  edit-hint line is no longer failure-only); every fail-closed / ambiguous
+  hint evidence now reads `hint rejected …` (existing fields unchanged);
+  the outcome token makes every delivered edit-hint line self-describing;
+  NO verdict-table change; `locateContent` / `resolveEditOldString`
+  untouched. Pins re-pinned: intercept_observer smoke (10e/10f/10g/10h +
+  11a-11f) + ONE new check (10h2 — the mutating edit-fuzzy delivers the
+  `fuzzy-edit applied` line on the successful result) — smoke 77 → 78;
+  probe S20-203 + S26 271-276 + S27 277-284 re-pinned (check count
+  unchanged — the header tally stays 346). Measured: intercept_observer
+  smoke 78/78; probe 346 checks = 335 PASS + the 11 pre-existing
+  environmental numword-python failures 136-146 (#113, not regressions);
+  all other smokes unchanged (auto_resume 140/140, compact_memory 78/78,
+  context_recovery 17/17, block_transfer 131/131 + 64/64, gauge_core,
+  ctx_gauge 3/3, loop_log 69/69, submit 23/23); ruff F=0; pytest
+  UNRUNNABLE (#113 — not attempted). Hash recorded in the planner's
+  follow-up bookkeeping commit (a worker commit cannot carry its own hash).
 
 ## #107. (open, 2026-09-28, plan28 feedback review; pre-approved class) DUMP-OK / COMPACT ctx.log lines should carry the FULL repo-relative directory
 - **Problem / evidence:** agent_feedback 2026-09-27_16-20 (planner): the

@@ -958,3 +958,18 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Status:** open — filed from the plan28/34 ideas queue (idea 4);
   the host-map facts above are the starting point, the payload shapes
   are the unknown.
+- **Status note (2026-09-28, plan38, source-side research, planner-inline):
+  the payload shapes are now KNOWN from the installed-build source
+  (opencode-dev = 1.18.32, provenance per the #99 close note):
+  `message.updated` carries `properties.info` = the FULL AssistantMessage
+  (tokens {input, output, reasoning, cache.read/write} + cost + finish),
+  emitted by `Session.updateMessage` (session.ts:629-633) on the
+  step-finish path (processor.ts:452-470 — tokens REPLACED per step, cost
+  accumulated) + finalization (processor.ts:609-610); the CLI's own run
+  consumer corroborates (session-data.ts:825-850 reads info.tokens/cost).
+  Verdict leans (a): a real-time gauge readout is feasible plugin-side
+  (last `message.updated` per session → in+out+cr, the #103 formula, no DB
+  read). Dated evidence entry: knowledge/opencode-plugins/
+  2026-09-28_message_updated_payload.md. The LIVE capture (3+ raw payloads
+  around a busy step — the acceptance) still requires the maintainer's
+  restart +   capture-plugin registration (his domain).

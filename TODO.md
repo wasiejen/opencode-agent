@@ -844,7 +844,11 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/plugin/` (new README files, one per
   plugin), `.opencode/agent/knowledge/knowledge_plugins.md` (source of the
   gotchas).
-- **Status:** OPEN (docs — pre-approved).
+- **Status:** LANDED (plan32 unit 1, 2026-09-28, worker-32 — 9 per-plugin /
+  per-tool READMEs next to their sources + the two folder-README index
+  lines; the tools folder's 4 READMEs ride the same batch — see the
+  worker-32 handover). Hash recorded in the planner's follow-up bookkeeping
+  commit.
 
 ## #111. (open, 2026-09-28, plan28 feedback review; pre-approved — small doc/prompt batch) doc/prompt friction batch from the plan28 review
 - **Problem / evidence:** three small pre-approved doc items from the
@@ -908,8 +912,11 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/agent/knowledge/knowledge_plugins.md` or
   a new dated file in `opencode-plugins/`, `.opencode/plugin/auto_resume.ts`
   (read-only reference).
-- **Status:** OPEN (docs — pre-approved; the handout paste is maintainer-
-  domain).
+- **Status:** LANDED (plan32 unit 1, 2026-09-28, worker-32 — the dated
+  explainer `knowledge/opencode-plugins/2026-09-28_auto-resume-units-
+  explainer.md`, ≤80 lines, spot-checked against auto_resume.ts). The
+  compaction-handout paste stays maintainer-domain. Hash recorded in the
+  planner's follow-up bookkeeping commit.
 
 ## #113. (open, 2026-09-28, plan29 planner gate run — ENVIRONMENT break, maintainer call) the repo venv's python.exe is broken — the base interpreter it points at is gone, so the standard gate's pytest + the probe's numword python checks are unrunnable
 - **Problem / evidence:** the plan29 gate run (2026-09-28) measured:

@@ -821,8 +821,19 @@ All those IDs stay reserved — see the numbering rule in the header.
   `.opencode/plugin/compact_memory.ts` (the dispatch path),
   `.opencode/agent/scripts/db/` (the step-meta read), the research doc in
   `.opencode/agent/research/`.
-- **Status:** OPEN (research first — detector design; pre-approved class
-  once designed, agent-usage-facing).
+- **Status:** RESEARCH DONE (plan32 unit 2, 2026-09-28, explorer-32 —
+  doc `.opencode/agent/research/2026-09-28_silent-limit-stop-detector.md`):
+  the detector = a zero-IO `limitStopCheck()` leg in the auto_resume 5s
+  tick — signature = last assistant finish `length` + `tokens.total` ≥
+  0.99 window + 60 s silence + idle + no NEW COMPACT line since the death
+  step + in-scope (role-agent prefix `planner/worker/explorer` OR
+  scope≠none — KEY FINDING: Task-tool workers carry `scope= none`, so a
+  scope-only gate would never fire); visibility = a `-WARNING` line
+  appended directly to the looprun's `loop_log.md` (the loop_log tool is
+  agent-facing; the plugin writes the file); build spec sketch in doc §5
+  (6 smoke pins, ~90-130 lines, ~0.5-1 day; detector + -WARNING =
+  pre-approved agent-usage class; a compaction DISPATCH on detection =
+  maintainer call). OPEN for the build (delegable per doc §5).
 
 ## #110. (open, 2026-09-28, plan28 ideas.md scan; pre-approved — docs) per-plugin README files for `.opencode/plugin/`
 - **Problem / evidence:** ideas.md 2026-09-22_17-53 (maintainer): "might be

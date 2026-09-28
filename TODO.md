@@ -1018,7 +1018,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   (a fresh session's injected line should then read "5 compactions
   left").
 
-## #115. (open, 2026-09-28, plan34 idle-lane — agent_ideas.md triage, idea 1; pre-approved class — bookkeeping reduction) the gauge window resolves from the model-ID name marker only — it should be config-first (root opencode.jsonc `limit.context`), name parse as fallback
+## #115. (LANDED, 2026-09-28, plan34 idle-lane — agent_ideas.md triage, idea 1; pre-approved class — bookkeeping reduction; worker-34 landed — the code commit's hash is recorded in the planner's follow-up bookkeeping commit) the gauge window is config-first: root opencode.jsonc `limit.context` beats the name marker (parseWindow is the fallback)
 - **Problem / evidence:** `gauge.mjs` `parseWindow` (L242-250) derives the
   context window ONLY from a trailing `<N>K`/`<N>M` marker in the model id —
   a model rename (or a backend limit move without a marker update) → window

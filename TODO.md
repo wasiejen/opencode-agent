@@ -663,7 +663,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** (a) the ideas.md scan is triaged — each entry → idea (`agent_ideas.md`), research task, feedback, or proposal where applicable; (b) the keepTokens fork effort is estimated (adapting the installed opencode to respect the keepTokens setting — via the repo copy in temp); (c) v2: the current "main" branch is identified (nearly 2000 branches) and a hardening plan for our plugins/app for a potential switch is researched (incl. whether v2's summarize already has keepTokens functionality not based solely on opencode.jsonc); (d) compaction-summary customization: using the exact summarize prompt (`.opencode/maintainer/draft/compaction_guide/compaction_prompt.md` + the temp opencode:dev copy), find how the compaction model's summary behavior can be influenced — e.g. drop all content older than 4 compactions, mark new additions with the current compaction iteration (keeps the summary current + trackable); (e) **explorer/researcher makeover** (his GO 2026-09-27; ideas.md 2026-09-26_07-50 + 2026-09-23_05-19): rework the explorer prompt as a researcher / information finder / map creator (APIs, online research, idea mining) — the maintainer will ALSO tighten the explorer's write access in opencode.jsonc (his domain; precaution so online sources cannot influence destructive changes), reuse his existing researcher roles in `.opencode/agent/prompts/roles/` (actionable_researcher, knowledge_researcher, prompt_engineer), and NOTE the explorer prompt is a worker-prompt + explorer-prompt COMBINATION — the basic worker guidelines are always present and must not be repeated in the rework.
 - **Acceptance criteria:** a research doc per target (`.opencode/agent/research/` or per-research folders); the ideas.md scan triage recorded in the summary/NAP with actionable items placed (agent_ideas.md / TODO / proposals); a recommendation (effort phase + estimate) per target; the stale-summary question (d) answers whether the summarize call accepts any instruction/prompt override (measured from the dev copy).
 - **Scope (suggested):** `.opencode/maintainer/ideas/ideas.md` (READ-ONLY), the temp opencode copies (the opencode:dev copy + `C:\Users\Wasiejen\AppData\Local\Temp\opencode\opencode-auto-resume-master` — paths in the host-map knowledge), `.opencode/maintainer/draft/compaction_guide/` (READ-ONLY), `.opencode/plugin/compact_memory.ts` (the summarize call surface), and for (e) `.opencode/agent/prompts/` (the explorer + worker prompt files + the `roles/` folder — read the current combination structure first).
-- **Status:** open — next maintenance pass (counter-triggered, every 5th iteration); (b)+(d) are explorer-shaped research; (a)+(c) planner-direct or explorer.
+- **Status:** open — parts (a)+(b)+(c)+(d) DONE (see per-part notes below); remaining: (e) explorer/researcher makeover.
   **Part (a) DONE (plan28, 2026-09-28, planner-direct):** the ideas.md scan
   is triaged — 4 ideas submitted to `agent_ideas.md` (ctx-gauge
   config-derived window + session/role attribution; the context-erase/
@@ -672,14 +672,41 @@ All those IDs stay reserved — see the numbering rule in the header.
   maintainer-domain backend (NAP note only), the rest are already covered
   (full triage in the plan28 summary + the loop folder).
    **Part (b) DONE (plan28, 2026-09-28, explorer-28):** the keepTokens fork
-   effort is estimated — research doc
-   `.opencode/agent/research/2026-09-28_keeptokens-fork-effort.md`: change set
-   ~11 lines / 6 files (all line refs grep-verified vs the 1.18.32 dev tree),
-   phased estimate ~3-5 h wall, plugin-side work = 0 (the body field is already
-   sent), recommendation = fork (b) now, scoped Phase 1-3; wait-for-upstream is
-   undecidable from the pinned tree. Remaining: (c) v2 branch/hardening,
-   (d) compaction-summary customization, (e) explorer/researcher makeover
-   (his opencode.jsonc write-access tightening pending — his domain).
+    effort is estimated — research doc
+    `.opencode/agent/research/2026-09-28_keeptokens-fork-effort.md`: change set
+    ~11 lines / 6 files (all line refs grep-verified vs the 1.18.32 dev tree),
+    phased estimate ~3-5 h wall, plugin-side work = 0 (the body field is already
+    sent), recommendation = fork (b) now, scoped Phase 1-3; wait-for-upstream is
+    undecidable from the pinned tree.
+    **Part (d) DONE (plan30, 2026-09-28, explorer-30):** research doc
+    `.opencode/agent/research/2026-09-28_compaction-summary-customization.md`
+    the summarize call takes NO prompt override in the body
+    or via env var; YES via config `agent.compaction.prompt`/`system` (the
+    summarizer's system prompt) — and the plugin hooks
+    `experimental.session.compacting` (context append / full prompt replace),
+    `experimental.chat.messages.transform`, `experimental.chat.system.transform`,
+    `experimental.text.complete` give plugin-side control of both maintainer
+    ideas (drop >4-compaction-old content; tag additions with the iteration)
+    without a fork — recommendation: phased plugin-side (soft context
+    injection first, ~0.5-1 day; hard prompt-replace / text-complete
+    stamping only if needed).
+    **Part (c) DONE (plan30, 2026-09-28, explorer-30):** research doc
+    `.opencode/agent/research/2026-09-28_v2-migration-hardening.md`
+    mainline = default branch `dev` (no `main` branch), latest
+    tag v2.0.18 (2026-09-25, v2 line moving ~1 release/day; v1.18.32 the last
+    v1 tag); npm `latest` is STILL 1.18.32 (v2 only on the npm `dev` tag); the
+    branch count is not measurable from the fetched pages (active branches
+    listed, incl. a `v2` branch) — the "nearly 2000" figure is unverified;
+    v2 summarize has NO per-call keep (SummarizePayload unchanged on dev;
+    ConfigV2.Compaction unchanged; the v1→v2 config shim still ships; the v2
+    `/api/compact` payload is the one open gap — follow-up specified);
+    hardening table per plugin/tool: hooks interface UNCHANGED on dev, all our
+    client endpoints present, risks concentrated in event payload shapes,
+    the gauge's DB schema, and the v1-format opencode.jsonc fields
+    (permission/provider/TUI items) — recommendation: do NOT switch now
+    (re-check each v2 minor; switch when v2 lands on npm latest or adds
+    per-call keep). Remaining: (e) explorer/researcher makeover
+    (his opencode.jsonc write-access tightening pending — his domain).
 
 ## #106. (open, 2026-09-28, plan28 feedback review; pre-approved class — agent-usage friction removal) edit-fuzzy hint line should state APPLIED vs REJECTED
 - **Problem / evidence:** agent_feedback 2026-09-26_12-15 (planner): a NAP

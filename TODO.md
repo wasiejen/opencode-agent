@@ -1052,4 +1052,16 @@ All those IDs stay reserved — see the numbering rule in the header.
   `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (re-pin only if affected),
   `.opencode/plugin/probes/handover_probe.mjs` (re-pin only if affected),
   `.opencode/agent/knowledge/knowledge_plugins.md` (one-liner).
-- **Status:** open — spec committed plan34 (worker launching).
+- **Status:** LANDED (plan34, 2026-09-28, worker-34
+  `worker_Q3S_245K_slow`, code **0c90abe** — gauge.mjs: replicated
+  string-aware `parseJsonc` + exported `resolveWindow(modelId)` (config-
+  first, first-`/` provider split, per-call root-config read, never-throw)
+  + `setConfigFileForTest` hook; `gaugeFromRaw` switched; 7 new resolveWindow
+  pins (a)-(f) in gauge_core.smoke.mjs, existing pins unchanged) —
+  planner-verified: own gauge_core ALL PASS + ctx_gauge 3/3 re-runs + the
+  live byte-identity readout (CTX=155274 (63%) REM=89726 — window 245000 =
+  config value); probe 346 = 335 PASS + 11 #113 env fails (no re-pin needed);
+  ruff F=0; pytest blocked #113. Live note: the running host process still
+  predates this build — the gauge surfaces pick it up at the maintainer's
+  next restart (no visible change until then: config 245000 == the current
+  model's name marker).

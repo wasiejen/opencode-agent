@@ -1,5 +1,7 @@
-auto_resume.log
-ctx.log
-intercept.log
-journal_edit.log
-journal_write.log
+# inverted: everything in temp/ is ignored by default; only the two
+# state files (the compaction budget store + the lineage cap) are tracked
+# (logs incl. any FUTURE ones are never added to this list)
+*
+!.gitignore
+!compact_budget.json
+!lineage_max_depth

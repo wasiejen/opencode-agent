@@ -830,18 +830,15 @@ All those IDs stay reserved — see the numbering rule in the header.
   fresh counts recorded in the NAP Standing baselines.
 - **Suggested scope:** maintainer domain (the venv + the base python
   install); the planner re-baselines on the next gate run.
-- **Status:** OPEN — ENVIRONMENT FIXED BY MAINTAINER (2026-09-29),
-  RE-BASELINE PENDING. The venv was REPLACED, not repaired: the current
-  `.venv/pyvenv.cfg` `command` line records a fresh creation with
-  `C:\Users\Wasiejen\AppData\Local\Programs\Python\Python314\python.exe -m
-  venv` (python 3.14.3 — measured working, 459 tests collect); the old
-  `..\python312` base dir is GONE from disk. Discrepancy vs intent: the
-  maintainer wanted 3.12 (same as before); bare `python`/`py` resolves to
-  3.14 (the `py -0` default), and CI pins 3.12 (`ci.yml:17`) + the
-  established baselines are 3.12-era → recommended: rebuild with
-  `py -3.12 -m venv .venv` + reinstall requirements (3.12 IS installed per
-  `py -0`), then the full standard-gate re-run re-baselines and closes
-  this. Until then: treat 3.14 results as provisional.
+- **Status:** OPEN — ENVIRONMENT FIXED (2026-09-29, round 2): the venv
+  is REBUILT on 3.12.9 (verified 02:00 — `pyvenv.cfg` → the proper
+  `AppData\Local\Programs\Python\Python312` install, 459 tests collect)
+  after an interim 3.14.3 replacement (the original venv had been
+  REPLACED, not repaired — the `..\python312` base dir was gone from
+  disk; the 3.14 slip = the bare-`python`/`py` default, `py -0` marks
+  3.14 as `*`). Remaining: ONE full standard-gate re-run (worker or
+  next autorun) to re-baseline (probe total incl. the 11 numword checks
+  136-146 + pytest count) and close this.
 ## #114. (open, 2026-09-28, plan30 maintenance pass — feedback review; pre-approved class — truthfulness) the injected ctx: line's budget suffix disagrees with the ctx_gauge self-read (1 vs 5 compactions left — same session, no compaction in between)
 - **Problem / evidence:** agent_feedback 2026-09-28_02-40 (planner-29): at
   session start the injected `ctx:` line read
@@ -882,6 +879,14 @@ All those IDs stay reserved — see the numbering rule in the header.
   12e3262; live acceptance remains pending the maintainer's host restart
   (a fresh session's injected line should then read "5 compactions
   left").
+- **LIVE-ACCEPTED (2026-09-29, direct ses_f15c490bdffe9KsxVC3kDdLi1K,
+  post-restart):** the injected ctx line and the ctx_gauge self-read
+  both read "5 compactions left" for the same session (`123085 (72%)
+  REM=46915 | 5`) — the original 1-vs-5 mismatch is GONE on the live
+  build (budget store restored by the maintainer). Residual: the exact
+  no-total failure path (a FRESH session's first injected line) gets
+  its final check on the next fresh session's first ctx line (should
+  read 5, not 1) — close on that data point.
 
 ## #115. (LANDED, 2026-09-28, plan34 idle-lane — agent_ideas.md triage, idea 1; pre-approved class — bookkeeping reduction; worker-34 landed — the code commit's hash is recorded in the planner's follow-up bookkeeping commit) the gauge window is config-first: root opencode.jsonc `limit.context` beats the name marker (parseWindow is the fallback)
 - **Problem / evidence:** `gauge.mjs` `parseWindow` (L242-250) derives the

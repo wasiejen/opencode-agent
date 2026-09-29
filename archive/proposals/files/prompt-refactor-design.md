@@ -47,7 +47,7 @@ Composition: `system prompt = [base template OR agent prompt] + env + skills + m
 
 ## 2. What's wrong today (friction map)
 
-From the role prompts + `.opencode/agent_feedback.md` (the friction log):
+From the role prompts + `agent/agent_feedback.md` (the friction log):
 
 - **Double-injection / drift.** The protocol block (stop-line, commit routine, handover
   roles, agent_feedback) appears in AGENTS.md *and* is re-summarized in 3–4 role prompts,

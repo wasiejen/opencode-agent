@@ -328,7 +328,7 @@
   one full loop iteration.
 - **repo_overview + priority convention (his chat ruling, same session):**
   (a) root `agents_repo.md` (a 19-line pointer stub) → `.opencode/agent/
-  prompts/repo/repo_overview.md` — the repo-docs family is now one folder
+  readme/repo_overview.md` — the repo-docs family is now one folder
   (overview + parts); the name is self-evident and it reads FIRST (role-prompt
   init step 1 + top of post-compaction STEP 1). Refs updated: AGENTS.md (5),
   planner/worker/explorer prompts (command/gauge refs now point precisely at
@@ -425,7 +425,7 @@
 - **#50 LANDED + CLOSED** (approved in the inbox; planner-direct, explicit
   task per the maintainer-owned-parts rule): `repo_map.md` — explorer roster
   bullet → `todo_inbox.md` (planner curates); `.opencode/` module-map bullet
-  now lists `system_prompts/repo/` parts + `agent_readme_*.md` + the
+  now lists `system_readme/` parts + `agent_readme_*.md` + the
   `loop/`/`archive/loop/` convention (stale `proposals/files/` draft ref
   dropped). One-line record in `todo_records.md`; next ID = #51.
 - **Plugin rundown (maintainer #3):** `proposals/maintainer/feedback/

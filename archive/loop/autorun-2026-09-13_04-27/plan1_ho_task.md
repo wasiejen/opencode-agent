@@ -41,7 +41,7 @@ COMPACT line — and the planner's resume protocol (same sessionID via
    after this call — the session ends.
 
 ## Phase B (after resume — same session, planner re-launched you)
-5. Follow `.opencode/agent/prompts/agent_readme_post_compaction.md`
+5. Follow `.opencode/agent/readme/readme_post_compaction.md`
    (STEP 1 parallel batch read; files beat the summary).
 6. Verify acceptance points (quote measured values VERBATIM):
    - (a) compaction part exists — run `compaudit.cjs <sessionID>`.

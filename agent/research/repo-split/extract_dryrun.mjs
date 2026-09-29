@@ -79,8 +79,8 @@ console.log(`
 PIN DIFF (execution checklist — NOT applied by this script):
   1. opencode.jsonc:26  external_directory: point at the NEW FST repo path
   2. opencode.jsonc     add a references.fst entry at the NEW FST repo path (pin #3 mechanism)
-  3. .opencode/agent/prompts/repo/repo_commands.md:36  scratchpad path wording (only if it moves)
-  4. .opencode/agent/prompts/repo/repo_opencode.md:8   npm path wording (only if it moves)
+  3. .opencode/agent/readme/repo_commands.md:36  scratchpad path wording (only if it moves)
+  4. .opencode/agent/readme/repo_opencode.md:8   npm path wording (only if it moves)
   5. AGENTS.md / repo_overview.md layout wording (only if the physical move happens — Phase 2)
   NO plugin/** or tools/** code changes (pin #5 takeaway: everything resolves from context.directory)
   keep: opencode.jsonc:28 allow-list entry for the session-log dir (pin #8 risk 4)

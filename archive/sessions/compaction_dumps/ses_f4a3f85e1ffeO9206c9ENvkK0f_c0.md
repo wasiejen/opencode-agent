@@ -249,7 +249,7 @@ He wants a test: launch both with the same task spec, compare the results. This 
 
 Key consideration: **one model slot — launches are serial.** "Only one subagent runs at a time. Queues up delegations, never parallelizes." So "start both explorers" must be serial: launch A, wait for result, launch B, wait for result. The maintainer said "could be worth a test to start both explorers with the same task spec" — serially.
 
-Also, my planner prompt says: "pick the worker from the roster at `.opencode/agent/prompts/repo/repo_map.md` (worker for implementation, explorer for audit/map)." I should read repo_map.md for the worker roster to check which models the agents use — per the maintainer's message, the roster in opencode.jsonc can be changed by the maintainer live and "verify it, never trust memory." He specifically flagged the explorer/worker_gemma misconfiguration. I should verify the actual config in opencode.jsonc — this is a "verify with execution" moment, and I'll surface a mismatch between his claim and the measured evidence.
+Also, my planner prompt says: "pick the worker from the roster at `.opencode/agent/readme/repo_map.md` (worker for implementation, explorer for audit/map)." I should read repo_map.md for the worker roster to check which models the agents use — per the maintainer's message, the roster in opencode.jsonc can be changed by the maintainer live and "verify it, never trust memory." He specifically flagged the explorer/worker_gemma misconfiguration. I should verify the actual config in opencode.jsonc — this is a "verify with execution" moment, and I'll surface a mismatch between his claim and the measured evidence.
 
 Before launching, per protocol:
 1. Read `agent_readme_task_spec.md` before writing or launching a task spec — **required**.
@@ -1646,4 +1646,3 @@ Now going to fire compact_memory (SELF) with keepMessages=16 and a continuation 
   [text]
 
   [tool] compact_memory callID=gi6QtMOxYoWBFL7IDgx3rVxUHdRqXQJk status=running
-

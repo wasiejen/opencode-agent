@@ -148,4 +148,4 @@ Relevant Files
 - .opencode/temp/auto_resume.log: live log (evidence for item 3; read-only grep).
 - .opencode/archive/sessions/compaction_dumps/ses_f39d250e9ffeheip2FVEeY5Fk6_c0.md: mis-scoped session dump (evidence for item 3).
 - opencode.jsonc: live config (verify plugin discovery; DO-NOT-touch).
-- .opencode/agent/prompts/repo/repo_commands.md: gate commands, shell conventions, commit routine.
+- .opencode/agent/readme/repo_commands.md: gate commands, shell conventions, commit routine.

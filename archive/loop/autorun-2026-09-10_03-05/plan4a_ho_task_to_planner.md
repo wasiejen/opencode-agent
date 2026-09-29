@@ -7,7 +7,7 @@ observable behavior change — pre-approved class). ONE commit containing this s
 embedded in its own commit).
 
 ## Changes (exactly 4 files)
-1. `.opencode/system_prompts/agent_readme_loop.md` — NEW `## Loop log` section (25
+1. `.opencode/system_readme/readme_loop.md` — NEW `## Loop log` section (25
    lines), placed after `## Autorun archive` (shared autorun folder). Specifies:
    - location: ONE file per looprun in the autorun archive folder,
      `.opencode/archive/autorun-<YYYY-MM-DD_HH-MM>/loop_log.md`, append only, created

@@ -74,7 +74,7 @@ requires a FRESH clone (it refuses otherwise) and STRIPS the origin
     ```
 12. Verify: `git ls-files | wc -l` = 775; `git show
     HEAD:free_snap_tap.py` must FAIL; `git show
-    HEAD:.opencode/agent/prompts/repo/repo_map.md` must SUCCEED.
+    HEAD:.opencode/agent/readme/repo_map.md` must SUCCEED.
 13. Move the carved clone into the opencode-agent slot (replacing the
     stale copy — its unique 76bf2e1 is subsumed, see Source of truth).
 14. Runtime: `npm install` at the repo root (`.opencode/node_modules`);

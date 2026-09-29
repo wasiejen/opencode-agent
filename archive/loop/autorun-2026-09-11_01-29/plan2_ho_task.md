@@ -41,7 +41,7 @@ Original wording:
 
 ## The build
 
-### 1. Split `agents_repo.md` (part 2) — parts go to `.opencode/system_prompts/repo/`
+### 1. Split `agents_repo.md` (part 2) — parts go to `.opencode/system_readme/`
 Create 4 files (the naming scheme from the proposal):
 - `repo_map.md` — What this is, Sign convention, Module map, Data flow, Worker
   roster, Phase-scoped work.
@@ -136,8 +136,8 @@ compaction-detection task — do not reference it yet.)
 
 ## Boundaries
 - You may edit: the root `agents_repo.md` (explicitly tasked by the maintainer's
-  approval line), the 4 live prompts, the new `system_prompts/repo/` +
-  `system_prompts/agent_readme_*.md` files, `todo_inbox.md`,
+  approval line), the 4 live prompts, the new `system_readme/` +
+  `system_readme/readme_*.md` files, `todo_inbox.md`,
   `proposals/files/AGENTS.md` (the one line), your summary file.
 - NEVER touch: `opencode.jsonc`, the rest of `proposals/files/*`, root
   `AGENTS.md`, `TODO.md`, `todo_records.md`, the plugin, FST code, tests, the

@@ -459,7 +459,7 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
   one full loop iteration.
 - **repo_overview + priority convention (his chat ruling, same session):**
   (a) root `agents_repo.md` (a 19-line pointer stub) → `.opencode/agent/
-  prompts/repo/repo_overview.md` — the repo-docs family is now one folder
+  readme/repo_overview.md` — the repo-docs family is now one folder
   (overview + parts); the name is self-evident and it reads FIRST (role-prompt
   init step 1 + top of post-compaction STEP 1). Refs updated: AGENTS.md (5),
   planner/worker/explorer prompts (command/gauge refs now point precisely at
@@ -707,7 +707,7 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
     DEFAULT EXPORT (named `EmergencyCompactionPlugin` → currently inert,
     not auto-loaded), shared budget with the tool, informed keep, activation
     flag (default OFF), over-budget clean fail.
-  - `.opencode/system_prompts/agent_readme_post_compaction.md` — the
+  - `.opencode/system_readme/readme_post_compaction.md` — the
     re-application directive file, VERBATIM vs the approved proposal block
     (planner diff-checked). The proposal's path line now names HIS filename
     (his edit in `91ace30` — canonical; the old spec's
@@ -914,7 +914,7 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
 - **#50 LANDED + CLOSED** (approved in the inbox; planner-direct, explicit
   task per the maintainer-owned-parts rule): `repo_map.md` — explorer roster
   bullet → `todo_inbox.md` (planner curates); `.opencode/` module-map bullet
-  now lists `system_prompts/repo/` parts + `agent_readme_*.md` + the
+  now lists `system_readme/` parts + `agent_readme_*.md` + the
   `loop/`/`archive/loop/` convention (stale `proposals/files/` draft ref
   dropped). One-line record in `todo_records.md`; next ID = #51.
 - **Plugin rundown (maintainer #3):** `proposals/maintainer/feedback/

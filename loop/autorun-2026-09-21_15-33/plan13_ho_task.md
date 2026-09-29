@@ -24,7 +24,7 @@ never hardcode counts or session ids.
   fixture-under-tests convention) and `.opencode/agent/scripts/INVENTORY.md`
   (one entry per script — copy an existing entry's format).
 - Standard gate (must stay green): run per
-  `.opencode/agent/prompts/repo/repo_commands.md` — probe 241/241, all
+  `.opencode/agent/readme/repo_commands.md` — probe 241/241, all
   `.opencode/plugin/tests/` smokes, pytest 459 passed + 1 warning, ruff F=0.
 
 ## DoD

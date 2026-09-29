@@ -19,7 +19,7 @@ smoke-based; the probe must simply stay green).
 - `tool()` form references: `.opencode/tools/ctx_gauge.ts` (T2, simplest) /
   `block_transfer.ts` (T1): `export default tool({ description, args, execute })`,
   NO `name` field (the host names the tool by FILENAME).
-- The line format (`.opencode/system_prompts/agent_readme_loop.md` §Loop log):
+- The line format (`.opencode/system_readme/readme_loop.md` §Loop log):
   `<date_time> <STATUS> <role>[-<iteration>] <session_id> <agent_model> <content>`
   where `<date_time>` = local `YYYY-MM-DD_HH-MM` (minute resolution) and the role
   string ALREADY carries its iteration (e.g. `planner-10+1`, `worker-10+1`).

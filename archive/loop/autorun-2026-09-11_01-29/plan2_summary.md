@@ -17,7 +17,7 @@
      autorun archive folder). Ruling: SEPARATE prompt-only task (3 prompts +
      `agent_readme_loop.md`); usefulness comparison vs. the plugin log later.
 3. **Split build LANDED + planner-VERIFIED** (`04b1f4d`, fresh `worker_Q4_120K`):
-   `agents_repo.md` → 4 parts in `system_prompts/repo/` + 19-line root index; 3
+   `agents_repo.md` → 4 parts in `system_readme/` + 19-line root index; 3
    feature readmes; instruction indexes in all 4 live prompts; session-marker rule
    (new pattern) in the planner prompt; session-id lookup line in the looprunner
    prompt; inbox rule in worker/explorer prompts; `todo_inbox.md` created (+3 worker

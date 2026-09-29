@@ -31,7 +31,7 @@ change ÔÇö pre-approved class.
   the injected `ctx:` line. Keep the section SHORT (Ôëñ ~30 lines).
 
 ## Edits (exactly 4 files)
-1. `.opencode/system_prompts/agent_readme_loop.md` ÔÇö add a `## Loop log`
+1. `.opencode/system_readme/readme_loop.md` ÔÇö add a `## Loop log`
    section (placement: after `## Autorun archive` ÔÇö the two sections share
    the autorun folder; or another fitting spot, your call) specifying the
    protocol above.

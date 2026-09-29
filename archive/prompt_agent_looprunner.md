@@ -102,7 +102,7 @@ planners and their error text, retried launches, loop anomalies you observed.
 ## Resume & recovery (compaction-aware)
 - On `resume` / a planner return mentioning compaction or compact_memory: resume the SAME
   planner session via task_id and instruct it to follow the post-compaction protocol —
-  read `.opencode/agent/prompts/agent_readme_post_compaction.md`.
+  read `.opencode/agent/readme/readme_post_compaction.md`.
 - **Self-compaction dump (convention, 2026-09-15):** when a planner's closing message is
   a Work State dump (Completed / Active / Blocked / Next Move) WITHOUT an `action:` line,
   that session self-compacted at its stop line — RESUME the SAME session via `task_id`

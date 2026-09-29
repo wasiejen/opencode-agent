@@ -40,7 +40,7 @@ they differ):**
   fresh session.
 
 ## Tasks (remaining; ordered; text-only — NO code, NO config, NO behavior claims)
-- **c. Repo docs** (`.opencode/agent/prompts/repo/`): `repo_custom_tools.md` —
+- **c. Repo docs** (`.opencode/agent/readme/`): `repo_custom_tools.md` —
   the compact_memory tool section: args now `[sessionID, keepMessages, message,
   emergency]` (post item 1+10), keepTokens gone, the "server ignores keep
   fields" note gone, the tool description reframed (maintenance tool, not

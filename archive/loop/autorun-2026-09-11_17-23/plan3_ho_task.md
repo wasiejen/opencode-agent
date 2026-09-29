@@ -88,7 +88,7 @@ Report the final total probe check count in your summary.
 ## Do NOT touch
 
 - `ctx_watchdog.ts`, `compact_memory.ts`,
-  `.opencode/system_prompts/agent_readme_post_compaction.md` (canonical
+  `.opencode/system_readme/readme_post_compaction.md` (canonical
   verbatim), the live `opencode.jsonc` (read-only for the plugin; it is
   uncommitted by design — NEVER stage it), FST python + `tests/`, the
   role prompts, the NAP, anything under

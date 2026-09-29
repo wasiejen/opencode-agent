@@ -77,7 +77,7 @@ these sections:
   HEADER ONLY — it self-annotates the total).
 - `git branch -v`, `git remote -v` (bounded).
 - `AGENTS.md` (repo-agnostic protocol — skim the repo pointers) +
-  `.opencode/agent/prompts/repo/repo_overview.md` (the repo-specific map —
+  `.opencode/agent/readme/repo_overview.md` (the repo-specific map —
   READ ONLY, it names the layout facts).
 
 ## Definition of done

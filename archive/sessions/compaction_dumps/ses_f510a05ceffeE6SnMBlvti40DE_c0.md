@@ -1481,7 +1481,7 @@ So the worker roster (worker_* prefixed) is: worker_explorer_Q3_120K_mtp, worker
 
 OK. Let me finalize the spec. Let me trim it to under 105 lines and write it.
 
-Actually, I realize I should double-check: is there a `repo_map.md` worker roster I should consult? My protocol says "Pick the worker per the roster in `.opencode/agent/prompts/repo/repo_map.md`". Let me not over-index — the available agents list in my system prompt is authoritative for what I can launch. `worker_Q4_140K` is available and was the R7 choice. I'll use it.
+Actually, I realize I should double-check: is there a `repo_map.md` worker roster I should consult? My protocol says "Pick the worker per the roster in `.opencode/agent/readme/repo_map.md`". Let me not over-index — the available agents list in my system prompt is authoritative for what I can launch. `worker_Q4_140K` is available and was the R7 choice. I'll use it.
 
 Let me write the spec now. Let me trim the draft to be concise.
 
@@ -2501,4 +2501,3 @@ Let me be concise to not burn more context (I'm at 94%).
   [text]
 
   [tool] compact_memory callID=IlSdTpjsShxnNWE84o3Dz4zOypq1tJ5k status=running
-

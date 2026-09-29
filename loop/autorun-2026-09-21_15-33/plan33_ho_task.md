@@ -53,7 +53,7 @@ FIRE SIGNATURE (conjunction — ALL on one tick, per watched sid) — doc §2 ve
 FIRE (once — the latch clears on a new busy OR a new assistant update):
 - append ONE `-WARNING` line to the current looprun's `loop_log.md` (the plugin writes
   the file itself — the loop_log TOOL is agent-facing; same 8-char line format,
-  `.opencode/agent/prompts/agent_readme_loop.md` §Loop log):
+  `.opencode/agent/readme/readme_loop.md` §Loop log):
   `<stamp> -WARNING auto_resume <sid> <model> silent limit-stop: finish=length total=<n> window=<n> no-COMPACT`
   (stamp format per that file; folder via `spawnTitleFor`; no folder → auto_resume.log
   only).

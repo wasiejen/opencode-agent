@@ -73,7 +73,7 @@ positive risk analyzed.
 - `.opencode/plugin/auto_resume.ts` — the tick area only (grep
   `ctxLogOffset` / `readCtxLog` / `scopeVerdict` + the ~L1390-1430 block).
   READ ONLY — no edits.
-- The loop-log format: `.opencode/agent/prompts/agent_readme_loop.md`
+- The loop-log format: `.opencode/agent/readme/readme_loop.md`
   §Loop log (the 8-char tokens) — READ ONLY.
 
 ## Definition of done

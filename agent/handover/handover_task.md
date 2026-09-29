@@ -26,7 +26,7 @@ R-status renames only; no root-name clash. NOTE: this spec file itself moves to
 - `.opencode/tools/submit.ts` L74-77 `rel` paths → `agent/agent_feedback.md`,
   `agent/knowledge/knowledge_inbox.md`, `agent/agent_ideas.md` (+ description L82)
 - `.opencode/tools/loop_log.ts` L150 `path.join(dir, ".opencode", "loop")` → `path.join(dir, "loop")` (+ description L118)
-- `.opencode/plugin/auto_resume.ts` L665/L684/L1498 loop root → root `loop/`; message strings L824/L841 → `agent/prompts/agent_readme_post_compaction.md`, L899 → `agent/scripts/db/dump_session.cjs`
+- `.opencode/plugin/auto_resume.ts` L665/L684/L1498 loop root → root `loop/`; message strings L824/L841 → `agent/readme/readme_post_compaction.md`, L899 → `agent/scripts/db/dump_session.cjs`
 - `.opencode/plugin/ctx_watchdog.ts` L222 `HANDOVER_SPEC_PATH` → `agent/handover/handover_task.md` (the handover-detection string follows the constant)
 - `.opencode/plugin/intercept_observer.ts` numwords map path (refs L155/L245 + code) → `agent/scripts/numword/numwords.json`
 - `.opencode/plugin/compact_memory.ts` L115 `DUMP_ARCHIVE_REL` → `archive/sessions`; L201 dump script → `agent/scripts/db/dump_session.cjs` (+ description strings naming moved paths)
@@ -45,14 +45,14 @@ Temp paths (`.opencode/temp/…`) do NOT move — leave them.
 - `projects/Free-Snap-Tap/README.md` (≤10 lines: same conventions for this project).
 - `projects/Free-Snap-Tap/TODO.md`: the FST entries moved out of root `TODO.md`. Classify per entry (FST product behavior / FST code / FST env vs agent infra). First map the entries: `rg -n "^## " TODO.md | head -80`, then read only the ranges you move.
 - `projects/Free-Snap-Tap/todo_records.md`: the CLOSED FST records moved out of root `todo_records.md` (2064 lines — map headers first: `rg -n "^## " todo_records.md | head -80`, read ranges only).
-- `projects/Free-Snap-Tap/repo/`: the FST repo-doc parts out of `agent/prompts/repo/` (`repo_map.md`, `repo_testgate.md`, `repo_gotchas.md`, the FST half of `repo_commands.md`). Agent-repo parts stay in `agent/prompts/repo/`. Rewrite `agent/prompts/repo/repo_overview.md` for THIS repo (agent-repo map; parts index updated; pointer to the FST parts at `projects/Free-Snap-Tap/repo/`).
+- `projects/Free-Snap-Tap/repo/`: the FST repo-doc parts out of `agent/readme/` (`repo_map.md`, `repo_testgate.md`, `repo_gotchas.md`, the FST half of `repo_commands.md`). Agent-repo parts stay in `agent/readme/`. Rewrite `agent/readme/repo_overview.md` for THIS repo (agent-repo map; parts index updated; pointer to the FST parts at `projects/Free-Snap-Tap/repo/`).
 - Numbering stays GLOBAL: root `TODO.md` header keeps the counter (up to #118, start #119); add a one-line pointer in root `TODO.md`: "FST project entries: `projects/Free-Snap-Tap/TODO.md`"; add a header note in the project TODO: "IDs continue the global sequence — counter in root `TODO.md`".
 
 **U5 — STAGE + VERIFY.**
 - Stage full replacements at root (copy the live file, then edit the COPY — never re-emit): `opencode_reorg_2026-09-29.jsonc` (all `{file:.` pointers `agent/…` → `agent/…`; worker/explorer permission paths `agent/prompts/**` → `agent/prompts/**` and `agent/handover/handover_planner.md` → `agent/handover/handover_planner.md`; the commented looprunner block's paths likewise; `destilled_mem` pointers) and `AGENTS_reorg_2026-09-29.md` (the ~7 path refs).
 - Verification grep gate — old-path hits allowed ONLY in: `todo_records.md`, `todo_inbox.md`, `proposals/**`, `archive/**`, `agent/handover/specs/**` (finished specs), `agent/research/**`, `agent/handover/handover_planner.md` (archived lines):
   `rg --hidden -l -e "\.opencode/(agent|loop|archive|maintainer|proposals)"` → zero hits in `.opencode/plugin/*.ts`, `.opencode/tools/*.ts`, `.opencode/plugin/*.md`, `.opencode/tools/*.md`, `agent/prompts/**`, `agent/knowledge/**`, `agent/memory/**`, `agent/orientation.md`, `agent/scripts/{README,INVENTORY}.md`, `agent/handover/handover_task*.md`, and root `TODO.md` open entries.
-- Run this repo's standard gate per `agent/prompts/repo/repo_commands.md` (probe + smoke suite; re-pins from U2) → green, numbers in the handover.
+- Run this repo's standard gate per `agent/readme/repo_commands.md` (probe + smoke suite; re-pins from U2) → green, numbers in the handover.
 
 ## DO-NOT-TOUCH
 - `opencode.jsonc`, `AGENTS.md` (live files — staged copies only), everything under `maintainer/` except the U1 `git mv` (content-neutral; never edit his files' content).

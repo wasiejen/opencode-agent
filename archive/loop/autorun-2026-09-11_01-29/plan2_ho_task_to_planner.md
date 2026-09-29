@@ -12,7 +12,7 @@ via `git log -1`; a commit hash cannot be embedded in its own commit).
 - `& .\.venv\Scripts\ruff.exe check --select F .` → `All checks passed!` (0 findings).
 
 ## 1. Section→part mapping (all 12 original sections, facts verbatim, exactly one home)
-| original section | part (`system_prompts/repo/`) |
+| original section | part (`system_readme/`) |
 |---|---|
 | What this is | `repo_map.md` |
 | Sign convention (IMPORTANT) | `repo_map.md` |
@@ -43,9 +43,9 @@ point intact (what-this-is + maintainership rule + one "read when …" line per 
   `opencode.exe-bun false confidence`
 
 ## 3. Files
-- NEW parts: `.opencode/system_prompts/repo/repo_{map,commands,testgate,gotchas}.md`
+- NEW parts: `.opencode/system_readme/repo_{map,commands,testgate,gotchas}.md`
   (102/61/21/45 lines).
-- NEW readmes (each ≤ 50 ✓): `.opencode/system_prompts/agent_readme_{proposals,todo,
+- NEW readmes (each ≤ 50 ✓): `.opencode/system_readme/readme_{proposals,todo,
   loop}.md` (33/29/37 lines).
 - `todo_inbox.md` (repo root) — 12-line header + 3 findings I appended this session
   (roster-bullet drift, module-map bullet gap, mid-session inbox item — see §5).
@@ -56,7 +56,7 @@ point intact (what-this-is + maintainership rule + one "read when …" line per 
   pattern `autorun-<YYYY-MM-DD_HH-MM>` + ONE `<session_id>.md` marker file (id = the
   `SESSION=` field of the injected `ctx:` launch line; minimal content; file name is
   the info) — spec/summary copy lines kept; roster reference now points at
-  `.opencode/system_prompts/repo/repo_map.md`; Instruction index (7 lines) added.
+  `.opencode/system_readme/repo_map.md`; Instruction index (7 lines) added.
 - `prompt_agent_task.md` — stale task-spec path fixed (line 12); inbox rule added
   (Work loop: unfixable/out-of-scope findings → `todo_inbox.md`, NOT `TODO.md`);
   Instruction index (5 lines) added.

@@ -30,7 +30,7 @@
     DEFAULT EXPORT (named `EmergencyCompactionPlugin` → currently inert,
     not auto-loaded), shared budget with the tool, informed keep, activation
     flag (default OFF), over-budget clean fail.
-  - `.opencode/system_prompts/agent_readme_post_compaction.md` — the
+  - `.opencode/system_readme/readme_post_compaction.md` — the
     re-application directive file, VERBATIM vs the approved proposal block
     (planner diff-checked). The proposal's path line now names HIS filename
     (his edit in `91ace30` — canonical; the old spec's

@@ -148,7 +148,7 @@ Each pointer should state:
   reference these sections **by name**, so sections need stable names. Renaming a section is a
   breaking change for every prompt that references it.
 - **Discoverable by filesystem metadata.** Name and folder should encode purpose
-  (`repo_overview.md` under `prompts/repo/` tells the agent "repo docs" before opening). This
+  (`repo_overview.md` under `readme/` tells the agent "repo docs" before opening). This
   is S1's metadata-as-signal principle applied to prompt files.
 - **Tight per the north star.** It is loaded *into* the attention budget at read time; the
   smallest high-signal set that fulfills its stated purpose. If a section is only needed for

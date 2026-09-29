@@ -25,7 +25,7 @@ Tracked total: 808 files (`git ls-files | wc -l`); 739 under `.opencode/`, 69 at
   `.venv/`, `__pycache__/`, `fst.log`, `coverage*`, `.pytest_cache/`, `*.exe`/`*.dll`/build dirs.
 - Machine state OUTSIDE the repo: session DB `C:/Users/Wasiejen/.local/share/opencode/opencode.db`
   (~1.9 GB — `agent/scripts/db/README.md` header), log `…/opencode/log/`, opencode CLI npm
-  install `C:/Users/Wasiejen/AppData/Roaming/npm` (`.opencode/agent/prompts/repo/repo_opencode.md:8`),
+  install `C:/Users/Wasiejen/AppData/Roaming/npm` (`.opencode/agent/readme/repo_opencode.md:8`),
   scratchpad `C:/Users/Wasiejen/AppData/Local/Temp/opencode`.
 - Discrepancy vs the task spec: the spec's fact-source list says root `package.json` — there is
   NO root package.json (`ls -aF`); the only one is `.opencode/package.json` and it is git-ignored
@@ -53,7 +53,7 @@ pins survive any repo change).
 | 13 | product test/CI config | root `pytest.ini` (`testpaths = tests`); `.github/workflows/ci.yml` | S product — root-relative, no cross-repo pin |
 | 14 | ignores | root `.gitignore` (product-only, no `.opencode` entries) + `.opencode/.gitignore` (agent runtime) | split cleanly, one per repo |
 | 15 | ruff | NO config file at the root (no `pyproject.toml`/`ruff.toml`/`.ruff.toml`/`setup.cfg` — verified by `ls`) | ruff defaults; product side, nothing pinned |
-| 16 | docs naming the layout | `.opencode/agent/prompts/repo/repo_commands.md:36` (scratchpad path); `repo_opencode.md:8` (npm path); `AGENTS.md` → `repo_overview.md` (relative pointer) | doc pins — update with the move |
+| 16 | docs naming the layout | `.opencode/agent/readme/repo_commands.md:36` (scratchpad path); `repo_opencode.md:8` (npm path); `AGENTS.md` → `repo_overview.md` (relative pointer) | doc pins — update with the move |
 
 Takeaway: the code pins the layout, not the location — everything repo-relative resolves from
 `context.directory` (the opencode workspace root), so the agent part may live in ANY folder as
@@ -126,7 +126,7 @@ his explicit allowance).
   scratchpad live outside both repos, the probe gate (#12) is self-contained in its tree,
   both new repos are read-only inert.
 - Reference-update list (from §2): `opencode.jsonc:26` (+ new `references.fst` entry),
-  `.opencode/agent/prompts/repo/repo_commands.md:36`, `repo_opencode.md:8`, and any layout
+  `.opencode/agent/readme/repo_commands.md:36`, `repo_opencode.md:8`, and any layout
   wording in `AGENTS.md`/`repo_overview.md` if the move happens.
 - Risk list: (1) the LIVE LOOP — a mid-flight session's `context.directory` still points at the
   old root; the move must land between sessions with a committed handover; (2) the ROOT

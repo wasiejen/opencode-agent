@@ -20,7 +20,7 @@ meta: {"mode":"planner_Q3S_160K","finish":"tool-calls","tokens":{"total":20014,"
   [reasoning]
 I'm the planner, in direct session (no autonom marker). According to initialization:
 
-1. Read `repo/repo_overview.md` (full path `.opencode/agent/prompts/repo/repo_overview.md`) — read first.
+1. Read `repo/repo_overview.md` (full path `.opencode/agent/readme/repo_overview.md`) — read first.
 2. Rebuild the current state from git log, NAP, TODO.md.
 3. Check proposals.
 4. If priority.md exists, read it.
@@ -1363,7 +1363,7 @@ ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=144083 (90%) REM=15917
 
 ## msg_0c657d8ca00106BbR94uDOigK4 | role=user | agent=build | model={"providerID":"llama-swap","modelID":"Qwen3.8-27B-Q3S-160K"} | 2026-09-21T23:40:41.034Z
   [text]
-[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
+[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
   [text]
 ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=144083 (90%) REM=15917
 
@@ -1461,7 +1461,7 @@ Let me structure the summary now.
 - `TODO.md`: open items #74 (write-tool failures), #78 (dump completeness), #79 (msgPairs fix — live acceptance partial).
 - `.opencode/maintainer/priority.md`: active priority list + two `--info` notes (compaction timing, dump completeness) + `--maintainer` block.
 - `.opencode/maintainer/ideas/ideas.md`: modified (uncommitted); 3 new ideas (cache invalidation, 50-line threshold, worker git-hash).
-- `.opencode/agent/prompts/repo/repo_commands.md`: shell/gate/gauge commands, log paths, TODO #74 write-tool caveat.
+- `.opencode/agent/readme/repo_commands.md`: shell/gate/gauge commands, log paths, TODO #74 write-tool caveat.
 - `.opencode/loop/autorun-2026-09-21_15-33/`: last looprun folder (plan7).
 - `.opencode/proposals/commented/unclear_if_implemented/`: directory (contents not yet inspected).
 - `.opencode/agent/prompts/agents/prompt_agent_planner.md`: contains the ~15 diff-line threshold to potentially raise to 50.
@@ -1859,7 +1859,7 @@ I'll defer 2–5 until #1 is ruled. If I have the root cause or the order wrong,
 
 ## msg_0c6680dab001Y1NUiAnABCz84a | role=user | agent=build | model={"providerID":"llama-swap","modelID":"Qwen3.8-27B-Q3S-160K"} | 2026-09-21T23:58:23.147Z
   [text]
-[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
+[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
   [text]
 ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=63664 (39%) REM=96336
 
@@ -1869,7 +1869,7 @@ meta: {"mode":"build","error":{"name":"MessageAbortedError","data":{"message":"A
 
 ## msg_0c66834d5001OxWNJs0hDD6MXS | role=user | agent=build | model={"providerID":"llama-swap","modelID":"Qwen3.8-27B-Q3S-160K"} | 2026-09-21T23:58:33.173Z
   [text]
-[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
+[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
   [text]
 ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=63664 (39%) REM=96336
 
@@ -1879,7 +1879,7 @@ meta: {"mode":"build","error":{"name":"MessageAbortedError","data":{"message":"A
 
 ## msg_0c668485c001PiO4WeFrnNTiuy | role=user | agent=build | model={"providerID":"llama-swap","modelID":"Qwen3.8-27B-Q3S-160K"} | 2026-09-21T23:58:38.172Z
   [text]
-[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
+[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
   [text]
 ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=63664 (39%) REM=96336
 
@@ -1889,7 +1889,7 @@ meta: {"mode":"build","error":{"name":"MessageAbortedError","data":{"message":"A
 
 ## msg_0c6685bed0012bv31A8UiZrlQ0 | role=user | agent=build | model={"providerID":"llama-swap","modelID":"Qwen3.8-27B-Q3S-160K"} | 2026-09-21T23:58:43.182Z
   [text]
-[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
+[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line.
   [text]
 ctx: SESSION=ses_f39d250e9ffeheip2FVEeY5Fk6 CTX=63664 (39%) REM=96336
 
@@ -2368,7 +2368,7 @@ Wait… (b) The scope check is `spawned.has(sid)` — does `spawned` persist acr
 
    Wait — unless the msgs fetch succeeded but userHasMarker(msgs) returned TRUE. That brings us back to (a): does one of my user messages contain the literal `<|autonom|>`?? Let me actually check my session's user message contents in the DB! Search all of my session's user messages (parts) for "autonom". One DB query.
 
-   Hmm, wait — actually, hold on. What about the injected unit-2/unit-4 messages themselves — do their texts contain `<|autonom|>`? The unit-4 text: "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — ..." — no marker. The unit-2 text: "[auto-resume unit 2 — context-limit trigger...]" — no.
+   Hmm, wait — actually, hold on. What about the injected unit-2/unit-4 messages themselves — do their texts contain `<|autonom|>`? The unit-4 text: "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — ..." — no marker. The unit-2 text: "[auto-resume unit 2 — context-limit trigger...]" — no.
 
    And the maintainer's messages? "needed to compact you manually. you did not stop..." — no marker. "Yes confirmed..." — no.
 
@@ -2446,7 +2446,7 @@ Actually — another thought: what if the marker check is looking at a substring
 
 Hmm, wait — what about the injected messages themselves? Unit 2's trigger text — let me look at selfCompactText: "[auto-resume unit 2 — context-limit trigger, session ses_...]" — does it contain "autonom"? No…
 
-What about restartText/continueText? continueText: "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files..." — no "autonom".
+What about restartText/continueText? continueText: "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files..." — no "autonom".
 
 Hmm — so what about `msgPairs` — the #79 fix: msgPairs unwraps the SDK's RequestResult {data} wrapper. Pre-fix (eaef397), msgPairs returned [] (empty) → userHasMarker=false → and lastAssistantAction=null → hmm, but wait: if msgs parsing returned empty pairs, then userHasMarker(msgs)=false → scope=none. That was the #79 bug (action lines unread → recovery loop on planner-6). Post-fix, pairs parse correctly.
 
@@ -2537,7 +2537,7 @@ I need lines 543–555 to see what `t` is — the text of the user message's par
 
 But — what about the injected messages (unit-2 trigger, unit-4 continuation) — those are USER messages (parts arrive as the next turn). Does their text contain `<|autonom|>`?
 - unit-2's selfCompactText: "[auto-resume unit 2 — context-limit trigger, session ...] Measured context saturation: ratio=1.032..." — from what I saw at the top of this conversation — no `<|autonom|>`.
-- unit-4's continueText (around lines 490–500): "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line." — no marker.
+- unit-4's continueText (around lines 490–500): "Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line." — no marker.
 - restartText (lines 504–511): "`<|autonom|> Run autonomously. (auto-resume unit 4 restart branch: ..."` — contains the marker! But restartText is only used in the RESTART branch (spawnPlanner with a new session — it's the planner's LAUNCH message, so it's supposed to contain the marker).
 
 Hmm, so which user message in my session contains the literal `<|autonom|>`? Let me think… my session's tool parts: the git log output, TODO.md's content (TODO.md might contain `<|autonom|>` — in the entry text? The NAP/planner prompt references it… TODO.md — hmm, possible!), the handover_planner.md read (the NAP might contain `<|autonom|>` references!), my marker sweep grep command + its output (the command itself contains "--main\|--now..." but not autonom… wait, no).
@@ -2556,7 +2556,7 @@ Hmm, the timeline doesn't fit for the 23:40:41 recovery. At 23:40:41, my session
 
 So my session's user messages: "What did we do so far?", "continue", "mh, so...", "and the todo.md...", "continue", "close up, cross compaction...", [unit-2 trigger], [unit-4 recovery], "needed to compact you manually...", [unit-4] ×4, "Yes confirmed...". Plus the compaction summary message (23:43:26).
 
-None of these contain `<|autonom|>` as literal text… except — the unit-4 recovery message text? Let me check the exact continueText. Lines 490–500: I saw line 496: `"(compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — " +` — I need the full text. And restartText (line 508) contains `<|autonom|> Run autonomously.` — restartText is the text of the LAUNCH message for a new planner (used in spawnPlanner). Not sent to my session.
+None of these contain `<|autonom|>` as literal text… except — the unit-4 recovery message text? Let me check the exact continueText. Lines 490–500: I saw line 496: `"(compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — " +` — I need the full text. And restartText (line 508) contains `<|autonom|> Run autonomously.` — restartText is the text of the LAUNCH message for a new planner (used in spawnPlanner). Not sent to my session.
 
 Hmm, wait — but what about the compaction summary (23:43:26)? The 4× recovery events were at 23:58:23/33/38/43 — after the 23:43:26 compaction. So for those 4, the scope scan included the compaction summary user message. If the summary contains `<|autonom|>` (my turns A–B discussed the marker extensively — e.g., the text of my turn C answer: "no `action:` line", and the unit-2 message text I quoted… hmm, actually my turn C contains: "A direct session (no <|autonom|> marker, not plugin-spawned): scope=none" — wait, did it? Let me recall turn C… I wrote "Direct session: the plugin doesn't manage them (scope=none)"… I don't remember the exact text. The summary of turns A–B (compacted at 23:43:26) would cover turns A and B (before turn C). Turns A–B contain: my reasoning "I'm the planner, in direct session (no autonom marker)" (no literal brackets), my log-forensics discussion… and the text of the first user message "direct session. opencode is restarted" — hmm.
 
@@ -2619,7 +2619,7 @@ Now — userHasMarker scans only `pair.info.role === "user"` text parts. Which o
 Hmm — the maintainer's messages: "What did we do so far?", "continue", "mh, so in a direct session...", "and the todo.md is now around 40k tokens...", "close up, cross compaction worked...", "needed to compact you manually...", "Yes confirmed...". None contain it (I can confirm from the conversation).
 
 Injected messages (unit-2 trigger, unit-4 continuation): user role, text parts. Does the continuation text contain `<|autonom|>`? Let me check lines 490–500 (continueText):
-- Line 496: `"(compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — " +` — I need the full text of continueText. Let me look at lines 486–512.
+- Line 496: `"(compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — " +` — I need the full text of continueText. Let me look at lines 486–512.
 
 Hmm, wait — but wait. What about the COMPACTION summary user message (23:43:26)? When opencode compacts, it replaces the old messages with a summary user message (agent=compaction… no wait, in the DB at 23:43:26: user agent=build + assistant agent=compaction summary=true). The user message at 23:43:26 — what's its text? It's the compaction request message. In opencode, the compaction flow: a user message "Continue the conversation from ... without asking the user any questions. ..." — hmm, or the summary is generated by the compaction agent as an assistant message, and the next turn continues… Actually, in opencode's compaction: the session's messages are replaced with a summary — the summary is stored as a user message with info like {role: "user", summary: true}? The DB showed `assistant agent=compaction summary=true` — so the assistant message has summary=true. And the user message at 23:43:26 (agent=build) is… the compaction trigger message?
 
@@ -2655,7 +2655,7 @@ The evidence so far is contradictory with the code I'm reading: userHasMarker on
 
 Hmm wait — actually, let me re-verify: are the injected unit-2/unit-4 messages user messages with text parts? Yes (they show up as user messages in my conversation). Do their texts contain `<|autonom|>`?
 - Unit-2 text (selfCompactText) — I saw it: "[auto-resume unit 2 — context-limit trigger, session ses_f39d250e9ffeheip2FVEeY5Fk6] Measured context saturation: ratio=1.032 (103.2% of the usable window: 144481 of 140000 tokens). Call the `compact_memory` tool NOW with NO sessionID (SELF path); its continuation message must be 1-3 lines: what to resume next and which head files to re-read (task spec / handover files / AGENTS.md as applicable). After the compaction summary lands, continue per your post-compaction protocol from committed state — never from the summary alone." — no marker.
-- Unit-4 text (continueText) — I saw it: "[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/prompts/agent_readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line." — no marker.
+- Unit-4 text (continueText) — I saw it: "[auto-resume unit 4 — planner liveness watchdog, session ses_f39d250e9ffeheip2FVEeY5Fk6] Your last turn ended without a recognized action: line (compaction, sudden stop, or protocol gap). Follow .opencode/agent/readme/readme_post_compaction.md — re-read the named head files, rebuild from the committed state (git log + NAP + TODO), and continue the current unit or close it with an action: line." — no marker.
 
 So after the unit-2 message landed (sent at 23:40:41), my session's user messages include the unit-2 text — still no marker.
 
@@ -3362,4 +3362,3 @@ After that, I'll call compact_memory with the message.
   [text]
 
   [tool] compact_memory callID=ky3z02SrsNQEgyaoZxoYqJ4TgdFxliYv status=running
-

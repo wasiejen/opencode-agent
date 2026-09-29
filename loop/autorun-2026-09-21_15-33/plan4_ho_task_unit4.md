@@ -32,7 +32,7 @@ here; live acceptance by the planner after the next host restart.
 - The Unit 2 `statusOf` shape fix is LANDED (`4b1a965`) — `session.status`
   busy/idle now arms correctly; the Unit 2 `watches` map carries
   `lastActivityAt` (stamped on assistant `message.updated`).
-- Post-compaction protocol file: `.opencode/agent/prompts/agent_readme_post_
+- Post-compaction protocol file: `.opencode/agent/readme/readme_post_
   compaction.md` (exists, verified).
 - Baseline at HEAD `4b1a965`: probe 235/235, pytest 459+1w, ruff F=0, full
   smoke suite green (auto_resume 40/40).
@@ -68,7 +68,7 @@ here; live acceptance by the planner after the next host restart.
    - CONTINUE: `[auto-resume unit 4 — planner liveness watchdog, session
      ${sid}] Your last turn ended without a recognized action: line
      (compaction, sudden stop, or protocol gap). Follow .opencode/agent/
-     prompts/agent_readme_post_compaction.md — re-read the named head files,
+     readme/readme_post_compaction.md — re-read the named head files,
      rebuild from the committed state (git log + NAP + TODO), and continue the
      current unit or close it with an action: line.`
    - RESTART (the Unit 3 spawn start prompt): `<|autonom|>` + a short block:

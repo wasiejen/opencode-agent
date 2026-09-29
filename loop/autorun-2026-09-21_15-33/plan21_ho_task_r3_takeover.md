@@ -45,7 +45,7 @@ worker re-verified them at its start): probe 316/316, block_transfer
 ## What to do
 1. Review the staged diff FIRST (`git diff` on the 4 files — bounded
    reads; do not re-read whole files beyond what the diff shows).
-2. Run the standard gate (per `.opencode/agent/prompts/repo/repo_commands.md`)
+2. Run the standard gate (per `.opencode/agent/readme/repo_commands.md`)
    on the staged state and fix what is red.
 3. COMPLETE the missing pins per the R3 spec DoD (committed at
    `.opencode/agent/research/fuzzy-numword/spec_R3_arg_scope_extension.md`

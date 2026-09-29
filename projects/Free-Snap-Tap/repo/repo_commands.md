@@ -1,7 +1,7 @@
-# repo_commands.md — Free-Snap-Tap: run/test commands (moved from `agent/prompts/repo/` on 2026-09-29, #117)
+# repo_commands.md — Free-Snap-Tap: run/test commands (moved from `agent/readme/` on 2026-09-29, #117)
 
 The agent-repo half of the former file (shell environment, the node-probe gate,
-handover paths, the gauge) stays at `agent/prompts/repo/repo_commands.md`.
+handover paths, the gauge) stays at `agent/readme/repo_commands.md`.
 
 ## Python / venv
 - **Python**: bare `python` on PATH = 3.14, NO repo deps (fake-starts, then
@@ -24,4 +24,4 @@ handover paths, the gauge) stays at `agent/prompts/repo/repo_commands.md`.
 
 ## Gate
 - The FST standard gate = pytest + ruff. The agent-repo gate (node probe +
-  smoke suite) lives in `agent/prompts/repo/repo_commands.md`.
+  smoke suite) lives in `agent/readme/repo_commands.md`.

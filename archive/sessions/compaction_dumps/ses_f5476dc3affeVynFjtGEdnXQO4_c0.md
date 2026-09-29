@@ -1708,7 +1708,7 @@ Wait — prompt files: `.opencode/agent/prompts/` — edit-deny applies to WORKE
 Where to put the primer: "for a README in the repo?" — a repo README? There's a root README.md (FST's product README — probably not the right place for agent conventions; that's for the product). Hmm, "a README in the repo" — ambiguous. Options:
 - Root README.md — product documentation, maintainer-owned? There is a README.md in the repo (FST tool). Not agent-facing.
 - AGENTS.md — he said the rules live there (already drafted §4) — but that's his paste.
-- A short primer as a standalone file that the prompts point to — e.g. `.opencode/agent/prompts/repo/` part? The repo parts are "maintained by the maintainer; agents don't edit directly." Hmm.
+- A short primer as a standalone file that the prompts point to — e.g. `.opencode/agent/readme/` part? The repo parts are "maintained by the maintainer; agents don't edit directly." Hmm.
 - The decision-record folder: `research/fuzzy-numword/primer.md` — the topic folder; the prompts reference it by name "on a need basis for details."
 
 Actually re-reading his request: "can you write an extremely short primer for our agents on how to apply the conventions, usage rules, and where they apply. For a README in the repo?" — I read this as: a primer for agents (they want to use the conventions when writing dense numerals), placed as a README in the repo (the fuzzy-numword folder's README? or the repo's README?). "For a README in the repo?" with the question mark = tentative. Then: "referencing the full decision.md is dangerous (10k tokens); better to add a short reference to the planner and worker prompts on a need basis for details."
@@ -2021,4 +2021,3 @@ keepMessages decision rationale (for the reply): the live task information sits 
   [text]
 
   [tool] compact_memory callID=9vyLWb3vLehqgFXoIb5eiYQt7LQ8hfiV status=running
-

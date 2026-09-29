@@ -926,7 +926,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   prompt self-references.
 - **Status:** CLOSED 2026-09-29 — done by the maintainer (see title); the planner's layout-proposal step became unnecessary.
 
-## #119. (open, 2026-09-29, direct session ses_f130ae200ffeDRuhAMKmw0N1qE; found mid-#117 worker run) compact_memory's budget increment rewrites `.opencode/temp/compact_budget.json` as a v2 sessions-only file, destroying all other keys
+## #119. (LANDED 2026-09-29, direct session ses_f11b625d3ffeio02fDzjzypbN2, planner-direct — live acceptance pending the maintainer's restart; found mid-#117 worker run) compact_memory's budget increment rewrites `.opencode/temp/compact_budget.json` as a v2 sessions-only file, destroying all other keys
 - **Problem / evidence:** the #117 worker's self-compaction rewrote the file: the committed v1 config (autoCompact, saturationThreshold, outputReserve, keepTokens, keepMessages, emergencyRecovery, emergency_budget, model_budget map) was replaced by a v2 `{version:2, sessions:{…}}` file (measured via git diff; the rewrite landed 2026-09-29 14:05Z). Consequence: the worker's model cap silently fell to the DEFAULT 1 mid-run (its next compaction attempt was refused: "model_budget default (cap 1), used 1/1") and the planner session's injected budget line dropped 5 → 1.
 - **Desired outcome:** the budget increment is read-modify-write — all pre-existing keys survive; only the `sessions` map changes (additively).
 - **Acceptance:** a compaction event leaves a `compact_budget.json` diff with ONLY the sessions block changed; a compact_memory smoke check asserts non-session-key survival across an increment on a pre-seeded v1-style config (model_budget + emergency_budget present).

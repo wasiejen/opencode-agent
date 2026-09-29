@@ -1,96 +1,87 @@
-# handover_task_to_planner.md — #117 post-split reorg (WORKER, DONE)
+# handover_task_to_planner.md — plan39: context_trim tool (WORKER-39, IN PROGRESS)
 
-Session: ses_f12b5172dffeq1r2iwK4QLlWxj (worker_Q3S_245K_slow). Branch `opencode_test`,
-never pushed. All five units LANDED; one self-compaction mid-run (U4 resumed from this
-file's IN-PROGRESS version, committed 35a50ef).
+Session ses_f10a06089ffeVKusSGiE20Hjw9 (worker_Q3S_slow). Branch `opencode_test`,
+never pushed. Compacted at the stop line mid-run — this IN-PROGRESS version is
+the durable state; the final version replaces it before close-down.
 
-## What changed (commits in order)
-- **U1** `aafaab4` — the five bookkeeping folders moved from their `.opencode/`
-  prefix to the root (`agent/`, `archive/`, `loop/`, `maintainer/`, `proposals/`)
-  as git R-renames (713 R + 1 RM). `git mv` itself is broken on this host
-  (ENOENT/EPERM despite existing sources) — plain `mv` + `git add` gives identical
-  staged R-renames. `.opencode/` now holds the seven native entries only.
-- **U2** `666e4d4` — code re-pointed: `tools/{submit,loop_log,ctx_gauge}.ts`,
-  `plugin/{auto_resume,ctx_watchdog,intercept_observer,compact_memory,compaction_core}.ts`,
-  `plugin/deactivated/*` (4), the 5 affected smokes, the probe. Key findings:
-  - `intercept_observer.ts` MAP_PATH needed a SECOND `..` (`join(THIS_DIR, "..", "..",
-    "agent", ...)`): one `..` from `.opencode/plugin` lands in `.opencode/`, not the
-    root — without it the numword pair gate silently went off (28 probe hook checks
-    + the io smoke failed). Fixed.
-  - auto_resume.smoke needed its 3 join-form loop-fixture refs updated (the
-    slash-form grep missed join forms).
-  - the probe sandbox needed an explicit `mkdirSync` of its `.opencode` dir (the
-    old handover fixture created it as a side-effect).
-- **U3** `86fb413` — 170+ old-path refs updated in active docs: `agent/prompts/**`,
-  `agent/knowledge/**`, `agent/memory/**`, `agent/orientation.md`, the
-  `agent/scripts/` READMEs + `dump_session.cjs`/`summarize_intercept.cjs` + fixture
-  smoke (ROOT 5→4 `..`, green) + `expected_summary.txt`, the spec's own old-path
-  lines (reworded gate-clean), the plugin/tool `.md` docs, root `TODO.md` open
-  entries, + the planner marker-sweep command gained the new root folders.
-  Deliberately untouched: root `TODO.md` closed #107 line.
-- **cleanup** `a196e5b` — stray `__pycache__` out of the U3 commit + root
-  `.gitignore` (pyc/pycache) created.
-- **U4** `68b603a` — per-project split: 17 FST entries → `projects/Free-Snap-Tap/
-  TODO.md` (behavior / code & tests / docs / environment); 21 closed records
-  (incl. both #47 blocks + the iter-9 wrapper with its 6 full-text sub-entries
-  + #11) → `projects/Free-Snap-Tap/todo_records.md`; `repo_map.md` /
-  `repo_testgate.md` / `repo_gotchas.md` → `projects/Free-Snap-Tap/repo/`;
-  `repo_commands.md` split (FST venv/pytest half vs agent-repo gate half);
-  `repo_overview.md` rewritten for the agent repo; `projects/README.md` +
-  project README built. Root `TODO.md` keeps the global counter + a pointer line;
-  root `todo_records.md` keeps the agent records (+ its stale #59 counter note
-  corrected).
-- **U5** (this commit + the staged-files commit) — staged replacements at root:
-  `opencode_reorg_2026-09-29.jsonc` (42 path refs, 38 lines changed, diff =
-  path-only, verified) + `AGENTS_reorg_2026-09-29.md` (7 refs, 7 lines). Live
-  `opencode.jsonc` / `AGENTS.md` NEVER touched — the maintainer applies the
-  staged copies.
+## What changed so far
+- **Unit 1 LANDED `2d4480e`** — `.opencode/tools/context_trim.ts` (new):
+  - core exports `reportWindow(dbPath, sessionID, target?)` (read-only window
+    map + dry-run) + `tailSet(dbPath, sessionID, targetID)` (validated
+    tail_start_id rewrite, floor 6, single transaction, one busy retry,
+    fail-closed); the `tool()` wrapper (mode/session/target args) uses the
+    gauge's DEFAULT_DB_PATH; NO registration (the handover carries the
+    snippet).
+  - Backend (new for this repo — first DB-writable tool): `bun:sqlite` then
+    `node:sqlite`, writable open + `busy_timeout 2500`; report performs no
+    writes. No spawn fallback for writes (fail-closed).
+  - Window math mirrors message-v2.ts:525-576 exactly (ascending
+    (time_created, id); host-loose summary detection for the guard window,
+    the strict summary+finish+no-error detection for the completed-compaction
+    validation).
+  - `.opencode/plugin/tests/context_trim.smoke.mjs` (new): fixture DB built by
+    the smoke (live-DB inspected shapes, FK cascade ON), 20/20 ALL PASS —
+    byte-exact report/dry-run/tail pins, the 5 rejection reasons, no-marker
+    report, db-error shapes, FK cascade verified.
+- **Live-DB inspection (read-only, bounded)**: `.schema session/message/part`,
+  compaction part shape `{"type":"compaction","auto":false,"tail_start_id":…}`,
+  summary row shape, read/bash/webfetch part shapes — all from
+  `~/.local/share/opencode/opencode.db` via the maintainer's sqlite3.exe
+  `-readonly` (the `?mode=ro` URI form FAILS on that build — `-readonly` works).
 
-## Measured verification (final state)
-- **Grep gate** (`rg --hidden -l` on the old-path pattern): 332 hit files (final
-  count, after this file itself became gate-clean), ALL
-  classified: the spec allow-list (root `todo_records.md`, `todo_inbox.md`,
-  `proposals/**`, `archive/**`, `agent/handover/specs/**`, `agent/research/**`,
-  `agent/handover/handover_planner.md`) + the planner-extended allow-list
-  (`agent/agent_feedback.md`, `agent/agent_ideas.md`, `agent/handover/
-  handover_draft_*.md`, `playground/**`) + maintainer-domain files
-  (`maintainer/**` — never edited per DO-NOT-TOUCH) + the pre-U1 looprun docs in
-  the live loop folder + the live `opencode.jsonc` / `AGENTS.md` (pending the
-  maintainer's apply of the staged copies) + `projects/Free-Snap-Tap/
-  todo_records.md` (historical records, same status as the root file) + the
-  closed #107 line in root `TODO.md` (left per spec). Zero hits in every
-  spec-enumerated active file.
-- **Standard gate:** probe 335/346 (the 11 fails = checks 136–146 python w2n =
-  no `.venv` in this repo, the known #113 env break — IDENTICAL fail set to the
-  pre-U1 baseline worktree at 8a97e86, PASS sets byte-identical) + 10/10 smokes
-  green (auto_resume 146, block_transfer 131, bt-sandbox 64, compact_memory 78,
-  intercept_observer 78, loop_log 69, context_recovery 17, ctx_gauge 3,
-  gauge_core ALL, submit 23) + the summarize_intercept cjs smoke green.
+## Remaining work (on resume)
+1. **Probe section S33** in `.opencode/plugin/probes/handover_probe.mjs`:
+   - new section AFTER the S32 block (which ends ~line 8012, before the
+     `// ------------------------------------------------------------------ summary` line ~8014); checks 346-351
+     (String(n33) pattern, `n33` starts at 346):
+     - 346 tool surface (direct type-stripped import, the S12/S15 load pattern:
+       description + args mode/session/target schemas + async execute + NO name
+       field + named exports reportWindow/tailSet functions);
+     - 347 report (no target) full text BYTE-EXACT on the probe's own fixture
+       (build it in SANDBOX with DatabaseSync — the smoke's fixture layout is
+       the reference: 18 messages, quartet at msg_13/14, tail_start msg_07,
+       tool parts INSIDE the retained tail on msg_08 read / msg_10 read+bash /
+       msg_12 webfetch; the exact expected bytes are in the smoke's
+       EXPECT_REPORT);
+     - 348 dry-run line exact (target msg_06: `remove=0 (0 tokens) keep=7
+       (38703 tokens) verdict=ok` — recompute if the probe fixture differs);
+     - 349 tail rewrite lands (return byte-exact `tail= msg_07 -> msg_06
+       keep=7` + part JSON byte-exact on re-read);
+     - 350 rejections (no-completed-compaction / target-not-found /
+       target-not-before-compaction / retained-tail-below-floor, each exact);
+     - 351 no-marker report header line exact (`marker=none …
+       window=full-history`).
+   - HEADER updates (3 places, all machine-updated):
+     - the top EXTENDED-history comment: add the plan39/S33 clause (insert
+       between the #92 2026-09-27 clause ending `…the NEW check 345 (the json
+       naming byte-exact)):` (~line 84) and the `// the pre-rebuild probe` line);
+     - the section-index block: add the `S33 … (6)` entry after the S32 block
+       (which ends ~line 968);
+     - the EXPECTED OUTPUT tally (~line 971): add `S33=6` and 346 → 352
+       (`"PROBE handover: 352/352 PASS"`).
+2. **Gate**: `node .opencode/plugin/probes/handover_probe.mjs` → expect 352
+   checks = 341 PASS + the 11 known #113 env-fails 136-146 (baseline measured
+   this session: 335/346 + 11 env); all other smokes unchanged (run the full
+   suite; baselines: auto_resume 146, block_transfer 131, bt-sandbox 64,
+   compact_memory 78, intercept_observer 78, loop_log 69, context_recovery 17,
+   ctx_gauge 3, gauge_core ALL, submit 23, context_trim 20); FST gate measured
+   this session: ruff F=0 ("All checks passed!"), pytest 459 passed 1 warning
+   (the #113 venv is FIXED now — report that; the probe's 11 fails remain: the
+   agent repo has no `.venv` of its own — VENV_PY = REPO_ROOT/.venv/…).
+3. **Final commit**: TODO #120 status → LANDED + code-commit hashes (2d4480e +
+   the probe commit's hash — never my own final hash) + this file's FINAL
+   version (the registration snippet + measured gate numbers + the
+   live-acceptance note: report read-only → planner live-accepts after
+   maintainer's restart + registration; tail = throwaway session, maintainer's
+   call) + friction submit + loop_log DONE line (the close-down rides a commit).
 
-## TODO entries
-- None filed. #117 → LANDED in this final commit (its hash is for the planner's
-  follow-up bookkeeping commit).
+## Registration snippet (for the maintainer's opencode.jsonc — in the FINAL
+handover verbatim)
+name `context_trim` → file `.opencode/tools/context_trim.ts`, description = the
+tool's own description text (see the file).
 
 ## Deliberately not done / flags
-- Live `opencode.jsonc` + `AGENTS.md` untouched (staged copies only — his apply +
-  restart is his tail).
-- Historical append-only records left with old paths per the extended allow-list
-  (ruling 2026-09-29): feedback/ideas/draft/playground files; root `TODO.md`
-  closed #107 line.
-- The pre-U1 looprun docs in the live loop folder (plan14/plan15/plan19) still
-  reference the old paths — looprun records, not agent-editable.
-- `projects/Free-Snap-Tap/todo_records.md` carries old paths in its records —
-  same historical-records status as the root file (the spec allow-list predates
-  the split; noted here for the planner's call if strictness matters).
-- DEFERRED root TODO entries (#56, #86) were path-updated in U3 (treated as
-  open — not closed records).
-- #113 env break stands: no `.venv` in this repo (the 11 python probe fails +
-  pytest unrunnable) — baseline==post-change verified.
-- The live opencode process still runs pre-move plugin code — live-tool
-  behavior may show old paths until his restart; all verification is on-disk.
-  Measured at close-down: the live `submit` + `loop_log` tools (pre-move code)
-  wrote my friction entry + DONE line into RECREATED old-path folders
-  (`.opencode/agent/agent_feedback.md`, `.opencode/loop/autorun-2026-09-29_16-48/`)
-  — both entries relocated to the correct new files and the stray dirs removed,
-  so `.opencode/` is back to the seven native entries. Until his restart, any
-  live tool writes may land at the old paths again (his to re-verify).
+- `opencode.jsonc` / AGENTS.md / agent/prompts / maintainer/** / live-DB
+  writes: untouched (DO-NOT-TOUCH respected).
+- No new TODO entry expected; doc/code discrepancies: none found so far
+  (the research doc's line refs matched the 1.18.32 dev tree exactly).

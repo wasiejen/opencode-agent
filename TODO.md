@@ -1,8 +1,9 @@
 # TODO — maintainer's open items
 
 Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #118, new
-entries start at #119 (closed IDs stay reserved in `todo_records.md`).
-Closed entries live in `todo_records.md` (one-line records — resolution in file/git log).
+entries start at #119 (closed IDs stay reserved in the `todo_records.md` files —
+root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
+Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
 
 ## Maintainer calls (open, in order)
@@ -20,47 +21,17 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
    `handover_task.md` worktree conflict → #49 CLOSED (`b6dc3e7`); Looprunner prompt
    v2 → #39 CLOSED.
 
-## FST behavior decisions (open — maintainer calls unless noted)
-
-## 1. (closed 2026-09-12, iter-9 unit A `4b93d37` on `fst_work`, full text in todo_records.md) — General vk resolution: unknown keys surface as ONE user-visible error at every vk-resolution site (P08 error toast / headless print) via the shared `FST_Keyboard.surface_config_error` helper; both constraint fail-closed guards + `check_for_combination` (+ hot-path resume catch) route through it, dedup + fail-closed preserved; unknown constraint *names* stay silent no-ops by design.
-## 7. (closed 2026-09-12, iter-9 unit B `2891dab` on `fst_work`, full text in todo_records.md) — Empty macro: BEHAVIOR WINS — the trigger key IS suppressed for an empty key group (kept); the stale comment reworded to match ("supress" fixed); pinned by the pre-existing `test_empty_macro_sequence_no_playback` (no-playback AND suppression).
-
-## 8. (closed 2026-09-12, iter-9 unit B `2891dab` on `fst_work`, full text in todo_records.md) — `ap`/`ar` "all keys (incl simulated)" = UNION (real OR simulated): both setters write the `all` dict as `is_press or <other side's state>` + the symmetric `vk_code > 0` guard on the real setter; doc comments state the union; 3 new pinning tests (crossing release both directions + vk guard).
-
-
-## 9. (closed 2026-09-12, iter-9 unit B `2891dab` on `fst_work`, full text in todo_records.md) — Repeat-constraint excepts hardened: `ValueError` added to `toggle_repeat`/`is_repeat_active`/`reset_repeat`/`stop_all_repeat` (+ `stop_repeat` as the fifth consistency site); one pinning test covers all five methods with malformed (1-/3-element) entries.
-
-
-## 4. (closed 2026-09-12, iter-9 unit B `2891dab` on `fst_work`, full text in todo_records.md) — Dead `elif result is None: pass` branch deleted from `check_constraint_fulfillment` (unreachable — `constraint_evaluation` normalizes None→True); the A→C triage reclassification stays maintainer-side (`COVERAGE_TRIAGE.md` is agent-read-only).
-
-
-## 6. (closed 2026-09-12 by maintainer ruling — KEEP, full text in todo_records.md) — `fst_keyboard.py` 302-303 (mixed-Key rebind conversion) RULING-KEEP ("keep this until I can test a bit more"): the `###XXX 241022-1341` block stays and is DO-NOT-TOUCH; the triage class correction stays maintainer-side per #4.
-
-
-## 11. (closed 2026-09-15, see todo_records.md) — General contradiction prevention — maintainer ruling D1-A (2026-09-15_backlog-decisions.md): kept OFF as an intentional decision (no re-enable); decision comment added below the untouched XXX 241016-1101 pin in fst_keyboard.py; the pinning tests stay the semantic pin.
-
-## 48. (closed 2026-09-11, first commit after `00bc24f`, see todo_records.md) — Packed-word equality checks in the mouse filter: X-button mouseData + LLKHF flags (2026-09-10, #42 report-back)
+FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 — FST behavior / code / docs / env entries live there)
 
 ## Docs & misc (open)
 
 ## 64. (closed 2026-09-16, plan9 planner-direct; finding 2026-09-16, worker-13 inbox) — stale "84/84" probe baseline in `.opencode/plugin/README.md` → replaced by the curate-don't-duplicate pointer to the probe's self-annotated header total (the #58 convention)
 
-## 3. Rework README and WIKI to the current state of the code (2026-09-06) (closed 2026-09-10, see todo_records.md)
-
-## 47. (closed 2026-09-10, see todo_records.md) — Docs: §3 undocumented features (variable system, invocations, extra start args, numpad debug combos) (2026-09-10, from the #3 residual)
-
-## 46. (closed 2026-09-10, see todo_records.md) — Flaky test: `test_crossover_not_taken_on_low_roll` — timing/order-dependent (2026-09-10)
-
-## 45. (closed 2026-09-10, see todo_records.md) — Doc errors found adjacent to the #3 rework: WIKI invocation "evaluate to False" claim, WIKI `+a, +b` rebind notation, README "he first" (2026-09-10)
-
 ## 40. Explorer run #1 output unreliable — no entries on disk, no commit, fabricated gauge, endpoint 128k ≠ 256K (2026-09-10) (closed 2026-09-10 by maintainer ruling, see todo_records.md)
-
-## 41. (closed 2026-09-10, see todo_records.md) — Production bug: `remove_all_toasts()` control function calls a nonexistent attribute (plural/singular mismatch) (2026-09-10)
 
 ## 50. (closed 2026-09-11, see todo_records.md) — repo_map.md refresh — two stale bullets from the split build (2026-09-10, worker findings, iter-3 curation)
 
 ## Loop & coordination (open)
-
 
 ## 53. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — Agent-feedback protocol: the mandatory close-down friction step (Part A, 5e29cb0, all 4 role prompts) + the `submit` write-tool (Part B, b83b34f + session/role autofill 86a977f); maintainer-domain tail closed (registration live in the role toolsets, AGENTS.md paste LANDED 2026-09-18, machine-stamped entries firing in live sessions since).
 
@@ -104,7 +75,6 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 
 ## 74. (closed 2026-09-27, direct session ses_f20d1b39… — backend no longer on ik_llama, the offending PR was reverted — non-issue; full text in todo_records.md) — **Write tool fails on long content payloads on this host**
 
-
 ## 17. (closed 2026-09-11, see todo_records.md) — v1.3 log-growth CONFIRMATION — one-shot read, deferred by the no-`plugin.log` constraint (2026-09-08)
 
 ## 30. (closed 2026-09-11, see todo_records.md) — De-peek: replace the peek.py shell-out with an in-plugin `node:sqlite` read (2026-09-09)
@@ -123,15 +93,16 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 
 ## 65. (closed 2026-09-17, maintainer-ruled — NOT a tool bug, see todo_records.md for the full entry if needed) — loop_log tool folder-detection bug: spurious folders on the maintainer-renamed loop folder (2026-09-16, plan2)
 
-
 ## 66. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — 5.3+5.4 restart acceptance was stale: the read-scope mutation channel was proven LIVE by #68's one-shot live-acceptance (2026-09-17); the §5.4 sentinel torn down; intercept.log accumulated to 3076 lines / 139 sessions by 2026-09-23.
 
 ## 67. (closed 2026-09-28, plan30 maintenance pass — R3 build LANDED 2026-09-26 (3ec1c5c/44c50a2/20d5a48, gate 337/337 + io 77/77) + live acceptance COMPLETE 2026-09-26 (plan23 re-test: grep/glob pair + bash quoted-form + bt anchor-marker pair live-accepted; section-anchor pinned-only, schema-shadowed — dormant by design on this host; see #95 closed status)) — Fuzzy scope extension: glob / grep / section-anchor resolvers (2026-09-16, plan2 queue)
+
 ## 68. (closed 2026-09-16, full text in todo_records.md) - Write-scope fuzzy (R2): approved + build landed green (35f8143) + one-shot live-accepted 2026-09-17 (benign mistype corrected; the #72 hazard live-measured; residual hazard -> #72 M1)
 
 ## 69. (closed 2026-09-16, full text in todo_records.md) - Redundancy form codification (the [left:right] pair convention, supersedes the Q2 angle-pipe form): AGENTS.md paste landed (bf18f14) + R1 green (96bb173) + role-prompt pointer lines (3e0406c); acceptance fully met
 
 ## 70. (closed 2026-09-28, plan30 maintenance pass — all units LANDED + live-accepted: unit A 6864bc0 (2026-09-21) + unit B d4ef76e (2026-09-22); live acceptance 2026-09-21 (DUMP-OK PASS + config resolution; the cross model-read bug found+fixed 280b8d0 + re-accepted); the requested research-spec follow-on superseded by the #99/#101/#105 research tracks) — compact_memory rework: config-resolved summarizer + queued message + dump diagnostics (2026-09-16, new priority.md item; re-scoped 2026-09-21 by his priority.md #1)
+
 ## 71. (closed 2026-09-17, planner-direct, full text in todo_records.md) - Stale probe totals in repo_commands.md: section now carries the curate-don't-duplicate pointer (per #58/#64; maintainer ruled the planner is allowed to update the file)
 
 ## 72. Write-scope residual hazard: new-file near-miss (maintainer decision; 2026-09-17)
@@ -181,12 +152,6 @@ All those IDs stay reserved — see the numbering rule in the header.
 
 ## 36. (closed 2026-09-09, see todo_records.md) — `agents_repo.md` `Environment & shell` — wrong/stale lines (lab-verified, fixed)
 
-## 42. (closed 2026-09-10, see todo_records.md) — Multi-notch scroll-wheel events (delta ≠ ±120) are untested across all layers; the filter pins wheel phase on single-notch equality (2026-09-10, Audit 3a)
-
-## 43. (closed 2026-09-10, see todo_records.md) — `kb_env` fixture + `build()`/`down()` helpers are copy-pasted (drifted) across 6 test files — no shared conftest location (2026-09-10, Audit 3a)
-
-## 44. (closed 2026-09-10, see todo_records.md) — Stale/unknown focus name → uncaught KeyError in `apply_focus_groups` / `apply_start_args_by_focus_name` (the config is reloaded *before* the lookup) (2026-09-10, Audit 3b)
-
 ## 54. (closed 2026-09-16, plan8 planner-direct; maintainer call 2026-09-12) — Rule: never circumvent access restrictions; blocked-file protocol for agents
 
 ## 55. (closed 2026-09-17, live-accepted in direct session ses_f4f539d7c…; maintainer call 2026-09-15) — `compact_memory` needs a dump function of the current session
@@ -210,6 +175,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 ## 77. (closed 2026-09-21, plan3, planner-direct; finding 2026-09-21 worker-3 UNIT 3 gate run, via todo_inbox.md) — stale description pin in `block_transfer.sandbox.smoke.mjs`: line 53 expected the "Housekeeping rule … instead of write/edit" sentence that the maintainer's commit `ff4c2fc` (2026-09-18) deliberately dropped from the `block_transfer` description → pin re-pointed to the new first sentence (the one-liner); smoke 52/52 ALL PASS. Pre-existing since ff4c2fc (worker-3 verified by stash; the Unit 3 commit touches neither file).
 
 ## 78. (closed 2026-09-28, plan30 maintenance pass — LANDED 2026-09-23 (6b33907, per his 2026-09-23 ruling "go for 1 + 2, plus 3+4 unified": --json raw mode + lossless full markdown + --lite preset + hook 120 s budget / pipe stderr / one retry; planner-verified: --json spot-check 70 msgs / 337 parts exact-match the live DB)) — Dump completeness: the session dumps filter out parts (thinking/writing) (2026-09-21, planner; his --info note in priority.md)
+
 ## 79. (closed 2026-09-23 - live-accepted, full text in todo_records.md) - auto_resume Unit 4 msgPairs never unwrapped the SDK { data } wrapper -> action lines were NEVER recognized (spurious recovery prompts / context drain); fixed eaef397 (dual-shape unwrap + ses_u4_wrap smoke) + LIVE ACCEPTED 2026-09-23 (route= restart spawn for a valid action: restart on both builds: v=24972ebd 12:52:39Z + v=d2b9d510 13:00:08Z, no recovery= lines for the sid)
 
 ## 75. (open, 2026-09-21, planner) — **Build our own auto-resume plugin** (opencode-auto-resume research, Phase 3 seed).
@@ -227,9 +193,6 @@ All those IDs stay reserved — see the numbering rule in the header.
 ## 80. (closed 2026-09-23 - fix LANDED 4098253 (worker-2) + plugin reactivated, live-accepted: (b) the injected turns keep the session agent (DB, 2026-09-22) + (c) the Direct session idle-untouched under the post-#90 build (scope=none 17:08:57Z, zero recovery/route/spawn); maintainer confirm 2026-09-23; full text in todo_records.md) - auto_resume inject calls lost the session agent → the turns ran as "build" (the prompt-cache invalidation + the planner lost its system prompt); fixed: the injected bodies carry the session's CURRENT agent+model (the last REAL assistant's info — #91: the compaction summary is skipped; else the JSONC configured-model fallback; else the host default — never a planner constant)
 
 ## 81. (closed 2026-09-23 - re-pin LANDED af38e2f (worker_Q3S_160K), gate green (probe 241/241, smoke 53/53, pytest 459+1w, ruff F=0), maintainer confirm 2026-09-23; full text in todo_records.md) - probe [97] + the compact_memory smoke message pin red since the maintainer's temp fix 0f192e5 (the queued promptAsync commented out); re-pinned to the temp-fix behavior (the dispatch line + the queued note byte-exact, NO queued promptAsync — NOT deactivated, promptAsync NOT restored)
-
-
-
 
 ## 82. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — scope toggle (last-toggle-wins, own-line anchor, bidirectional) LANDED as #85 part 1 (97fccfc) + the unit-2 suppression ruling (Direct suppresses Unit 2 = the already-landed #85 part 3 behavior, no code change); FULL live acceptance 2026-09-23 on the #90 spawn tail (own-line toggle judged scope=autorun, route= restart spawn, successor's first message carries the own-line marker, trigger deactivate=).
 
@@ -328,8 +291,6 @@ All those IDs stay reserved — see the numbering rule in the header.
 ## #88. (LANDED 2026-09-23, worker-14 `worker_Q3S_170K`) — auto_resume smoke wall-time cut 91.4 %: 145.5 s → 12.5 s (his 2026-09-23_00-12 complaint measured at 145.5 s, not ~300 s) — the tick period is now a DEFAULT-PRESERVING factory option (`tickMs`, default 5000 ms — the live tick is unchanged; first factory call sets the module-level tick); the smoke instantiates with `tickMs: 300` and its 7× `sleep(5600)` became `tickWait()` (2 ticks + margin — same "at least one full tick period" pin semantics); no check removed (102/102 before AND after); gate re-verified: probe 241/241, all 10 smokes, pytest 459+1w, ruff F=0. Commit 532ddbc.
 
 ## #89. (closed 2026-09-23 - live-accepted plan10; full text in todo_records.md) - autorun-identifiable names for plugin-spawned sessions (title <loop-folder> planner-<N>): LIVE - the first named spawn verified 2026-09-23 13:00:08Z (the spawn= line carries ident=autorun-2026-09-21_15-33 planner-10 + the session title in the DB)
-
-
 
 ## #90. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — spawned successors inherit the trigger's Autorun state + the trigger deactivates (Parts A+B+C, commit c4b244d, worker_Q3S_170K) — FULL live acceptance 2026-09-23 (planner-13, build v=7d2e6207): `route= restart spawn` + `spawn= agent=planner_Q3S_170K ident=autorun-2026-09-21_15-33 planner-13` + `deactivate=` (19:20:55Z) + the restartText own-line `<|autonom|>` as the successor's first message + zero `skip=` depth-cap lines; subsumes #87 (closed).
 
@@ -439,9 +400,11 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Acceptance criteria:** smokes 30/30 + 53/53 (from 22/52); probe S15 = 12 checks, total 259; standard gate green; the tool description documents REPLACE; a knowledge note appended.
 - **Suggested scope:** `.opencode/tools/block_transfer.ts`, `.opencode/plugin/tests/block_transfer*.smoke.mjs`, `.opencode/plugin/probes/handover_probe.mjs` (S15), `agent/knowledge/plugin_tools/`.
 - **Status:** LANDED 2026-09-25 (worker, `worker_Q3S_170K`): `REPLACE` mode in `.opencode/tools/block_transfer.ts` (enum + the dispatch branch next to PASTE + the description MODES/ANCHORS/BUFFERS/EDGE text) — the line-anchored span (short UNIQUE line prefixes, `startsWith`, non-unique → an error naming the cause, start..end INCLUSIVE, start ≤ end) of an EXISTING dstFile is replaced atomically by the named buffer (REPLACE never creates a file; the buffer is preserved, PASTE semantics; all checks before any fs write; the return reports the 1-based line span + counts); smokes re-pinned 30/30 (+8) + 53/53 (+1); probe S15 = 12 checks (+262/263), probe total 259/259 (header totals machine-updated); gate green (pytest 459 passed + 1 warning, ruff F=0); knowledge note appended at `agent/knowledge/plugin_tools/2026-09-25_block_transfer.replace_mode.md`. (Commit hash recorded in the planner's follow-up bookkeeping commit — no self-reference.) The broader fuzzy-oldstring track (anchor-based fuzzy oldString resolution + the edit/write journal dump per his ideas.md L146-150 + the priority.md fuzzy_numword items) is a SEPARATE track awaiting design ruling.
+
 ## #96. (CLOSED 2026-09-25, planner-17 live-verified post-restart; full text in todo_records.md) — auto_resume.log write-volume reduction: delta exclusion + init size guard LANDED (worker-Q3S-170K, 22c36e4/70399ea, smoke 133/133); LIVE-VERIFIED 2026-09-25 (planner-17, post-restart): `log-trim= old=293026007 new=2097152` (12:50:57Z — the 293MB file trimmed to 2MB at init) + zero `message.part.delta` lines appended after the trim (the last delta line predates the trim; the new build's lines are delta-free).
 
 ## 97. (closed 2026-09-28, plan30 maintenance pass — LANDED 2026-09-25 (worker-17: 07bdd56 Unit 1 redirect + 0d9b8e6 Unit 2 escape return-info + 6684991 handover; gate green) + LIVE-ACCEPTED 2026-09-26 (plan22 planner spot-check: the Windows-root form redirected 1:1 into the scratchpad, kind=redirect line delivered)) — R8 sandbox redirect: out-of-sandbox path args redirected INTO the sandbox (2026-09-25, his live priority.md edit labeled "TODO #97"; planner-14 filed)
+
 ## #98. (LANDED, 2026-09-25, worker-16; Parts A+B implemented + smoke re-pinned, Part C not-applicable per the planner ruling) unit-4 resume-after-compaction: line-anchor the action regex (A) + re-arm on COMPACT (B) + prompt note (C)
 - **Problem / evidence:** `proposals/approved/2026-09-23_unit4-
   compaction-resume.md` (his `--comment` "approved A, B and C") —
@@ -644,6 +607,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Scope (suggested):** explorer task → new `agent/knowledge/opencode-plugins/host-map.md`: SDK surface (v1/v2 endpoints from the installed .d.ts), plugin hook registration + ordering, session/message/part DB schema, permission / external_directory mechanics, the compaction/summarize path, tool registration; every entry dated + locator.
 - **Acceptance criteria:** the map covers the areas above with locators verified against the installed build; the knowledge folder/README rules are followed; planner spot-check: one host question answered from the map alone.
 - **Status:** DONE (explorer 2026-09-26, ses_f24bf71beffekwRYMtnlrWy5UG) — the map is at `agent/knowledge/opencode-plugins/host-map.md` (all 6 areas, dated + located; 6 open/unverified items listed there).
+
 ## #103. (LANDED 2026-09-27, plan27 part 2; was: maintainer instruction in direct fork session ses_f20b3bf14ffedWHp2HGajHmGLN) fix the ctx gauge readout semantics — it lags the live context by one generated turn
 - **Problem / evidence:** the ctx gauge reads `input + cache.read` of the LAST FINISHED assistant step — verified 2026-09-26 by exact matches (61,298 = 78 in + 61,220 cr of the last finished row; 32,507 = the summarizer row). Because it excludes `output`, the readout sits one generated turn below the live context → the documented "≈2 tool-call lag" (AGENTS.md §Context budget, role prompts, compaction guide) is STRUCTURAL, not measurement noise. Full field semantics: `agent/knowledge/knowledge_inbox.md` entry 2026-09-27 (S-continuity, fork-robustness, gauge semantics).
 - **Desired outcome:** the gauge readout ≈ the live context within one tool call (e.g. read `input + output + cache.read` of the last finished step, or the in-flight step's recorded input when available), OR the lag note in all docs is replaced by the verified exact semantics if the maintainer rules the current behavior acceptable.
@@ -744,8 +708,11 @@ All those IDs stay reserved — see the numbering rule in the header.
   ctx_gauge 3/3, loop_log 69/69, submit 23/23); ruff F=0; pytest
   UNRUNNABLE (#113 — not attempted). Hash recorded in the planner's
   follow-up bookkeeping commit (a worker commit cannot carry its own hash).
+
 ## 107. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan29 planner-direct; full text in todo_records.md) — the DUMP-OK / DUMP-RETRY / DUMP-FAIL ctx.log lines carry the FULL repo-relative dump path (`.opencode/archive/sessions/` + name, shared `DUMP_ARCHIVE_REL` constant — a live acceptance is a single `ls`); probe S14/S25 + the compact_memory smoke's two DUMP-OK pins re-pinned
+
 ## 108. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan29 planner-direct; full text in todo_records.md) — the #96 (c) trim-restore fixture's 10 pairs are now built programmatically (the `L(i)` charCode loop) + a PAIR-COUNT assert (a dropped pair fails instantly with the count); auto_resume smoke 140/140
+
 ## #109. (LANDED 2026-09-28, plan33 unit 1, worker-33 — live acceptance pending the maintainer's restart; was: 2026-09-28, plan28 ideas.md scan; research → design) silent context-limit stops carry NO signal — a worker dying at the wall without self-compaction returns an empty result with no log line
 - **Problem / evidence:** ideas.md 2026-09-25_18-01 (maintainer) + the
   submit feedback in that entry: a worker session that stops at the context
@@ -806,40 +773,13 @@ All those IDs stay reserved — see the numbering rule in the header.
   the planner's follow-up bookkeeping commit — no self-reference.)
 
 ## 110. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan32 unit 1, worker-32, 3a5de39; full text in todo_records.md) — per-plugin / per-tool README files for `.opencode/plugin/` + `.opencode/tools/` (9 READMEs, each ≤ ~60 lines, pointer-only, hook names spot-checked against the code) + the two folder-README index lines
+
 ## 111. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan29 planner-direct; full text in todo_records.md) — doc/prompt friction batch: the worker-prompt closing-commit worked example (the hash NEVER in the worker's commit) + the `node --check` probe-syntax line in repo_testgate.md + the intercept-smoke module-state-flip header note
+
 ## 112. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan32 unit 1, worker-32, f406a20; full text in todo_records.md) — the compact auto-resume units explainer `knowledge/opencode-plugins/2026-09-28_auto-resume-units-explainer.md` (units 1-4, the 14 log tokens, pointer-only; the compaction-handout inclusion = the maintainer's paste)
-## #113. (open, 2026-09-28, plan29 planner gate run — ENVIRONMENT break, maintainer call) the repo venv's python.exe is broken — the base interpreter it points at is gone, so the standard gate's pytest + the probe's numword python checks are unrunnable
-- **Problem / evidence:** the plan29 gate run (2026-09-28) measured:
-  `./.venv/Scripts/python.exe -c "print(...)"` fails with
-  `No Python at '"C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312\python.exe"'`
-  (the error text carries an embedded quote). `.venv/pyvenv.cfg` points
-  `home`/`executable` at `C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312`
-  (ONE level above the repo root); that `python312` dir exists but holds
-  only `Doc` — `python.exe` is ABSENT. Consequence measured in the same
-  run: the probe's 11 numword python checks (136-146, `runPyW2n` over
-  VENV_PY) all FAIL with that message; the standard gate's pytest half is
-  unrunnable (the venv is the only python with the repo deps — bare PATH
-  `python` = 3.14 without deps per repo_commands.md). The 2026-09-27
-  baselines (probe 345, pytest 459+1w) predate the break.
-- **Desired outcome:** the venv's python works again (re-pointed or
-  rebuilt by the maintainer — repo_commands.md forbids agents from
-  reinstalling the venv from scratch); then one full standard-gate re-run
-  to re-establish the baselines (probe total + pytest count).
-- **Acceptance:** `./.venv/Scripts/python.exe -c "print(...)"` works;
-  standard gate green (probe self-annotated total + pytest count) with the
-  fresh counts recorded in the NAP Standing baselines.
-- **Suggested scope:** maintainer domain (the venv + the base python
-  install); the planner re-baselines on the next gate run.
-- **Status:** OPEN — ENVIRONMENT FIXED (2026-09-29, round 2): the venv
-  is REBUILT on 3.12.9 (verified 02:00 — `pyvenv.cfg` → the proper
-  `AppData\Local\Programs\Python\Python312` install, 459 tests collect)
-  after an interim 3.14.3 replacement (the original venv had been
-  REPLACED, not repaired — the `..\python312` base dir was gone from
-  disk; the 3.14 slip = the bare-`python`/`py` default, `py -0` marks
-  3.14 as `*`). Remaining: ONE full standard-gate re-run (worker or
-  next autorun) to re-baseline (probe total incl. the 11 numword checks
-  136-146 + pytest count) and close this.
+
 ## #114. (closed 2026-09-29, first fresh session in the new workspace root ses_f130ae200ffeDRuhAMKmw0N1qE — the final no-total data point landed: a fresh session's first injected ctx line read `CTX=notAvailable | 5 compactions left`; root-cause history + full entry in todo_records.md)
+
 ## #115. (LANDED, 2026-09-28, plan34 idle-lane — agent_ideas.md triage, idea 1; pre-approved class — bookkeeping reduction; worker-34 landed — the code commit's hash is recorded in the planner's follow-up bookkeeping commit) the gauge window is config-first: root opencode.jsonc `limit.context` beats the name marker (parseWindow is the fallback)
 - **Problem / evidence:** `gauge.mjs` `parseWindow` (L242-250) derives the
   context window ONLY from a trailing `<N>K`/`<N>M` marker in the model id —
@@ -939,6 +879,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   2026-09-28_message_updated_payload.md. The LIVE capture (3+ raw payloads
   around a busy step — the acceptance) still requires the maintainer's
   restart +   capture-plugin registration (his domain).
+
 ## #117. (open, 2026-09-29, direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
 - **Problem / evidence:** post-carve, the agent repo will hold
   per-project bookkeeping flat (root TODO.md / todo_inbox.md /

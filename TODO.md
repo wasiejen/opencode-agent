@@ -987,3 +987,29 @@ All those IDs stay reserved — see the numbering rule in the header.
   2026-09-28_message_updated_payload.md. The LIVE capture (3+ raw payloads
   around a busy step — the acceptance) still requires the maintainer's
   restart +   capture-plugin registration (his domain).
+## #117. (open, 2026-09-29, direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
+- **Problem / evidence:** post-carve, the agent repo will hold
+  per-project bookkeeping flat (root TODO.md / todo_inbox.md /
+  todo_records.md, `.opencode/agent/handover/`, repo docs,
+  knowledge/research) — with multi-project use ahead ("other repos
+  will be added and worked on in the future"), bookkeeping must be
+  organized per project; additionally every .md under
+  `.opencode/agent/` auto-registers as an opencode agent type
+  (measured ~90 phantom Task-tool agent entries in the live agent
+  list).
+- **Desired outcome:** a per-project bookkeeping layout in the agent
+  repo (`projects/Free-Snap-Tap/`: TODO.md, todo_inbox.md,
+  todo_records.md, handover/, the repo doc set; the shared agent
+  prompts stay under `.opencode/agent/prompts/`) and the Task-tool
+  agent list reduced to the real role prompts.
+- **Acceptance:** the layout is in place; ALL path references updated
+  in one pass (role prompts, the AGENTS.md copy, `tools/submit.ts`,
+  `tools/loop_log.ts`, repo docs, probe/smoke geometry where touched);
+  gate green; the moved .md folders no longer appear as Task-tool
+  agent types.
+- **Suggested scope:** the agent repo (post-carve),
+  `.opencode/agent/{handover,knowledge,research,memory,scripts}`,
+  `.opencode/tools/submit.ts`, `.opencode/tools/loop_log.ts`,
+  AGENTS.md (copy protocol), the repo docs.
+- **Status:** OPEN — awaiting scheduling (his call; ideally
+  inside/before the Phase-2 move window; needs a spec pass first).

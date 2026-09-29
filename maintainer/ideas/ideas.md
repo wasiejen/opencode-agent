@@ -5,28 +5,46 @@
 //   - e.g. research: you (the planner) can go trough feedback, maintainer folder files, archive log and identify problems/opportunities/things-to-optimise and research them
 // this is no priority sorting ... ideas are loosely grouped in topics but might contain crossrelevant snippets
 
-2026-09-25_18-01:
+2026-09-29_19-47:
+- should i git crush the whole opencode_test branch of FST?
+- remove branches fst_work, fst_work2
+- merge into opencode branch or async branch?
 
-  ctx: SESSION=ses_f27282d2dfferl9gScrfLt2AxV CTX=84677 (49%) REM=85323 | 4 compactions left
-  <|Direct|>
-  stop.
-  first time the worker self compacted.
-  after resume the worker stopped on the context limit - without triggering it it seems. 
-  that was not voluntary by the worker.
-  your second resume then triggered the context limit violation and the auto-resume plugin startet the emergency compaction.
-  after compaction you were again active and fired another compaction (the third for the worker) as cross compaction on the worker. 
-  both compaction ran with keepMessages= 18 so it might be ok.
-  
-  What was the result of the second stop without context limit violation? just an emptry result?
-  
-  + Thought: 52.3s
-  Yes — just an empty result, no other signal. Precise timeline of what I observed:
-  1. First resume (after my self-compaction): the worker ran, committed Unit 1 (07bdd56), staged the full Unit 2 code + pins in the tree — then the Task tool returned state: completed with a completely empty task_result (no text, no error, no Work State summary, no DONE line in the loop log). It stopped silently at the limit without triggering its own compaction — nothing surfaced to me. I rebuilt the state purely from files (git log + git status + the in-progress handover + the diff), per the limit-death discipline.
-  2. My second resume attempt: that one failed immediately with request (170869 tokens) exceeds the available context size (170240 tokens) — the session was already past the window, so even injecting my resume message was hard-rejected (MEM-0109 signature). No work ran on that attempt.
-  3. Then the auto-resume emergency compaction + my CROSS compaction (third for the worker) both landed, keepMessages=18 each.
-  So the "second stop" left no result channel at all — only the committed + staged state. Now that both compactions are in, the session should be below the wall. Verifying, then retrying the resume:
+(stached into ideas to not let it be the first and only item in priority - so the agent can work more freely)
+# 3 3 destillation of knowledge
+2026-09-29_19-25
+- find a good place to stash all the session and filter the ones out that are mostly empty
+  - with the folder movement of root, the existing connection of opencode to this repo is broken and thus (for me at least) i can no longer see the old sessions. might be a non issue for you but just a headsup in case it is a problem.
 
-  submit [feedback=A worker session that stops at the context wall WITHOUT triggering a self-compaction returns only an EMPTY Task result (no error, no Work State, no loop-log line) — recovery required full file forensics (git log + status + in-progress handover). A signal in the result channel (stop reason) or a plugin-side detection + `-WARNING` loop-log line for silent limit-stops would make the resume decision instant instead of forensic.]
+- use the same worker as yourself to keep switching cost low by preventing cache invalidation on model switch
+
+- you are free to test out different destillation goals and experiment with different goals/tasks more, report formats. (make a plan of what would be useful information and what to test)
+  - you are free to experiment and document what you find
+    - e.g. let multiple workers with different settings run over the same session and compare their output
+  - create different tools/scripts to work with the dumps. how to best extract what you and the agents might need and what the workers might need.
+
+- i am also inclined to reset the opencode db after we dump all the sessions - it is already 2.6GB big.
+
+# knowledge and memory
+## prompt additions/edits/rewrites:
+## safe knowledge when you gained it! 
+- motivation: when you e.g. researched how an object is resolved and it is needed for solving a problem, this needs to be documented somewhere -> knowledge base
+- addition in the agents.md, that general knowledge - actionable items,code,facts that helped to solve a problem should be send via submit directly after confirming it and it is needed for a problem solution
+  - when looking for solutions one of the first things should be to grep the knowledge in the folder for relevant hits (remember to limit outputted lines for first grep call or similar)
+    - knowledge folder may need to get keywords? or would a tool with e.g. increasing resolution and window of needle search be useful?
+
+- do we need dedicated knowledge search tools? like a needle search with keywords that automatically give back a specified range of found knowledge in the knowledge base or on lean mode to just return number of hits with some examples?
+  - knowledge base might need to be built up completely different for this. keyboard unique identifiers to be able to use tools the retrieve them
+
+## codify knowledge gain and how to save it
+  e.g. keywords to be easily searchable because the knowledge files could get very big
+    specific instruction for retrieval
+    - storage would be done in a knowledge inbox with recommendation for keywords
+    - dedicated agent with skill knowledge_curator would then go over this and collect it from other places to built up the knowledge files - updates them and dedubles - optimises based on collected feedback of retrieval attempts from agents
+    - feedback needs to be again a mandatory step - needs to be easy and frictionless?
+      - feedback_tool that just appends to the inbox???
+
+# other stuff
 
 2026-09-27_20-08:
 - adapt the current version of opencode to respect the keepToken setting
@@ -51,73 +69,13 @@
 2026-09-23_05-19:
 try to be more creative and experiment a bit with different appoaches to problems - to use context this was is never a waste - when you learn something from it save it in memories.
 
-2026-09-23_04-53:
-- ctx-gauge should be based on context parameter in openjson and not the number in the name??
-  - just for convienience for me ... so not dringend
-
 2026-09-23_04-20:
 - marker sweep of a planner took 17k token as result
   - $ grep -rn -- "--main\|--now\|--info\|--todo\|--defer\|--wip\|--comment" --include="*.md" .opencode/ TODO.md README.md WIKI.md 2>/dev/null | grep -v "_past_priorities\|/done/\|agent_feedback\|nap_direct\|archive/"
   - The output of the marker sweep got polluted with plugin.log noise 
 
-
-2026-09-23_01-18
-- so the loopguard is interrupting the sessions and the auto-resume unit 4 did not fire for it
-- 70.31.848.027 W slot handle_loop_: id  0 | task 24525 | loop guard force-closing hidden reasoning at token 1152 (interventions=1 token=1558 piece=''): ngram_dominance period=8 coverage=513 score=0.501
-- - draft
-
-
-2026-09-23_00-20
-- submit section for memories that explains it usage and appends it into inbox_memory.md of the agent role automatically
-
-2026-09-22_17-53
-- might be a good idea to create seperate README.md files for each plugin we have written 
-  - general explanation what is does and how it is implemented
-  - might contain gotchas encountered - lessons learned and what not to do with reasoning
-    - this might be better in another gotchas file specific to plugins
-
-2026-09-22_17-41
-- we should move ctx gauge max value not gained from the modelID but from the opencode.jsonc or if their is a field in ctx object to gain the limit directly over it.
-  - would allow me to more freely name and rename modelID without needing to update the name in backend AND openconfig to signal the limit via name
-
-
-
-2026-09-22_14-30:
-"
-  4. The compaction question: he reactivated the plugin — which plugin? auto_resume (I assume — "the plugin" = the one we were discussing, the deactivated auto_resume). Also — the compact_memory plugin: his temporary fix (commented-out promptAsync) is still in effect → SELF compact should work. Unverified. I'm at 83% — approaching the 90% stop line. If I need to compact this session, SELF compact_memory should work now (per his temporary fix). But per the triage rule: I should plan the turn to fit without needing to compact. My plan is ~12–15K → end at ~90–92%... hmm, that's tight. The 80% triage rule: "before starting a unit, estimate the remaining tool calls; if the estimate exceeds 10 calls → instead of starting a unit, stop at the last verified checkpoint and fire compact_memory." I'm at 83% with an estimate of 12–14 calls → per the rule, I should compact first (SELF — should work now per his temporary fix, but unverified!).
-"
-- is there a rule to "But per the triage rule: I should plan the turn to fit without needing to compact."??? compact is the go-to mechanism right now to continue
-
-
-2026-09-22_12-03:
-- commit has inclusion instruction lets every worker stumble on how to do it
-  - needs clear instruction or has to be part of the spec
-- maybe a spec template to be filled out? with handles all the not changing parts of the process
-  - could be created with an edit marker for easier filling out 
-
-- overhead of small changes are big atm - loosem the 15 diff line convention
-  - 2026-09-22_12-41 done - first change to planner prompt
-
-- need more direct interaction - the planner agent is burning its context trying do everything at once - TRIAGE rule (see end priority.md)
-  - 2026-09-22_12-42 done - first change to planner prompt
-
-2026-09-22_00-46:
-- resume message of auto_resume invalidates the cache? but i observed the same after return from a sub-agent to the planner. might be just the size that is not supported right now - try some fixes in the backend.
-
-2026-09-22_00-25:
-- loosen the less than 15 lines diff can do a planner a bit. maybe 50 diff lines? still a small change. and prevents delegating an extra worker with all the turn around
-
-- worker gets confused because he does not know how to include in git hash in his closing commit - this might be needed to declared more specifically - he burned 10k token and 6,5 minutes to decide to look up how other have done it in the existing handover_task_to_planner
- - happens nearly every time... and costs token and a lot of time
-
-
-- on planner closeup with enough room to the stop line, maybe add feedback integration. look at the current accumulated agent_feedback and decide if and where it should be integrated.
-
 -pathfinder mentality as planner prompt part - when you are in an area (files/folders) and you see something is bad or not current or is easily fixed - leave it in a better state then before.
 - but might distract from task. small edits yes, bigger ones todo_inbox?
-
-- we might need an information in tool call that something was replaced
-  - or else the agents will get confused
 
 - need a dedicated research agent
   - prompt and instruction set/skillset inclusive?
@@ -130,70 +88,9 @@ try to be more creative and experiment a bit with different appoaches to problem
         - Phases based on task_spec in size and strucute
   - ideal working flow. i destribe an intented function, write some thoughts down and an agent checks viability, seaches in the internet (context might be too tight - might need to upgrade gemma to 256K (found a way to do so and gemma is fast)) and creating a comprehensive overview with potential problems, usages, benefits -> an analysis if this is workable, how much work it would need and what we could expect as return in worth (e.g. smoother interaction, less friction with tools,)
 
-- compact keepMessenges setting must be codified (readme_loop most likely)
-  - settings to adjust what to keep in memory to be decided before compaction
-  - best time to compact is before big writing and editing work and after the implementation is clear.
-    - comprehensive handover and then compact with choosing carefully to retain the reasoning and implementation drafts
-    - write yourself a message to get easier started (currently not working but in priority.md # 1 compact_memory additions/fix messages)
-
-  
-  - cleanup of agent_feedback
-    - get actionable items -> proposal bundle and extract knowledge if present
-
- i could now with reduces kv-cache upgrade model iq3kt to 262k contextsize .. and make 2 slots so they can run parallel :-) mhhhh a workers with each 131k contextwindow
-            - question is how fast these are in reality compared to one worker
-            
-- ctx needs a session_id and role to better attribute which measurement it is
-  - good place to track worker sessions and get session_id if needed
-  - only place to check after error of a sub-agent how full his context was
-  - add tools.execute.before in watchdog to just trigger ctx.gauge update in the log - not change in message to keep it more up to date
-    - is there a trigger for every message? just to trigger the ctx.gauge update in the log
-      - normally the provider sends with EVERY return message the ctx info
-
-  - would be much more helpful with session_id and role (modelid can drop - is implied with role)
-    2026-09-16_17-43 Qwen3.8-27B-IQ4KT-140K edit (97% used, 3K left)
-    2026-09-16_17-46 Qwen3.8-27B-IQ4KT-140K bash (99% used, 1K left)
-    2026-09-16_17-49 Qwen3.8-27B-IQ4KT-140K ctx_gauge (74% used, 36K left)
-    2026-09-16_17-50 Qwen3.8-27B-IQ4KT-140K compact_memory (74% used, 35K left)
-    2026-09-16_17-51 Qwen3.8-27B-IQ4KT-140K bash (75% used, 34K left)
-    2026-09-16_17-51 Qwen3.8-27B-IQ4KT-140K COMPACT ses_f55463549ffelXphfcDlDGMhPJ tokens=30000 messages=12
-
-  - Line 4881: 2026-09-16_23-59 DUMP-FAIL ses_f5409e7a5ffeHFuZxFFuWovscO spawnSync node ETIMEDOUT
-
 - using event hook messages.updated instead we might calculate the real token fill in real time!
   - this needs to be checked
     - apparently its the way the opencode TUI does this
-
-
-## tool description list/prompt that explains the available costum tools to each agent
-- session_info
-- ctx_gauge
-- block_tranfer //when working
-- compact_memory
-
-## tool erase message from seesion
-- a tool to make it possible to remove the tail to a specific message and replace it by e.g. a summary
-  - or directly remove a message or a list of messages identified by heir messageID from the session
-  - usage: on ingesion of large files -e.g webfetch or log/dump reads summarise the useful parts and then remove it from context
-  - could be another great lever to save context space!
-- ?? ctx.session contains the messages 
-  - ARE these actually the context???
-  - and when removed the context is recompiled???
-
-## codify knowledge gain and how to save it
-  e.g. keywords to be easily searchable because the knowledge files could get very big
-    specific instruction for retrieval
-    - storage would be done in a knowledge inbox with recommendation for keywords
-    - dedicated agent with skill knowledge_curator would then go over this and collect it from other places to built up the knowledge files - updates them and dedubles - optimises based on collected feedback of retrieval attempts from agents
-    - feedback needs to be again a mandatory step - needs to be easy and frictionless?
-      - feedback_tool that just appends to the inbox???
-
-
-## lets remove the verbatim output printout of looprunner. formatting is butchered by the transfer and the token are filling up
-
-## prompt example of rmaintence --info instruction in priority 
-- but you may as well do some maintenance and curation on knowledge files. repo prompt files, nap, explore new script we could need, ... :-) if you are bored look in my ideas and make some proposels or research how to do this. fuzzy search on read or when searching in files. or num_to_word autoreplace as intercept plugin on hook.execute.before to combine both and make tools calls more reliable even with bitshifts in numbers. worthwhile thing to research. but dont save research in your nap. make e.g. a agent/research folder if you want.
-
 
 # prompt and tool description engineering (research) DONE
   https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
@@ -205,34 +102,3 @@ try to be more creative and experiment a bit with different appoaches to problem
     - hw should get all the knowledge to be able to optimize all the prompts, tool, plugin descriptions - essentially everything that
   - e.g. from writign-tools-for-agents
     - "When writing tool descriptions and specs, think of how you would describe your tool to a new hire on your team. Consider the context that you might implicitly bring—specialized query formats, definitions of niche terminology, relationships between underlying resources—and make it explicit. Avoid ambiguity by clearly describing (and enforcing with strict data models) expected inputs and outputs. In particular, input parameters should be unambiguously named: instead of a parameter named user, try a parameter named user_id"
-
-
-  # research, analyse the copied repo (a lot of files, so do not try to run it in one session) STARTED/WIP
-- "C:\Users\Wasiejen\AppData\Local\Temp\opencode\opencode-auto-resume-master"
-- goal: general map the usage and map out what problems and how this plugin solves them
-  - identify used solutions for autostarting an agent continuesly
-  - how to react to a contextoverflow or errors
-  - generally useful implementations
-  - enrich our knowledge base with these informations found 
-    - like recepies: this problem is solved here in this way
-      - as basis to built our own plugins with working examples
-
-
-  "autoCompact": false,
-  "saturationThreshold": 0.95,
-  "outputReserve": 5000,
-  "keepTokens": 30000,
-  "keepMessages": 12,
-  "emergencyRecovery": false,
-  "model_budget": {
-    "Qwen3.8-27B-Q3XS-160K-MTP": 3,
-    "Qwen3.8-27B-Q3S-110K-MTP": 3,
-    "Qwen3.8-27B-Q2S-128K-x2": 3,
-    "Qwen3.8-27B-Q2S-210K-MTP": 3,
-    "Qwen3.8-27B-Q3S-160K-MTP-Thireus": 3,
-    "Qwen3.8-27B-Q3S-170K": 3,
-    "Qwen3.8-27B-Q3S-230K-slow": 3,
-    "Qwen3.8-27B-Q3XS-262K": 3,
-    "Gemma4-12B-Q4KM-UC-128K": 1,
-    "Gemma4-12B-Q4KXL-MTP-128K": 1
-  },

@@ -66,7 +66,7 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 
 ## 56. (DEFERRED 2026-09-15, maintainer `--defer` in priority.md) — Distillation worker runs over the session dumps (his # 3 3 mandate)
 
-- **Problem / evidence:** the 137-session corpus (`.opencode/archive/sessions/`,
+- **Problem / evidence:** the 137-session corpus (`archive/sessions/`,
   backfilled 2026-09-15) is the basis for distilling session history; the
   maintainer deferred the runs 2026-09-15 ("to much work right now") while
   focusing on the proposal/inbox backlog (his #0).
@@ -82,7 +82,7 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
   base; the skillset/roles documented for reuse.
 - **Suggested scope:** `skill_session_scan.md` (ALREADY BUILT, plan1 —
   perspectives P1 FRICTION / P2 DECISIONS / P3 KNOWLEDGE + output format);
-  `.opencode/archive/sessions/` (read-only dumps); the `worker_gemma_Q4_128K`
+  `archive/sessions/` (read-only dumps); the `worker_gemma_Q4_128K`
   + `worker_Q4_120K` roster; a comparison notes file in the loop folder.
 - **Status:** DEFERRED — picked up only when the maintainer lifts the
   `--defer` marker in `priority.md` (# 3 3) or re-prioritizes it.
@@ -305,7 +305,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   - **LIVE EVIDENCE 2026-09-23 (plan10, new build v=d2b9d510):** the Unit-4 restart branch fired correctly on planner-9 close (`route= restart spawn` 13:00:08Z -> the named spawn `ident=autorun-2026-09-21_15-33 planner-10`, session ses_f31a5dee5ffe1DIBxZzEDZF8aF); the trigger session was NOT re-routed afterwards (no recovery=/route= lines for its sid) and no unbounded-spawn loop recurred. His 2026-09-23_14-25 item now directs a change to the spawned-exclusion design (TODO #90).
      new sessions, 2026-09-22).
 
-## #86. (DEFERRED — maintainer-proposed 2026-09-23, curated from todo_inbox 2026-09-23_01-08) — worker audit of ALL `.opencode/plugin/` + `.opencode/agent/scripts/` tools/plugins
+## #86. (DEFERRED — maintainer-proposed 2026-09-23, curated from todo_inbox 2026-09-23_01-08) — worker audit of ALL `.opencode/plugin/` + `agent/scripts/` tools/plugins
 - **Problem:** stale hardcoded agent ID found in `auto_resume.ts`
   (`PLANNER_AGENT_ID planner_Q3S_160K` — already handled by #85 part 2);
   likely the same class elsewhere: hardcoded agent/model IDs not matching
@@ -315,7 +315,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   suggested fix — filed to `todo_inbox.md`. No behavior change (read-only
   audit).
 - **Acceptance:** findings list covering `.opencode/plugin/*.ts` +
-  `.opencode/plugin/tests/` + `.opencode/agent/scripts/` (node/cjs); no
+  `.opencode/plugin/tests/` + `agent/scripts/` (node/cjs); no
   edits; the `auto_resume.ts` PLANNER_AGENT_ID case excluded (handled by
   #85 part 2).
 - **Suggested scope:** explorer or worker, read-only grep-driven scan.
@@ -349,7 +349,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** every pre-compaction dump writes BOTH: the lossless full markdown (current) + a raw `--json` snapshot (the lossless master — any later filtered view re-derivable from it).
 - **Acceptance criteria:** two DUMP-OK lines per dump (md + json); both files land in the archive dir; the #78 diagnostics (ms= / DUMP-RETRY= / DUMP-FAIL + stderr) + the 120 s budget + one retry apply to BOTH dumps; compact_memory smoke re-pinned; gate green.
 - **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the preCompactionDump call site — the dump script already has `--json`), `.opencode/plugin/tests/compact_memory.smoke.mjs`.
-- **Status:** LANDED 2026-09-27 (worker-26, plan26 — per the 2026-09-27 ruling "save both"): `preCompactionDump` now writes BOTH artifacts — the lossless md (first) + the raw `--json` snapshot (the lossless master) — each INDEPENDENTLY (the same attempt → DUMP-RETRY=1 → one retry → DUMP-FAIL per artifact, the #78 120 s budget + stderr capture on both); the DUMP-RETRY=/DUMP-FAIL lines gain the artifact relFile; the hook returns `{ ok, files, error }` (files = the landed paths, md first; error = `<md|json>: <detail>` per failed artifact, joined by " | "); the no-overwrite stamp stays MD-base-driven (both artifacts share the stamped base); the dispatch call site reads only ok/error (unchanged). The probe S14 checks 104/105/106/107 re-pinned + NEW check 345 (the json naming byte-exact) — 345/345 (header self-annotated); the compact_memory smoke +2 (78/78: the json artifact exists + the json DUMP-OK line byte-exact); gate green (all smokes, pytest 459 passed + 1 warning, ruff F=0). **Closed (planner-26 bookkeeping, 2026-09-27):** commits `11f4a12` (code) / `5a6e842` (probe) / `e2a1a52` (smoke) / `86bda25` (this status + handover) — planner-verified by own re-run (probe 345/345 + compact_memory smoke 78/78, exit 0). **LIVE-ACCEPTED (planner-27, 2026-09-27, verified from files):** the first real compaction under the #92 build was the planner-27 part-2 self-compact (ctx.log 2026-09-27_15-42/15-45, ses_f1d198b41): TWO DUMP-OK lines (`…_c0.md` ms=49 + `…_c0.json` ms=50) + the COMPACT line (keep=12m tok=29498 computed); both artifacts on disk in `.opencode/archive/sessions/compaction_dumps/` — the md (616,987 B, correct session/title/agent header) and the json (1,216,263 B, valid JSON, top keys `session,messages,orphan_parts`).
+- **Status:** LANDED 2026-09-27 (worker-26, plan26 — per the 2026-09-27 ruling "save both"): `preCompactionDump` now writes BOTH artifacts — the lossless md (first) + the raw `--json` snapshot (the lossless master) — each INDEPENDENTLY (the same attempt → DUMP-RETRY=1 → one retry → DUMP-FAIL per artifact, the #78 120 s budget + stderr capture on both); the DUMP-RETRY=/DUMP-FAIL lines gain the artifact relFile; the hook returns `{ ok, files, error }` (files = the landed paths, md first; error = `<md|json>: <detail>` per failed artifact, joined by " | "); the no-overwrite stamp stays MD-base-driven (both artifacts share the stamped base); the dispatch call site reads only ok/error (unchanged). The probe S14 checks 104/105/106/107 re-pinned + NEW check 345 (the json naming byte-exact) — 345/345 (header self-annotated); the compact_memory smoke +2 (78/78: the json artifact exists + the json DUMP-OK line byte-exact); gate green (all smokes, pytest 459 passed + 1 warning, ruff F=0). **Closed (planner-26 bookkeeping, 2026-09-27):** commits `11f4a12` (code) / `5a6e842` (probe) / `e2a1a52` (smoke) / `86bda25` (this status + handover) — planner-verified by own re-run (probe 345/345 + compact_memory smoke 78/78, exit 0). **LIVE-ACCEPTED (planner-27, 2026-09-27, verified from files):** the first real compaction under the #92 build was the planner-27 part-2 self-compact (ctx.log 2026-09-27_15-42/15-45, ses_f1d198b41): TWO DUMP-OK lines (`…_c0.md` ms=49 + `…_c0.json` ms=50) + the COMPACT line (keep=12m tok=29498 computed); both artifacts on disk in `archive/sessions/compaction_dumps/` — the md (616,987 B, correct session/title/agent header) and the json (1,216,263 B, valid JSON, top keys `session,messages,orphan_parts`).
 
 ## #95. (CLOSED 2026-09-28, plan28 maintenance pass; was open, 2026-09-25, planner direct; his rulings 2026-09-25) fuzzy edit-oldstring track — PARENT entry (replaces the stale #67 references — that ID never existed in the committed TODO.md)
 - **Problem / evidence:** edit oldString exact-match failure is a very regular problem (his priority.md "fuzzy matching of edit oldstring" + ideas.md L143-158); the #94 worker's anchor-semantics drift finding is queued here (todo_inbox 2026-09-25). Track state: R1/R2 live, R4/R7 landed, R6 STAGED (gate cleared), R3 STAGED, R8 + the escape return-info not staged.
@@ -437,8 +437,8 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Problem / evidence:** edit oldString exact-match is a very regular failure (his priority.md "fuzzy matching of edit oldstring"; ideas.md L153-158: "what would be needed to make block_transfer as versatile as edit but less prone to oldstring mismatch?"); block_transfer PASTE is insert-only (append after targetMarker / EOF) — a slot/region replacement needs a MOVE+DELETE composition (two calls, intermediate state); the 2026-09-24 slot-clobber incident (agent_feedback) showed PASTE-as-slot-replacement is a trap.
 - **Desired outcome:** one atomic call replaces the line-anchored span (short unique line-prefix anchors — no exact oldstring, no whitespace sensitivity) with the named buffer content; the return string reports what was replaced (perceptibility — the caller cannot see its own args after the call).
 - **Acceptance criteria:** smokes 30/30 + 53/53 (from 22/52); probe S15 = 12 checks, total 259; standard gate green; the tool description documents REPLACE; a knowledge note appended.
-- **Suggested scope:** `.opencode/tools/block_transfer.ts`, `.opencode/plugin/tests/block_transfer*.smoke.mjs`, `.opencode/plugin/probes/handover_probe.mjs` (S15), `.opencode/agent/knowledge/plugin_tools/`.
-- **Status:** LANDED 2026-09-25 (worker, `worker_Q3S_170K`): `REPLACE` mode in `.opencode/tools/block_transfer.ts` (enum + the dispatch branch next to PASTE + the description MODES/ANCHORS/BUFFERS/EDGE text) — the line-anchored span (short UNIQUE line prefixes, `startsWith`, non-unique → an error naming the cause, start..end INCLUSIVE, start ≤ end) of an EXISTING dstFile is replaced atomically by the named buffer (REPLACE never creates a file; the buffer is preserved, PASTE semantics; all checks before any fs write; the return reports the 1-based line span + counts); smokes re-pinned 30/30 (+8) + 53/53 (+1); probe S15 = 12 checks (+262/263), probe total 259/259 (header totals machine-updated); gate green (pytest 459 passed + 1 warning, ruff F=0); knowledge note appended at `.opencode/agent/knowledge/plugin_tools/2026-09-25_block_transfer.replace_mode.md`. (Commit hash recorded in the planner's follow-up bookkeeping commit — no self-reference.) The broader fuzzy-oldstring track (anchor-based fuzzy oldString resolution + the edit/write journal dump per his ideas.md L146-150 + the priority.md fuzzy_numword items) is a SEPARATE track awaiting design ruling.
+- **Suggested scope:** `.opencode/tools/block_transfer.ts`, `.opencode/plugin/tests/block_transfer*.smoke.mjs`, `.opencode/plugin/probes/handover_probe.mjs` (S15), `agent/knowledge/plugin_tools/`.
+- **Status:** LANDED 2026-09-25 (worker, `worker_Q3S_170K`): `REPLACE` mode in `.opencode/tools/block_transfer.ts` (enum + the dispatch branch next to PASTE + the description MODES/ANCHORS/BUFFERS/EDGE text) — the line-anchored span (short UNIQUE line prefixes, `startsWith`, non-unique → an error naming the cause, start..end INCLUSIVE, start ≤ end) of an EXISTING dstFile is replaced atomically by the named buffer (REPLACE never creates a file; the buffer is preserved, PASTE semantics; all checks before any fs write; the return reports the 1-based line span + counts); smokes re-pinned 30/30 (+8) + 53/53 (+1); probe S15 = 12 checks (+262/263), probe total 259/259 (header totals machine-updated); gate green (pytest 459 passed + 1 warning, ruff F=0); knowledge note appended at `agent/knowledge/plugin_tools/2026-09-25_block_transfer.replace_mode.md`. (Commit hash recorded in the planner's follow-up bookkeeping commit — no self-reference.) The broader fuzzy-oldstring track (anchor-based fuzzy oldString resolution + the edit/write journal dump per his ideas.md L146-150 + the priority.md fuzzy_numword items) is a SEPARATE track awaiting design ruling.
 ## #96. (CLOSED 2026-09-25, planner-17 live-verified post-restart; full text in todo_records.md) — auto_resume.log write-volume reduction: delta exclusion + init size guard LANDED (worker-Q3S-170K, 22c36e4/70399ea, smoke 133/133); LIVE-VERIFIED 2026-09-25 (planner-17, post-restart): `log-trim= old=293026007 new=2097152` (12:50:57Z — the 293MB file trimmed to 2MB at init) + zero `message.part.delta` lines appended after the trim (the last delta line predates the trim; the new build's lines are delta-free).
 
 ## 97. (closed 2026-09-28, plan30 maintenance pass — LANDED 2026-09-25 (worker-17: 07bdd56 Unit 1 redirect + 0d9b8e6 Unit 2 escape return-info + 6684991 handover; gate green) + LIVE-ACCEPTED 2026-09-26 (plan22 planner spot-check: the Windows-root form redirected 1:1 into the scratchpad, kind=redirect line delivered)) — R8 sandbox redirect: out-of-sandbox path args redirected INTO the sandbox (2026-09-25, his live priority.md edit labeled "TODO #97"; planner-14 filed)
@@ -550,7 +550,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   rationale — his review).
 - **Close note (2026-09-26, worker-24, commit b95d532):** metric fixed → raw part mass (bytes/4), usage-field fallback kept (all pins updated; gate 340/340 + 74/74 + 17/17 + 459+1w + F=0). The live fork-test acceptance stays OPEN.
 - **Close note (2026-09-27, worker_Q3S_245K_slow, commit dcad3d1):** metric v2: S-diff provider-true primary (S = input+output+cache.read per assistant; window mass = S[last assistant in window] − S[last assistant before window]), bytes/4 part mass kept as the fallback (no assistant in window / diff ≤ 0) — all pins machine-recomputed + updated (smoke 76/76 + 17/17, probe 340/340 count unchanged, 459+1w, F=0). The live fork-test acceptance stays OPEN.
-- **Status (2026-09-27, direct session ses_f20d1b39…): LIVE TESTS COMPLETE (maintainer, 2026-09-26/27, `.opencode/maintainer/draft/compaction_guide/compaction_tests.md`): the body `keep.tokens` is NOT honored by the installed host — retention always tracks opencode.json `compaction.keep.tokens` (now 40000); `keep.messages` ignored; measured floor = 25.8-25.9k (system + summary). Metric v2 (S-diff, dcad3d1) stands as the computed advisory (the COMPACT line `tok=`). FOLLOW-UP RESEARCH APPROVED (his ruling 2026-09-27 direct: "if there is a way to set keeptoken flexibly, it should be used" — compact_memory must keep control over WHAT to keep, not just WHEN; a fixed global 40k is "too much in most cases, too little in some"): map the installed host's summarize path for a per-call keep input — the dev-branch source has `preserve_recent_tokens ?? clamp(0.25*usable, 2k..15k)` + `tail_turns`, but host-map §compaction does NOT trace where `preserve_recent_tokens` is read from (config vs per-call body — the gap); his fork-test matrix is the decider (undocumented body field variants vs the config value → measured post-compaction retention; the body `keep.tokens` we send is measured-IGNORED on this build — config wins twice: 44865 vs 30000/44878, 45005 vs 1 → floor). If a per-call field exists → wire the computed keepTokens into it; if none → the config `compaction.keep.tokens` (his file) is the only control, the computed value stays advisory (the COMPACT line `tok=`). The N=10 discriminator + the summarize-scope probe (fork session) ride this research.**
+- **Status (2026-09-27, direct session ses_f20d1b39…): LIVE TESTS COMPLETE (maintainer, 2026-09-26/27, `maintainer/draft/compaction_guide/compaction_tests.md`): the body `keep.tokens` is NOT honored by the installed host — retention always tracks opencode.json `compaction.keep.tokens` (now 40000); `keep.messages` ignored; measured floor = 25.8-25.9k (system + summary). Metric v2 (S-diff, dcad3d1) stands as the computed advisory (the COMPACT line `tok=`). FOLLOW-UP RESEARCH APPROVED (his ruling 2026-09-27 direct: "if there is a way to set keeptoken flexibly, it should be used" — compact_memory must keep control over WHAT to keep, not just WHEN; a fixed global 40k is "too much in most cases, too little in some"): map the installed host's summarize path for a per-call keep input — the dev-branch source has `preserve_recent_tokens ?? clamp(0.25*usable, 2k..15k)` + `tail_turns`, but host-map §compaction does NOT trace where `preserve_recent_tokens` is read from (config vs per-call body — the gap); his fork-test matrix is the decider (undocumented body field variants vs the config value → measured post-compaction retention; the body `keep.tokens` we send is measured-IGNORED on this build — config wins twice: 44865 vs 30000/44878, 45005 vs 1 → floor). If a per-call field exists → wire the computed keepTokens into it; if none → the config `compaction.keep.tokens` (his file) is the only control, the computed value stays advisory (the COMPACT line `tok=`). The N=10 discriminator + the summarize-scope probe (fork session) ride this research.**
 - **Close note (2026-09-27, plan27, planner-27, planner-direct): FOLLOW-UP RESEARCH DONE — installed host = 1.18.32 (measured: npm platform package `opencode-windows-x64`; the host-map "1.18.31" reading is stale) and the scratchpad source tree `opencode-dev` IS that build (provenance spot-verified vs the published v1.18.32 tag). NO per-call keep input exists: `SummarizePayload = {providerID, modelID, auto?}` (opencode-dev `groups/session.ts` L65-69), the handler passes only model + auto (`handlers/session.ts` L273-294), the budget reads CONFIG only (`session/compaction.ts` L115-120). The legacy mapping `compaction.keep.tokens` → `preserve_recent_tokens` (+ `buffer` → `reserved`) in `config/v2-compat.ts` normalizeCompaction (L163-184) explains the config-wins live series. The budget is consumed whole-turn under an estimated-token metric (`select` L223-269); the floor (no tail) = system + summary only — matches the measured 25.8k. **Fallback ruling confirmed: the config `compaction.keep.tokens` is the ONLY retention control; the computed keepTokens stays advisory (the COMPACT `tok=`).** No code change (the body `keep.*` fields are dead but harmless — server ignores extras, live-verified). RESIDUAL (maintainer, live, on 1.18.32): the N=10 discriminator (count-vs-budget retention semantics) + the summarize-scope probe — protocol in `knowledge/opencode-plugins/2026-09-27_summarize-keep-source-trace.md`; the 2026-09-26 fork observation (full 30-message tail retained despite a 30k budget) contradicts 1.18.32's `select()` — version drift 1.18.31→1.18.32 is the candidate explanation the N=10 test resolves.**
 
 ## #100. (LANDED 2026-09-26, plan18, worker-18 `worker_Q3S_245K_slow`, commit bc374b2; direct session 2026-09-25; maintainer GO 2026-09-25) remove the numword escape channel — bit-drift solved backend-side, the escape's use-case is gone
@@ -564,7 +564,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** the escape channel is gone (code + pins) while the
   fuzzy track's positive parts stay fully intact: the pair channel
   (R1/R2 — right-side numwords → digits), the shared numword map
-  (`.opencode/agent/scripts/numword/numwords.json`), the dense/numword
+  (`agent/scripts/numword/numwords.json`), the dense/numword
   observation logging, the R6/R7/R8 channels. The Unit-2 (#97) noteCache /
   after-hook note delivery STAYS (the R8 redirect notes ride it).
 - **Scope (agreed, direct session 2026-09-25):**
@@ -576,13 +576,13 @@ All those IDs stay reserved — see the numbering rule in the header.
   - tests: the escape pins (intercept smoke: ~24 escape grep hits incl.
     13a-13d; probe: ~45 grep hits) — removed; one 13-style note-delivery
     pin repurposed to the R8 redirect note (the note mechanism stays)
-  - knowledge: the primer `.opencode/agent/research/fuzzy-numword/primer.md`
-    → new `.opencode/agent/knowledge/fuzzy-numword/primer.md` (escape
+  - knowledge: the primer `agent/research/fuzzy-numword/primer.md`
+    → new `agent/knowledge/fuzzy-numword/primer.md` (escape
     section annotated removed 2026-09-25) + the subfolder README (≤20
     lines) in the SAME commit; NOT into AGENTS.md (his ruling)
   - DO-NOT-touch: the pair channel, the map, R1/R2/R6/R7/R8,
     auto_resume / compact_memory / context_recovery / block_transfer
-    plugins, FST code, `.opencode/maintainer/**`
+    plugins, FST code, `maintainer/**`
 - **Acceptance criteria:** standard gate green; zero escape code paths
   (grep-clean for `ESCAPE_RE` / `runEscapeContent` / `kind=escape`); the
   pair/fuzzy pins unchanged; the note mechanism still delivers the R8
@@ -641,11 +641,11 @@ All those IDs stay reserved — see the numbering rule in the header.
 ## #101. (LANDED 2026-09-26, explorer ses_f24bf71beffekwRYMtnlrWy5UG, commit 1081e52; GO 2026-09-25 direct) opencode host map — one-time explorer task: map the installed host internals so planner/worker LOOK UP instead of re-deriving
 - **Problem / evidence:** every task re-pays the derivation cost of opencode host facts (SDK v1/v2 shape, plugin hook surface, session/message/part DB schema, permission system, the compaction/summarize path) — knowledge is gathered per task, not accumulated as a map (maintainer observation 2026-09-25: "we derive the same knowledge often again and again").
 - **Desired outcome:** a durable, dated host map in the knowledge base of the relevant installed opencode internals (with file/line locators); upstream (web) research delegated to the explorer (cost in its context, finding → knowledge base); the planner reads installed types for VERIFICATION only.
-- **Scope (suggested):** explorer task → new `.opencode/agent/knowledge/opencode-plugins/host-map.md`: SDK surface (v1/v2 endpoints from the installed .d.ts), plugin hook registration + ordering, session/message/part DB schema, permission / external_directory mechanics, the compaction/summarize path, tool registration; every entry dated + locator.
+- **Scope (suggested):** explorer task → new `agent/knowledge/opencode-plugins/host-map.md`: SDK surface (v1/v2 endpoints from the installed .d.ts), plugin hook registration + ordering, session/message/part DB schema, permission / external_directory mechanics, the compaction/summarize path, tool registration; every entry dated + locator.
 - **Acceptance criteria:** the map covers the areas above with locators verified against the installed build; the knowledge folder/README rules are followed; planner spot-check: one host question answered from the map alone.
-- **Status:** DONE (explorer 2026-09-26, ses_f24bf71beffekwRYMtnlrWy5UG) — the map is at `.opencode/agent/knowledge/opencode-plugins/host-map.md` (all 6 areas, dated + located; 6 open/unverified items listed there).
+- **Status:** DONE (explorer 2026-09-26, ses_f24bf71beffekwRYMtnlrWy5UG) — the map is at `agent/knowledge/opencode-plugins/host-map.md` (all 6 areas, dated + located; 6 open/unverified items listed there).
 ## #103. (LANDED 2026-09-27, plan27 part 2; was: maintainer instruction in direct fork session ses_f20b3bf14ffedWHp2HGajHmGLN) fix the ctx gauge readout semantics — it lags the live context by one generated turn
-- **Problem / evidence:** the ctx gauge reads `input + cache.read` of the LAST FINISHED assistant step — verified 2026-09-26 by exact matches (61,298 = 78 in + 61,220 cr of the last finished row; 32,507 = the summarizer row). Because it excludes `output`, the readout sits one generated turn below the live context → the documented "≈2 tool-call lag" (AGENTS.md §Context budget, role prompts, compaction guide) is STRUCTURAL, not measurement noise. Full field semantics: `.opencode/agent/knowledge/knowledge_inbox.md` entry 2026-09-27 (S-continuity, fork-robustness, gauge semantics).
+- **Problem / evidence:** the ctx gauge reads `input + cache.read` of the LAST FINISHED assistant step — verified 2026-09-26 by exact matches (61,298 = 78 in + 61,220 cr of the last finished row; 32,507 = the summarizer row). Because it excludes `output`, the readout sits one generated turn below the live context → the documented "≈2 tool-call lag" (AGENTS.md §Context budget, role prompts, compaction guide) is STRUCTURAL, not measurement noise. Full field semantics: `agent/knowledge/knowledge_inbox.md` entry 2026-09-27 (S-continuity, fork-robustness, gauge semantics).
 - **Desired outcome:** the gauge readout ≈ the live context within one tool call (e.g. read `input + output + cache.read` of the last finished step, or the in-flight step's recorded input when available), OR the lag note in all docs is replaced by the verified exact semantics if the maintainer rules the current behavior acceptable.
 - **Acceptance criteria:** after one known small turn, gauge readout differs from the last finished step's S (input+output+cache.read, DB-verifiable) by < 1k tokens; the lag wording in AGENTS.md / role prompts / compaction guide updated to the measured semantics; gauge smoke re-pinned.
 - **Scope (suggested):** FIRST locate the gauge source — it is NOT in the repo (`.opencode/**/ctx_gauge*` glob empty; check the live `opencode.jsonc` tool registration + the referenced file, maintainer domain if host-side); then the one-metric change + doc updates + smoke pin.
@@ -659,10 +659,10 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Status:** LANDED (2026-09-27, plan27 part 2, planner-27 planner-direct — GO per his in-session ruling: "a removal of friction (like the mismatch in #104)"; the new approval-boundary ruling pre-approves agent-usage-facing improvements): option (a) taken — the core `matchAnchorPrefixLines` now MIRRORS the tool's plan25-b anchor-side trim EXACTLY (an anchor typed with the line's indentation matches; an all-whitespace anchor matches nothing) — the S31 equivalence is restored in the trim dimension; probe check 317 re-pinned (`"  beta"` → [2,3,5] + all-whitespace anchor → []) and check 318 gains the `"  Dup"` drift fixture (pre-fix it would have diverged: tool [2,3] vs core []); headers updated; probe 345/345 + intercept_observer smoke 77/77 (hash in the plan27 bookkeeping commit).
 
 ## #105. (open, 2026-09-27, maintainer direction in direct session ses_f1d198b41 — next maintenance pass) research bundle: scan the existing ideas.md + 3 research targets (keepTokens fork effort, v2 migration hardening, compaction-summary customization)
-- **Problem / evidence:** maintainer direction 2026-09-27 (direct session ses_f1d198b41): "on the next maintenance pass the existing ideas.md can be scanned and ideas, research, feedback and if applicable proposals created on it." His `.opencode/maintainer/ideas/ideas.md` carries ~15 dated ideas, several researchable (incl. the keepTokens fork + v2 questions of 2026-09-27_20-08 and the explorer-makeup of 2026-09-26_07-50). His new compaction understanding (same session): the not-kept history is DROPPED (not compressed) — the compaction model only creates the summary — so bit-rot is NOT the limiting factor; the risks are a stale/diluted summary (dragging points addressed long ago) and the optional post-compaction read being skipped (the behavior-changing case).
-- **Desired outcome:** (a) the ideas.md scan is triaged — each entry → idea (`agent_ideas.md`), research task, feedback, or proposal where applicable; (b) the keepTokens fork effort is estimated (adapting the installed opencode to respect the keepTokens setting — via the repo copy in temp); (c) v2: the current "main" branch is identified (nearly 2000 branches) and a hardening plan for our plugins/app for a potential switch is researched (incl. whether v2's summarize already has keepTokens functionality not based solely on opencode.jsonc); (d) compaction-summary customization: using the exact summarize prompt (`.opencode/maintainer/draft/compaction_guide/compaction_prompt.md` + the temp opencode:dev copy), find how the compaction model's summary behavior can be influenced — e.g. drop all content older than 4 compactions, mark new additions with the current compaction iteration (keeps the summary current + trackable); (e) **explorer/researcher makeover** (his GO 2026-09-27; ideas.md 2026-09-26_07-50 + 2026-09-23_05-19): rework the explorer prompt as a researcher / information finder / map creator (APIs, online research, idea mining) — the maintainer will ALSO tighten the explorer's write access in opencode.jsonc (his domain; precaution so online sources cannot influence destructive changes), reuse his existing researcher roles in `.opencode/agent/prompts/roles/` (actionable_researcher, knowledge_researcher, prompt_engineer), and NOTE the explorer prompt is a worker-prompt + explorer-prompt COMBINATION — the basic worker guidelines are always present and must not be repeated in the rework.
-- **Acceptance criteria:** a research doc per target (`.opencode/agent/research/` or per-research folders); the ideas.md scan triage recorded in the summary/NAP with actionable items placed (agent_ideas.md / TODO / proposals); a recommendation (effort phase + estimate) per target; the stale-summary question (d) answers whether the summarize call accepts any instruction/prompt override (measured from the dev copy).
-- **Scope (suggested):** `.opencode/maintainer/ideas/ideas.md` (READ-ONLY), the temp opencode copies (the opencode:dev copy + `C:\Users\Wasiejen\AppData\Local\Temp\opencode\opencode-auto-resume-master` — paths in the host-map knowledge), `.opencode/maintainer/draft/compaction_guide/` (READ-ONLY), `.opencode/plugin/compact_memory.ts` (the summarize call surface), and for (e) `.opencode/agent/prompts/` (the explorer + worker prompt files + the `roles/` folder — read the current combination structure first).
+- **Problem / evidence:** maintainer direction 2026-09-27 (direct session ses_f1d198b41): "on the next maintenance pass the existing ideas.md can be scanned and ideas, research, feedback and if applicable proposals created on it." His `maintainer/ideas/ideas.md` carries ~15 dated ideas, several researchable (incl. the keepTokens fork + v2 questions of 2026-09-27_20-08 and the explorer-makeup of 2026-09-26_07-50). His new compaction understanding (same session): the not-kept history is DROPPED (not compressed) — the compaction model only creates the summary — so bit-rot is NOT the limiting factor; the risks are a stale/diluted summary (dragging points addressed long ago) and the optional post-compaction read being skipped (the behavior-changing case).
+- **Desired outcome:** (a) the ideas.md scan is triaged — each entry → idea (`agent_ideas.md`), research task, feedback, or proposal where applicable; (b) the keepTokens fork effort is estimated (adapting the installed opencode to respect the keepTokens setting — via the repo copy in temp); (c) v2: the current "main" branch is identified (nearly 2000 branches) and a hardening plan for our plugins/app for a potential switch is researched (incl. whether v2's summarize already has keepTokens functionality not based solely on opencode.jsonc); (d) compaction-summary customization: using the exact summarize prompt (`maintainer/draft/compaction_guide/compaction_prompt.md` + the temp opencode:dev copy), find how the compaction model's summary behavior can be influenced — e.g. drop all content older than 4 compactions, mark new additions with the current compaction iteration (keeps the summary current + trackable); (e) **explorer/researcher makeover** (his GO 2026-09-27; ideas.md 2026-09-26_07-50 + 2026-09-23_05-19): rework the explorer prompt as a researcher / information finder / map creator (APIs, online research, idea mining) — the maintainer will ALSO tighten the explorer's write access in opencode.jsonc (his domain; precaution so online sources cannot influence destructive changes), reuse his existing researcher roles in `agent/prompts/roles/` (actionable_researcher, knowledge_researcher, prompt_engineer), and NOTE the explorer prompt is a worker-prompt + explorer-prompt COMBINATION — the basic worker guidelines are always present and must not be repeated in the rework.
+- **Acceptance criteria:** a research doc per target (`agent/research/` or per-research folders); the ideas.md scan triage recorded in the summary/NAP with actionable items placed (agent_ideas.md / TODO / proposals); a recommendation (effort phase + estimate) per target; the stale-summary question (d) answers whether the summarize call accepts any instruction/prompt override (measured from the dev copy).
+- **Scope (suggested):** `maintainer/ideas/ideas.md` (READ-ONLY), the temp opencode copies (the opencode:dev copy + `C:\Users\Wasiejen\AppData\Local\Temp\opencode\opencode-auto-resume-master` — paths in the host-map knowledge), `maintainer/draft/compaction_guide/` (READ-ONLY), `.opencode/plugin/compact_memory.ts` (the summarize call surface), and for (e) `agent/prompts/` (the explorer + worker prompt files + the `roles/` folder — read the current combination structure first).
 - **Status:** open — parts (a)+(b)+(c)+(d) DONE (see per-part notes below); remaining: (e) explorer/researcher makeover.
   **Part (a) DONE (plan28, 2026-09-28, planner-direct):** the ideas.md scan
   is triaged — 4 ideas submitted to `agent_ideas.md` (ctx-gauge
@@ -673,13 +673,13 @@ All those IDs stay reserved — see the numbering rule in the header.
   (full triage in the plan28 summary + the loop folder).
    **Part (b) DONE (plan28, 2026-09-28, explorer-28):** the keepTokens fork
     effort is estimated — research doc
-    `.opencode/agent/research/2026-09-28_keeptokens-fork-effort.md`: change set
+    `agent/research/2026-09-28_keeptokens-fork-effort.md`: change set
     ~11 lines / 6 files (all line refs grep-verified vs the 1.18.32 dev tree),
     phased estimate ~3-5 h wall, plugin-side work = 0 (the body field is already
     sent), recommendation = fork (b) now, scoped Phase 1-3; wait-for-upstream is
     undecidable from the pinned tree.
     **Part (d) DONE (plan30, 2026-09-28, explorer-30):** research doc
-    `.opencode/agent/research/2026-09-28_compaction-summary-customization.md`
+    `agent/research/2026-09-28_compaction-summary-customization.md`
     the summarize call takes NO prompt override in the body
     or via env var; YES via config `agent.compaction.prompt`/`system` (the
     summarizer's system prompt) — and the plugin hooks
@@ -691,7 +691,7 @@ All those IDs stay reserved — see the numbering rule in the header.
     injection first, ~0.5-1 day; hard prompt-replace / text-complete
     stamping only if needed).
     **Part (c) DONE (plan30, 2026-09-28, explorer-30):** research doc
-    `.opencode/agent/research/2026-09-28_v2-migration-hardening.md`
+    `agent/research/2026-09-28_v2-migration-hardening.md`
     mainline = default branch `dev` (no `main` branch), latest
     tag v2.0.18 (2026-09-25, v2 line moving ~1 release/day; v1.18.32 the last
     v1 tag); npm `latest` is STILL 1.18.32 (v2 only on the npm `dev` tag); the
@@ -766,10 +766,10 @@ All those IDs stay reserved — see the numbering rule in the header.
   spec (or a maintainer call if the design touches observable behavior).
 - **Suggested scope:** `.opencode/plugin/auto_resume.ts` (the tick) or
   `.opencode/plugin/compact_memory.ts` (the dispatch path),
-  `.opencode/agent/scripts/db/` (the step-meta read), the research doc in
-  `.opencode/agent/research/`.
+  `agent/scripts/db/` (the step-meta read), the research doc in
+  `agent/research/`.
 - **Status:** RESEARCH DONE (plan32 unit 2, 2026-09-28, explorer-32 —
-  doc `.opencode/agent/research/2026-09-28_silent-limit-stop-detector.md`):
+  doc `agent/research/2026-09-28_silent-limit-stop-detector.md`):
   the detector = a zero-IO `limitStopCheck()` leg in the auto_resume 5s
   tick — signature = last assistant finish `length` + `tokens.total` ≥
   0.99 window + 60 s silence + idle + no NEW COMPACT line since the death
@@ -873,7 +873,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   `parseJsonc`), `.opencode/plugin/tests/gauge_core.smoke.mjs`,
   `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (re-pin only if affected),
   `.opencode/plugin/probes/handover_probe.mjs` (re-pin only if affected),
-  `.opencode/agent/knowledge/knowledge_plugins.md` (one-liner).
+  `agent/knowledge/knowledge_plugins.md` (one-liner).
 - **Status:** LANDED (plan34, 2026-09-28, worker-34
   `worker_Q3S_245K_slow`, code **0c90abe** — gauge.mjs: replicated
   string-aware `parseJsonc` + exported `resolveWindow(modelId)` (config-
@@ -917,7 +917,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   research step.
 - **Suggested scope:** a small capture plugin (`.opencode/plugin/` —
   event hook, append-only writes to a temp log, no mutation),
-  `.opencode/agent/knowledge/opencode-plugins/` (the dated evidence
+  `agent/knowledge/opencode-plugins/` (the dated evidence
   entry), the gauge docs if the verdict is (a). BLOCKED on the
   maintainer's host restart + plugin registration (his domain) — the
   capture plugin only lives in the live process after his restart.
@@ -942,17 +942,17 @@ All those IDs stay reserved — see the numbering rule in the header.
 ## #117. (open, 2026-09-29, direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
 - **Problem / evidence:** post-carve, the agent repo will hold
   per-project bookkeeping flat (root TODO.md / todo_inbox.md /
-  todo_records.md, `.opencode/agent/handover/`, repo docs,
+  todo_records.md, `agent/handover/`, repo docs,
   knowledge/research) — with multi-project use ahead ("other repos
   will be added and worked on in the future"), bookkeeping must be
   organized per project; additionally every .md under
-  `.opencode/agent/` auto-registers as an opencode agent type
+  `agent/` auto-registers as an opencode agent type
   (measured ~90 phantom Task-tool agent entries in the live agent
   list).
 - **Desired outcome:** a per-project bookkeeping layout in the agent
   repo (`projects/Free-Snap-Tap/`: TODO.md, todo_inbox.md,
   todo_records.md, handover/, the repo doc set; the shared agent
-  prompts stay under `.opencode/agent/prompts/`) and the Task-tool
+  prompts stay under `agent/prompts/`) and the Task-tool
   agent list reduced to the real role prompts.
 - **Acceptance:** the layout is in place; ALL path references updated
   in one pass (role prompts, the AGENTS.md copy, `tools/submit.ts`,
@@ -960,7 +960,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   gate green; the moved .md folders no longer appear as Task-tool
   agent types.
 - **Suggested scope:** the agent repo (post-carve),
-  `.opencode/agent/{handover,knowledge,research,memory,scripts}`,
+  `agent/{handover,knowledge,research,memory,scripts}`,
   `.opencode/tools/submit.ts`, `.opencode/tools/loop_log.ts`,
   AGENTS.md (copy protocol), the repo docs.
 - **Status:** IN PROGRESS (2026-09-29, direct ses_f130ae200ffeDRuhAMKmw0N1qE — design settled with the maintainer: five folders (agent/archive/loop/maintainer/proposals) → root, .opencode keeps node_modules/plugin/tools/temp/package*.json/.gitignore/plugin.log, projects/Free-Snap-Tap/{TODO.md, todo_records.md, repo/}, single NAP/todo_inbox/loop (his ruling), global TODO numbering, historical records untouched, his jsonc+AGENTS staged as replacements). Worker spec staged next turn on his GO; his tail = apply staged files + restart + live check. Follow-up: #118 (internal prompts restructure, post-move).
@@ -978,8 +978,8 @@ All those IDs stay reserved — see the numbering rule in the header.
   AGENTS.md updated in one pass (same staging protocol as #117).
 - **Acceptance:** new tree in place; all references updated; agents load
   the correct prompts after a restart (live check); no phantom-agent
-  growth (the .md files stay outside `.opencode/agent` — unaffected
-  post-reorg).
+  growth (the .md files stay outside the `.opencode/` agent-registration
+  namespace — unaffected post-reorg).
 - **Suggested scope:** `agent/prompts/**` (readme/, skill/, agents/,
   repo/), opencode.jsonc (staged replacement), AGENTS.md (copy), active
   prompt self-references.

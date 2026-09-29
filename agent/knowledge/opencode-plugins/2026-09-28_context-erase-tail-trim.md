@@ -21,7 +21,7 @@
   onDelete cascade` (sql.ts:82-89, `PRAGMA foreign_keys = ON` database.ts:31)
   — deleting a message row removes its parts with it. All refs verified
   against the opencode-dev v1.18.32 source copy.
-- **Ref:** research doc `.opencode/agent/research/2026-09-28_context-erase-
+- **Ref:** research doc `agent/research/2026-09-28_context-erase-
   tail-trim.md` (211 lines, commits 4591cd0/c32c5eb; explorer-36
   ses_f192da65effe5No7efgj5VFbb1, plan36); all 4 key refs planner-36
   spot-verified against the source copy 2026-09-28.

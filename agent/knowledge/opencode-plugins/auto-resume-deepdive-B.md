@@ -1,6 +1,6 @@
 # Deep-Dive B — context overflow + error handling (recipe — PLANNER-CONSOLIDATED, 2026-09-21)
 > Base text: RUN 6 (his model map: Q3S) of opencode-auto-resume Phase 2; spec
-> `.opencode/agent/handover/handover_task.md`. Complementing material from RUN 5
+> `agent/handover/handover_task.md`. Complementing material from RUN 5
 > (Q3XS): the §7.1 fit-assessment dimension table + the §8.10 token double-add
 > item. RUN 7_1 (Q2S, run in parallel; its sibling run 7_2 was interrupted to
 > speed it up) independently confirmed every RUN-6 anchor with its own reads.
@@ -11,7 +11,7 @@
 > (anchors 1122, 1288, 2196, 2284, 2574).
 > Source (READ-ONLY, static analysis, NEVER executed):
 > `C:/Users/Wasiejen/AppData/Local/Temp/opencode/opencode-auto-resume-master` (`src/index.ts`, 2767 lines).
-> Map: `.opencode/agent/knowledge/opencode-plugins/auto-resume-map.md` (planner-verified;
+> Map: `agent/knowledge/opencode-plugins/auto-resume-map.md` (planner-verified;
 > every line range used here was re-verified by me with targeted reads / line-anchored
 > greps this session, except the `getUsableContextLimit` start anchor — see §8).
 > Deep-Dive A (planner-verified, same knowledge folder): §3 (timer architecture),

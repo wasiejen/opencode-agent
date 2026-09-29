@@ -12,7 +12,7 @@
 Worker: worker_Q4_140K, session ses_f49eda7a1ffezGm7zQi15jhpBs (2026-09-18).
 Source (READ-ONLY, static analysis, never executed): `C:/Users/Wasiejen/AppData/Local/Temp/opencode/opencode-auto-resume-master`
 All `src/index.ts` line refs below were read/verified in this session unless marked *(map)*.
-Map: `.opencode/agent/knowledge/opencode-plugins/auto-resume-map.md` (Phase 1, planner-verified).
+Map: `agent/knowledge/opencode-plugins/auto-resume-map.md` (Phase 1, planner-verified).
 
 **Topic:** how the plugin keeps a stalled/dead session moving without user clicks,
 without ever fighting the user's ESC.

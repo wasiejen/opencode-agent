@@ -16,9 +16,9 @@ surviving only in historical records.
 
 ## Units (ordered; ONE green checkpoint commit per verified unit; TODO + handover ride the FINAL commit)
 
-**U1 — MOVE.** `git mv` each: `.opencode/agent`→`agent`, `.opencode/archive`→`archive`,
-`.opencode/loop`→`loop`, `.opencode/maintainer`→`maintainer`, `.opencode/proposals`→`proposals`
-(content-neutral renames, zero content edits). Verify: `git status --short` shows
+**U1 — MOVE.** `git mv` each of the five bookkeeping folders from their
+`.opencode/` prefix to the root (`agent/`, `archive/`, `loop/`, `maintainer/`,
+`proposals/`) — content-neutral renames, zero content edits. Verify: `git status --short` shows
 R-status renames only; no root-name clash. NOTE: this spec file itself moves to
 `agent/handover/handover_task.md` — fine, you hold the content.
 
@@ -49,7 +49,7 @@ Temp paths (`.opencode/temp/…`) do NOT move — leave them.
 - Numbering stays GLOBAL: root `TODO.md` header keeps the counter (up to #118, start #119); add a one-line pointer in root `TODO.md`: "FST project entries: `projects/Free-Snap-Tap/TODO.md`"; add a header note in the project TODO: "IDs continue the global sequence — counter in root `TODO.md`".
 
 **U5 — STAGE + VERIFY.**
-- Stage full replacements at root (copy the live file, then edit the COPY — never re-emit): `opencode_reorg_2026-09-29.jsonc` (all `{file:.` pointers `.opencode/agent/…` → `agent/…`; worker/explorer permission paths `.opencode/agent/prompts/**` → `agent/prompts/**` and `.opencode/agent/handover/handover_planner.md` → `agent/handover/handover_planner.md`; the commented looprunner block's paths likewise; `destilled_mem` pointers) and `AGENTS_reorg_2026-09-29.md` (the ~7 path refs).
+- Stage full replacements at root (copy the live file, then edit the COPY — never re-emit): `opencode_reorg_2026-09-29.jsonc` (all `{file:.` pointers `agent/…` → `agent/…`; worker/explorer permission paths `agent/prompts/**` → `agent/prompts/**` and `agent/handover/handover_planner.md` → `agent/handover/handover_planner.md`; the commented looprunner block's paths likewise; `destilled_mem` pointers) and `AGENTS_reorg_2026-09-29.md` (the ~7 path refs).
 - Verification grep gate — old-path hits allowed ONLY in: `todo_records.md`, `todo_inbox.md`, `proposals/**`, `archive/**`, `agent/handover/specs/**` (finished specs), `agent/research/**`, `agent/handover/handover_planner.md` (archived lines):
   `rg --hidden -l -e "\.opencode/(agent|loop|archive|maintainer|proposals)"` → zero hits in `.opencode/plugin/*.ts`, `.opencode/tools/*.ts`, `.opencode/plugin/*.md`, `.opencode/tools/*.md`, `agent/prompts/**`, `agent/knowledge/**`, `agent/memory/**`, `agent/orientation.md`, `agent/scripts/{README,INVENTORY}.md`, `agent/handover/handover_task*.md`, and root `TODO.md` open entries.
 - Run this repo's standard gate per `agent/prompts/repo/repo_commands.md` (probe + smoke suite; re-pins from U2) → green, numbers in the handover.

@@ -36,7 +36,7 @@ Format per the README: **Do** / **Why (evidence)** / **Ref** / **Keys**.
   approach looped on the same list. The 1.6 GB opencode DB is handled only
   through read-only scripts (sesdata.cjs pattern → `dump_session.cjs`).
 - **Ref:** the `handover_task.md` spec of ses_f5d75a58 (committed
-  e8200da); `.opencode/agent/scripts/README.md`.
+  e8200da); `agent/scripts/README.md`.
 - **Keys:** pipeline-only, bounded reads, context budget, dump, corpus,
   pointer, no-loss, compressed sections.
 

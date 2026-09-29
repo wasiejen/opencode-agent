@@ -9,7 +9,7 @@ Provenance: built 2026-09-26 by explorer (session ses_f24bf71beffekwRYMtnlrWy5UG
 from the installed packages under `.opencode/node_modules/@opencode-ai/`
 (`@opencode-ai/sdk` 1.18.29, `@opencode-ai/plugin` 1.18.29 — both measured
 2026-09-26 per task spec), the live DB `C:/Users/Wasiejen/.local/share/opencode/
-opencode.db` (READ-ONLY, via `node .opencode/agent/scripts/db/probe_schema.cjs`),
+opencode.db` (READ-ONLY, via `node agent/scripts/db/probe_schema.cjs`),
 the repo's own plugins (`\.opencode/plugin/*.ts`, `.opencode/tools/*.ts`,
 `opencode.jsonc` read-only), and the vendored files in this folder. One bounded
 upstream fetch: opencode.ai/docs/plugins (last updated Sep 25, 2026) — those
@@ -184,7 +184,7 @@ The "ctx nudge" of the spec = auto_resume's `tool.execute.after` suffix channel
 
 ## 3. DB schema (live DB)
 
-Source: `node .opencode/agent/scripts/db/probe_schema.cjs` run 2026-09-26
+Source: `node agent/scripts/db/probe_schema.cjs` run 2026-09-26
 (script opens the live DB `C:/Users/Wasiejen/.local/share/opencode/opencode.db`
 READ-ONLY). Row counts as of that date.
 
@@ -268,7 +268,7 @@ Config shape (`opencode.jsonc`, read-only, 2026-09-26):
 - A commented-out per-tool permission block L192-210 (`"*": "deny"` + allows
   incl. `loop_log`/`compact_memory`) — INACTIVE.
 - Per-agent `permission` maps (e.g. explorer L265-277): `edit: {"*": "allow" +
-  explicit denies (AGENTS.md, .opencode/agent/prompts/**,
+  explicit denies (AGENTS.md, agent/prompts/**,
   handover/handover_planner.md, .git/**, .github/**)}`, plus
   `task`/`bash`/`webfetch: allow`. The edit-deny list IS the explorer/worker
   allow-list the role prompts reference.

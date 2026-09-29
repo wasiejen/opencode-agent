@@ -226,7 +226,7 @@ knowledge / NAP) is re-stated.
 
 ## MEM-0107 — Worker limit-death forensics live in the dump's step-finish meta; the in-flight write is salvageable from the last message
 - Memory: when a worker session dies mid-task (empty Task result, NO ctx.log
-  COMPACT line for it), dump it (`node .opencode/agent/scripts/db/dump_session.cjs
+  COMPACT line for it), dump it (`node agent/scripts/db/dump_session.cjs
   <sid>`) and read the LAST step-finish meta: `reason=length` + a large
   `output=N` = the per-turn OUTPUT cap cut the generation (a truncated write
   tool call → the file change never lands — the tree stays clean for that
@@ -251,7 +251,7 @@ knowledge / NAP) is re-stated.
   ses_f33ee8eabffeaE0xuwZ7lc65NR — machine pass over per-message bytes
   (17.2k + 16.4k token output planning messages; final step
   reason=length output=23156 total=170238); smoke file untouched in the tree;
-  74KB salvage at .opencode/loop/autorun-2026-09-21_15-33/
+  74KB salvage at loop/autorun-2026-09-21_15-33/
   plan8_worker12_smoke_draft.md.
 - Verified: 2026-09-23
 - Related: MEM-0104 (rebuild from files on a limit failure), MEM-0106

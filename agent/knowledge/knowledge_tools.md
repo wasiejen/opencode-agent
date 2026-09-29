@@ -422,7 +422,7 @@ instructions/protocol — facts that save lookups. Format per the README:
   plan11_78_scope.md; verified 2026-09-23 on
   ses_f31a5dee5ffe1DIBxZzEDZF8aF (58 msgs / 263 parts: 62 tool with
   input/output, 57 step-start, 57 step-finish, 57 reasoning, 30 text).
-- **Ref:** `.opencode/agent/scripts/db/dump_session.cjs`; verify script
+- **Ref:** `agent/scripts/db/dump_session.cjs`; verify script
   (deleted scratch): scratch_78/a.json + b_full + b_lite, 2026-09-23,
   worker ses_f30807a16ffelPQPUBH50wiXBe.
 - **Keys:** dump_session, --json, --lite, lossless, byte-identical,

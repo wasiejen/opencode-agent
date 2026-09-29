@@ -5,7 +5,7 @@ under `.opencode/node_modules/` (bounded greps of
 `@opencode-ai/sdk/dist/gen/sdk.gen.d.ts` and `@opencode-ai/plugin/dist/index.d.ts`);
 verifying session: worker_Q3S_160K, session ses_f3bbdd89affeigE26tm2lka7AT,
 2026-09-21. Design of record:
-`.opencode/proposals/approved/2026-09-21_opencode-auto-resume-plugin.md`.
+`proposals/approved/2026-09-21_opencode-auto-resume-plugin.md`.
 
 ## Installed versions (provenance)
 

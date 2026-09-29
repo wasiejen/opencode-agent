@@ -54,5 +54,5 @@ for a surviving test form). If in doubt what you actually passed: log field
 
 ## Do not
 Write the form into code; invent new delimiters or separators; add words to
-`.opencode/agent/scripts/numword/numwords.json` (one shared map, maintainer
+`agent/scripts/numword/numwords.json` (one shared map, maintainer
 map); treat a log line as a failure of your call.

@@ -7,7 +7,7 @@
 > line ranges below.
 
 Source repo (READ-ONLY, never executed): `C:/Users/Wasiejen/AppData/Local/Temp/opencode/opencode-auto-resume-master`
-Spec: `.opencode/agent/handover/handover_task.md` (Phase 1 feature-index map)
+Spec: `agent/handover/handover_task.md` (Phase 1 feature-index map)
 Built: 2026-09-18, static analysis only. Scope: every `###` section under "What it does"
 (README 5–258) + "Recovery model" (README 269) + "Architecture" (README 295).
 README sections from "Installation" onward are OUT of scope.

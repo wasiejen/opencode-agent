@@ -19,7 +19,7 @@ maintainer: serial-workflow scan + prompt-surface rework).
 - Why it matters: kills a class of otherwise-attractive proposals (parallel
   delegation rules) at the idea stage; effort framing must be wall-clock.
 - Evidence: maintainer comment 1, direct session 2026-09-18 (serial-workflow
-  scan); slot facts also in `.opencode/agent/knowledge/knowledge_tools.md`
+  scan); slot facts also in `agent/knowledge/knowledge_tools.md`
 - Verified: 2026-09-18
 - Related: MEM-0102
 - Review when: multi-slot hardware or provider change
@@ -197,7 +197,7 @@ maintainer: serial-workflow scan + prompt-surface rework).
   the looprunner lesson, MEM-0103); (3) gate: `node .opencode/plugin/probes/
   handover_probe.mjs` must stay green (235/235 PASS measured after the 2026-09-18
   rework). Runtime before/after deltas are UNRESOLVED until the P6 loop_stats draft
-  lands (`.opencode/proposals/draft/2026-09-18_p6-looprun-measurement.md`; the P3
+  lands (`proposals/draft/2026-09-18_p6-looprun-measurement.md`; the P3
   snapshot-tool draft sits beside it, P2 superseded-by-implementation). Prompt/config
   changes activate only at the maintainer's NEXT HOST RESTART — say so on every
   landing.
@@ -205,7 +205,7 @@ maintainer: serial-workflow scan + prompt-surface rework).
   better" claim, and the next session re-derives the same ladder or forgets the
   restart.
 - Evidence: rework session 2026-09-18 (gate run after commit 79beebd; the three
-  drafts in .opencode/proposals/draft/)
+  drafts in proposals/draft/)
 - Verified: 2026-09-18
 - Related: MEM-0102
 - Review when: the P6 harness lands, or the probe total changes (update the 235

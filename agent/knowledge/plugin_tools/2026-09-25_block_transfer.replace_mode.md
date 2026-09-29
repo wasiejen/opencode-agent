@@ -27,7 +27,7 @@
   file and INSERT it into another in one call. For a slot/region replacement
   use REPLACE (or a write-overwrite of the whole file) — NOT PASTE.
 - **Why (evidence):** the 2026-09-24 slot-clobber incident
-  (`.opencode/agent/agent_feedback.md`): an agent used PASTE-as-slot-replacement
+  (`agent/agent_feedback.md`): an agent used PASTE-as-slot-replacement
   and clobbered the slot — PASTE is insert-only, so a two-step
   DELETE+PASTE composition leaves an intermediate state; REPLACE closes that
   gap atomically (one call, no intermediate state, perceptible report).

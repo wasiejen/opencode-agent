@@ -467,7 +467,7 @@ Evidence IDs reference the Findings table below.
   thin procedure on top: (1) take target surface + failure evidence → (2) apply D1–D10
   checklist → (3) produce diff → (4) run the Part 5 small regression set → (5) report delta.
 - **Inputs/artifacts the next agent must receive:** this file; read access to all prompt files
-  (`.opencode/agent/prompts/**`, `AGENTS.md`, `repo_overview.md`), tool/plugin registration
+  (`agent/prompts/**`, `AGENTS.md`, `repo_overview.md`), tool/plugin registration
   sources (descriptions + schemas), and the transcript/log sources for failure mining; a way
   to run the local model on the regression set.
 - **Decisions requiring maintainer approval:** none for the skill itself (knowledge artifact).

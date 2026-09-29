@@ -7,6 +7,7 @@
   "emergencyRecovery": true,
   "emergency_budget": 1,
   "model_budget": {
+    "default": 3,
     "Qwen3.8-27B-Q3XS-160K-MTP": 3,
     "Qwen3.8-27B-Q3S-110K-MTP": 3,
     "Qwen3.8-27B-Q2S-128K-x2": 3,

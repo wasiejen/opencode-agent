@@ -880,7 +880,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   around a busy step — the acceptance) still requires the maintainer's
   restart +   capture-plugin registration (his domain).
 
-## #117. (open, 2026-09-29, direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
+## #117. (LANDED 2026-09-29, worker ses_f12b5172dffeq1r2iwK4QLlWxj; direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
 - **Problem / evidence:** post-carve, the agent repo will hold
   per-project bookkeeping flat (root TODO.md / todo_inbox.md /
   todo_records.md, `agent/handover/`, repo docs,
@@ -904,7 +904,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   `agent/{handover,knowledge,research,memory,scripts}`,
   `.opencode/tools/submit.ts`, `.opencode/tools/loop_log.ts`,
   AGENTS.md (copy protocol), the repo docs.
-- **Status:** IN PROGRESS (2026-09-29, direct ses_f130ae200ffeDRuhAMKmw0N1qE — design settled with the maintainer: five folders (agent/archive/loop/maintainer/proposals) → root, .opencode keeps node_modules/plugin/tools/temp/package*.json/.gitignore/plugin.log, projects/Free-Snap-Tap/{TODO.md, todo_records.md, repo/}, single NAP/todo_inbox/loop (his ruling), global TODO numbering, historical records untouched, his jsonc+AGENTS staged as replacements). Worker spec staged next turn on his GO; his tail = apply staged files + restart + live check. Follow-up: #118 (internal prompts restructure, post-move).
+- **Status:** LANDED 2026-09-29 (worker session ses_f12b5172dffeq1r2iwK4QLlWxj — commit hash in the planner's follow-up bookkeeping commit): the five folders (agent/archive/loop/maintainer/proposals) at root with R-rename history kept, all active code/docs re-pointed in one pass, `projects/Free-Snap-Tap/` built (TODO.md, todo_records.md, repo/), staged replacements at root (`opencode_reorg_2026-09-29.jsonc` + `AGENTS_reorg_2026-09-29.md` — his apply + restart is his tail). Gate: probe 335/346 (11 = #113 env, no venv) + 10/10 smokes + summarize smoke green; grep gate clean (hits = allow-list + maintainer domain + live config only). Follow-up: #118 (internal prompts restructure, post-move).
 
 ## #118. (open, 2026-09-29, direct session — maintainer-stated follow-up; design his) internal restructure of the prompts/ tree post-reorg: move the agent_readme_* files into an `agent/readme/` folder and drop the prefix (e.g. `agent/readme/loop.md`); re-home `prompts/skill/` (dynamically loaded — not a prompt component like agent/role prompts); restructure the `prompts/agents/` layout; decide the placement of the repo content (repo docs)
 - **Problem / evidence:** maintainer's message 2026-09-29 (direct,

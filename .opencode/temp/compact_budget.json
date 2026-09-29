@@ -19,5 +19,18 @@
     "Qwen3.8-27B-Q3S-210K-slow-HQKV": 5,
     "Gemma4-12B-Q4KM-UC-128K": 1,
     "Gemma4-12B-Q4KXL-MTP-128K": 1
-  }
+  },
+  "sessions": {
+    "ses_f12b5172dffeq1r2iwK4QLlWxj": {
+      "count": 1,
+      "updated": "2026-09-29T14:05:51.776Z",
+      "model": "Qwen3.8-27B-Q3S-210K-slow-HQKV"
+    },
+    "ses_f130ae200ffeDRuhAMKmw0N1qE": {
+      "count": 1,
+      "updated": "2026-09-29T14:59:49.733Z",
+      "model": "Qwen3.8-27B-Q3S-210K-slow-HQKV"
+    }
+  },
+  "version": 2
 }

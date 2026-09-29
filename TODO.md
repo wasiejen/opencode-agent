@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #118, new
-entries start at #119 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #119, new
+entries start at #120 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -880,7 +880,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   around a busy step — the acceptance) still requires the maintainer's
   restart +   capture-plugin registration (his domain).
 
-## #117. (LANDED 2026-09-29, worker ses_f12b5172dffeq1r2iwK4QLlWxj; direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
+## #117. (LANDED 2026-09-29, worker ses_f12b5172dffeq1r2iwK4QLlWxj, final 7c5d623; direct session — ruling "per project folder is enough") reorganize the agent-repo bookkeeping into per-project folders (projects/<name>/)
 - **Problem / evidence:** post-carve, the agent repo will hold
   per-project bookkeeping flat (root TODO.md / todo_inbox.md /
   todo_records.md, `agent/handover/`, repo docs,
@@ -904,9 +904,9 @@ All those IDs stay reserved — see the numbering rule in the header.
   `agent/{handover,knowledge,research,memory,scripts}`,
   `.opencode/tools/submit.ts`, `.opencode/tools/loop_log.ts`,
   AGENTS.md (copy protocol), the repo docs.
-- **Status:** LANDED 2026-09-29 (worker session ses_f12b5172dffeq1r2iwK4QLlWxj — commit hash in the planner's follow-up bookkeeping commit): the five folders (agent/archive/loop/maintainer/proposals) at root with R-rename history kept, all active code/docs re-pointed in one pass, `projects/Free-Snap-Tap/` built (TODO.md, todo_records.md, repo/), staged replacements at root (`opencode_reorg_2026-09-29.jsonc` + `AGENTS_reorg_2026-09-29.md` — his apply + restart is his tail). Gate: probe 335/346 (11 = #113 env, no venv) + 10/10 smokes + summarize smoke green; grep gate clean (hits = allow-list + maintainer domain + live config only). Follow-up: #118 (internal prompts restructure, post-move).
+- **Status:** LANDED 2026-09-29 (worker session ses_f12b5172dffeq1r2iwK4QLlWxj — final commit 7c5d623): the five folders (agent/archive/loop/maintainer/proposals) at root with R-rename history kept, all active code/docs re-pointed in one pass, `projects/Free-Snap-Tap/` built (TODO.md, todo_records.md, repo/), staged replacements at root — his apply + the prompts reorg followed (b4adfd1/529bdb5/7b41b5d, he did #118 himself). Gate: probe 335/346 (11 = #113 env, no venv) + 10/10 smokes + summarize smoke green; grep gate clean (hits = allow-list + maintainer domain + live config only); planner re-ran the full gate after his post-landing reorg/link-fix (green) and re-pinned the 10 filename-form smoke pins his full-path replace missed (87a0487). Follow-up: #118 (internal prompts restructure, post-move) — CLOSED, done by the maintainer.
 
-## #118. (open, 2026-09-29, direct session — maintainer-stated follow-up; design his) internal restructure of the prompts/ tree post-reorg: move the agent_readme_* files into an `agent/readme/` folder and drop the prefix (e.g. `agent/readme/loop.md`); re-home `prompts/skill/` (dynamically loaded — not a prompt component like agent/role prompts); restructure the `prompts/agents/` layout; decide the placement of the repo content (repo docs)
+## #118. (closed 2026-09-29 — DONE by the maintainer himself: 529bdb5 prompts reorg (agent_readme_* → agent/readme/readme_*, repo docs → agent/readme/, roles/ → prompts/addition/, prompt_agent_* → agent_*, skill/ in place) + 7b41b5d repo-wide link fix + b4adfd1 staged-config apply; he kept the readme_ prefix — deviation from the requested prefix drop) internal restructure of the prompts/ tree post-reorg: move the agent_readme_* files into an `agent/readme/` folder and drop the prefix (e.g. `agent/readme/loop.md`); re-home `prompts/skill/` (dynamically loaded — not a prompt component like agent/role prompts); restructure the `prompts/agents/` layout; decide the placement of the repo content (repo docs)
 - **Problem / evidence:** maintainer's message 2026-09-29 (direct,
   ses_f130ae200ffeDRuhAMKmw0N1qE): "I only contemplate to move the
   readme/readme_* files into an extra readme folder and remove the
@@ -924,5 +924,11 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `agent/prompts/**` (readme/, skill/, agents/,
   repo/), opencode.jsonc (staged replacement), AGENTS.md (copy), active
   prompt self-references.
-- **Status:** OPEN — after #117 lands. Exact placements = maintainer call;
-  the planner drafts a layout proposal first.
+- **Status:** CLOSED 2026-09-29 — done by the maintainer (see title); the planner's layout-proposal step became unnecessary.
+
+## #119. (open, 2026-09-29, direct session ses_f130ae200ffeDRuhAMKmw0N1qE; found mid-#117 worker run) compact_memory's budget increment rewrites `.opencode/temp/compact_budget.json` as a v2 sessions-only file, destroying all other keys
+- **Problem / evidence:** the #117 worker's self-compaction rewrote the file: the committed v1 config (autoCompact, saturationThreshold, outputReserve, keepTokens, keepMessages, emergencyRecovery, emergency_budget, model_budget map) was replaced by a v2 `{version:2, sessions:{…}}` file (measured via git diff; the rewrite landed 2026-09-29 14:05Z). Consequence: the worker's model cap silently fell to the DEFAULT 1 mid-run (its next compaction attempt was refused: "model_budget default (cap 1), used 1/1") and the planner session's injected budget line dropped 5 → 1.
+- **Desired outcome:** the budget increment is read-modify-write — all pre-existing keys survive; only the `sessions` map changes (additively).
+- **Acceptance:** a compaction event leaves a `compact_budget.json` diff with ONLY the sessions block changed; a compact_memory smoke check asserts non-session-key survival across an increment on a pre-seeded v1-style config (model_budget + emergency_budget present).
+- **Suggested scope:** the budget-increment write path in `.opencode/plugin/compact_memory.ts` (+ `compaction_core.ts` if shared), `.opencode/plugin/tests/compact_memory.smoke.mjs` (survival pin).
+- **Status:** OPEN (pre-approved class — plugin/tool fix, no observable behavior change beyond not losing the config). Interim: the file was manually restored to the committed config + the worker's session entry (this session; rides the planner's bookkeeping commit).

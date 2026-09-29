@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #117, new
-entries start at #118 (closed IDs stay reserved in `todo_records.md`).
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #118, new
+entries start at #119 (closed IDs stay reserved in `todo_records.md`).
 Closed entries live in `todo_records.md` (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
 
@@ -963,5 +963,25 @@ All those IDs stay reserved — see the numbering rule in the header.
   `.opencode/agent/{handover,knowledge,research,memory,scripts}`,
   `.opencode/tools/submit.ts`, `.opencode/tools/loop_log.ts`,
   AGENTS.md (copy protocol), the repo docs.
-- **Status:** OPEN — awaiting scheduling (his call; ideally
-  inside/before the Phase-2 move window; needs a spec pass first).
+- **Status:** IN PROGRESS (2026-09-29, direct ses_f130ae200ffeDRuhAMKmw0N1qE — design settled with the maintainer: five folders (agent/archive/loop/maintainer/proposals) → root, .opencode keeps node_modules/plugin/tools/temp/package*.json/.gitignore/plugin.log, projects/Free-Snap-Tap/{TODO.md, todo_records.md, repo/}, single NAP/todo_inbox/loop (his ruling), global TODO numbering, historical records untouched, his jsonc+AGENTS staged as replacements). Worker spec staged next turn on his GO; his tail = apply staged files + restart + live check. Follow-up: #118 (internal prompts restructure, post-move).
+
+## #118. (open, 2026-09-29, direct session — maintainer-stated follow-up; design his) internal restructure of the prompts/ tree post-reorg: move the agent_readme_* files into an `agent/readme/` folder and drop the prefix (e.g. `agent/readme/loop.md`); re-home `prompts/skill/` (dynamically loaded — not a prompt component like agent/role prompts); restructure the `prompts/agents/` layout; decide the placement of the repo content (repo docs)
+- **Problem / evidence:** maintainer's message 2026-09-29 (direct,
+  ses_f130ae200ffeDRuhAMKmw0N1qE): "I only contemplate to move the
+  prompts/agent_readme_* files into an extra readme folder and remove the
+  agent_readme_ prefix ... same with prompt/skill folder (dynamically
+  loaded — not a part of a prompt like agent prompts or role prompts).
+  generally will restructure the prompts/agents folder a bit after
+  movement. unsure of the best placement for repo content though."
+- **Desired outcome:** a tidier prompts/ tree with stable paths; all
+  `{file:}` pointers in opencode.jsonc + prompt self-references +
+  AGENTS.md updated in one pass (same staging protocol as #117).
+- **Acceptance:** new tree in place; all references updated; agents load
+  the correct prompts after a restart (live check); no phantom-agent
+  growth (the .md files stay outside `.opencode/agent` — unaffected
+  post-reorg).
+- **Suggested scope:** `agent/prompts/**` (readme/, skill/, agents/,
+  repo/), opencode.jsonc (staged replacement), AGENTS.md (copy), active
+  prompt self-references.
+- **Status:** OPEN — after #117 lands. Exact placements = maintainer call;
+  the planner drafts a layout proposal first.

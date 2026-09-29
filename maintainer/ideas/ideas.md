@@ -5,6 +5,8 @@
 //   - e.g. research: you (the planner) can go trough feedback, maintainer folder files, archive log and identify problems/opportunities/things-to-optimise and research them
 // this is no priority sorting ... ideas are loosely grouped in topics but might contain crossrelevant snippets
 
+2026-09-29_20-31: second git identidy for the agents? planner + worker`? or just agent?
+
 2026-09-29_19-47:
 - should i git crush the whole opencode_test branch of FST?
 - remove branches fst_work, fst_work2

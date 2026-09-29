@@ -968,7 +968,12 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Suggested scope:** `.opencode/tools/context_trim.ts` (new),
   `.opencode/plugin/tests/context_trim.smoke.mjs` (new),
   `.opencode/plugin/probes/handover_probe.mjs` (new section), this entry.
-- **Status:** spec committed (plan39, `agent/handover/handover_task.md`);
-  worker `worker_Q3S_slow` pending launch. (The worker updates this status →
-  LANDED + the code commits' hashes in its final commit; the final hash
-  rides the planner's follow-up bookkeeping commit.)
+- **Status:** LANDED (2026-09-30, worker-39 ses_f10a06089ffeVKusSGiE20Hjw9) —
+  code commits `2d4480e` (tool + fixture smoke 20/20) + `48aab9f` (probe S33,
+  checks 346-351). Gate: probe 352 = 341 PASS + the 11 known #113 env-fails
+  (136-146); all 11 smokes green (context_trim 20/20). Registration snippet
+  in the handover (opencode.jsonc = the maintainer's domain). Live acceptance
+  pending: `report` is read-only → the planner live-accepts it after the
+  maintainer's restart + registration; `tail` = a throwaway session, the
+  maintainer's call. (The final hash rides the planner's follow-up
+  bookkeeping commit.)

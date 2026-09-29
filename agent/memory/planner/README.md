@@ -92,6 +92,13 @@ exact wording):
 
 ## Agent-specific write policy
 
+Inbox entries (`memory_inbox.md`, the `submit(memory=...)` channel, 2026-09-29
+approved proposal): `submit(memory=...)` appends role-scoped entries to
+`memory_inbox.md` (same folder). At the maintenance pass, CURE each uncured
+inbox entry into `memory.md` (full entry, per the write policy below) +
+`destilled_mem.md` (one-liner) in the same commit, then mark the inbox line
+cured (the same inbox-then-cure rhythm as `knowledge_inbox.md`).
+
 Create a memory when:
 - a unit closed with a durable, verified lesson that the prompts / knowledge
   base / NAP do not already carry authoritatively (check all three BEFORE

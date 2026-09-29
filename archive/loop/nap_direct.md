@@ -1425,3 +1425,34 @@ section into the Compressed archive (details beyond what git + TODO hold):
   stays live in the meantime — the Phase-2 physical move remains a
   separate between-sessions window); (2) gate re-baseline next session
   closes #113; (3) TODO #117 scheduling (his call).
+
+## 2026-09-29 — excess of the new-root direct session (ses_f130ae200ffeDRuhAMKmw0N1qE, rounds 1-3b)
+- Round 2: env-var question (%OC_AGENT% to survive root moves) answered NO — the
+  tree is ALREADY root-portable (measured: zero hardcoded repo-root paths in live
+  code; everything resolves from context.directory/cwd/script-relative; the only
+  machine-absolute surface = opencode.jsonc references+external_directory,
+  auto-discovered at the root; machine paths already carry env overrides
+  OPENCODE_DB/LOG/EXE, TEMP/TMP). Invariant to codify in active docs during the
+  reorg: "repo paths resolve against the workspace root; machine-absolute paths
+  get an env override with a sane default".
+- Round 3: his prompts-internal restructure ideas = TODO #118 (he did it
+  himself: 529bdb5 — agent_readme_* → agent/readme/readme_*, repo docs →
+  agent/readme/, roles/ → prompts/addition/, prompt_agent_* → agent_*; he kept
+  the readme_ prefix — deviation from the requested prefix drop).
+- Round 3 residual old-path surface (flagged, accepted): probe-internal
+  directive fixtures (handover_probe.mjs ~L2451/L2941 — self-consistent,
+  passing) + deactivated copies (dead code) + historical records per the
+  allow-list. Untracked `session.json` at root (1 MB session export — his
+  debug artifact; opencode not showing the session after restart) DELETED per
+  his OK.
+- Round 3b: live-process staleness until his restart (live submit/loop_log wrote
+  at the OLD paths until restart — manual append to the new on-disk paths
+  meanwhile; the worker hit this and relocated; my pre-compaction dump failed
+  on the old script path — the compaction proceeded WITHOUT a dump, resolved
+  at restart). Post-restart live acceptance PASSED: Task-tool agent list = the
+  9 real roles only (no phantoms — the .opencode/agent md files no longer
+  auto-register); live submit fired post-restart landed at the NEW path
+  agent/agent_feedback.md; gauge line normal (restored budget file live — 4 left
+  after my 1 use); .opencode/ back to exactly the 7 native entries. This
+  session's injected prompt still carried pre-reorg paths (context built
+  pre-restart) — fresh sessions load the new layout.

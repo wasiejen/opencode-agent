@@ -931,4 +931,19 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** the budget increment is read-modify-write — all pre-existing keys survive; only the `sessions` map changes (additively).
 - **Acceptance:** a compaction event leaves a `compact_budget.json` diff with ONLY the sessions block changed; a compact_memory smoke check asserts non-session-key survival across an increment on a pre-seeded v1-style config (model_budget + emergency_budget present).
 - **Suggested scope:** the budget-increment write path in `.opencode/plugin/compact_memory.ts` (+ `compaction_core.ts` if shared), `.opencode/plugin/tests/compact_memory.smoke.mjs` (survival pin).
-- **Status:** OPEN (pre-approved class — plugin/tool fix, no observable behavior change beyond not losing the config). Interim: the file was manually restored to the committed config + the worker's session entry (this session; rides the planner's bookkeeping commit).
+- **Status:** LANDED 2026-09-29 (direct session ses_f11b625d3ffeio02fDzjzypbN2,
+  planner-direct — pre-approved class): `readBudget` in
+  `.opencode/plugin/compaction_core.ts` now returns the parsed object AS-IS
+  (every pre-existing top-level key survives — the file is shared with the
+  compaction config) and only normalizes the `sessions` map (absent / wrong-
+  typed → fresh empty map); the `version` bump to 2 still lands on the first
+  write (recordSuccess). Root cause confirmed: the committed config file had
+  NO `sessions` block → the old lenient read fell through to the fresh v2
+  object → the first increment rewrote the whole file. Pin: compact_memory
+  smoke +2 (80/80) — the config-only file (autoCompact / saturationThreshold /
+  outputReserve / keepTokens / keepMessages / emergencyRecovery /
+  emergency_budget / model_budget, no sessions block) survives an increment
+  with ONLY the sessions block changed + the version bump. Gate: probe = 335
+  PASS + 11 #113 env, all 10 smokes green. Live note: the running host process
+  carries the old code until the maintainer's next restart (the next real
+  compaction under the new build shows the config keys surviving).

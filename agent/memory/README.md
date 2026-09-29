@@ -57,7 +57,9 @@ Use this lifecycle:
 7. RECALL: retrieve memory by meaning, category, keyword, or record ID only
    when relevant to the current task.
 8. CURATE: periodically merge duplicates, mark stale entries, and remove
-   memories that no longer belong.
+   memories that no longer belong — including curing uncured entries of the
+   role's `memory_inbox.md` (the `submit(memory=...)` channel) into proper
+   records.
 
 Do not append a new entry merely because a new session occurred.
 

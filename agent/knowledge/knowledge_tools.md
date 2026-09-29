@@ -527,3 +527,7 @@ instructions/protocol — facts that save lookups. Format per the README:
   07-41, planner-34 08-19/08-20, planner-35 08-29); every miss costs a
   CORRECT- line.
 - **Keys:** loop_log, auto-fill, context.agent, role, model, CORRECT.
+
+## submit gains a `memory` channel — the role-scoped memory inbox (2026-09-29, approved proposal 2026-09-28_submit-memory-channel.md)
+- **Do:** role-scoped verified lessons/experience go to `submit(memory=...)` → `agent/memory/<role>/memory_inbox.md` (`<role>` = the agent id BEFORE the first `_`, e.g. `planner_Q3S_245K_slow` → `planner`; fallback `agent`); repo-general facts stay on `submit(knowledge=...)`. The inbox FILE + role FOLDER are auto-created (ruling 3); the curation lane (the role's memory README write policy) cures inbox entries into `memory.md` + `destilled_mem.md` at the maintenance pass, then marks the line cured. The memory-entry format guideline (type/confidence/scope/evidence/review trigger) lives in the tool description — not in the prompts.
+- **Keys:** submit, memory channel, memory_inbox, role prefix, curation.

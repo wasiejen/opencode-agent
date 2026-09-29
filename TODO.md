@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #119, new
-entries start at #120 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #120, new
+entries start at #121 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -947,3 +947,28 @@ All those IDs stay reserved — see the numbering rule in the header.
   PASS + 11 #113 env, all 10 smokes green. Live note: the running host process
   carries the old code until the maintainer's next restart (the next real
   compaction under the new build shows the config keys surviving).
+
+## #120. (open, 2026-09-29, planner ses_f110d8065ffeCVoCfNeTcba0wU; proposal `proposals/approved/2026-09-28_context-trim-tool.md` — his "1. + 2. are approved" + round-2 "go :-)") context_trim tool: `report` (read-only window map) + `tail` (validated tail_start_id rewrite) — NO turns mode
+- **Problem / evidence:** a live session cannot drop middle context without
+  compaction (the host only drops the head, summary-retaining); the research
+  doc `agent/research/2026-09-28_context-erase-tail-trim.md` proved the tail
+  lever (the host rewrites `tail_start_id` in place, compaction.ts:461-466;
+  the window guard message-v2.ts:568; the DB is re-read per step).
+- **Desired outcome:** an agent-facing tool with two modes — `report`
+  (effective window state + per-message rows with tool targets + a trim
+  dry-run) and `tail` (a fail-closed-validated `tail_start_id` rewrite,
+  floor 6); Unit 2 follow-up = the plugin-side post-compaction tail-set
+  (zero fork).
+- **Acceptance:** fixture-DB smoke ALL PASS (valid cases + the 5 rejection
+  cases); a new probe section (baseline 346 → 346+N, the 11 #113 env-fails
+  excluded); the standard gate green (other smokes unchanged, ruff F=0,
+  pytest per #113 status); the registration snippet in the handover
+  (opencode.jsonc = the maintainer's domain); the live DB NEVER written
+  (smokes = fixture only).
+- **Suggested scope:** `.opencode/tools/context_trim.ts` (new),
+  `.opencode/plugin/tests/context_trim.smoke.mjs` (new),
+  `.opencode/plugin/probes/handover_probe.mjs` (new section), this entry.
+- **Status:** spec committed (plan39, `agent/handover/handover_task.md`);
+  worker `worker_Q3S_slow` pending launch. (The worker updates this status →
+  LANDED + the code commits' hashes in its final commit; the final hash
+  rides the planner's follow-up bookkeeping commit.)

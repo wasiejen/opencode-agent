@@ -26,7 +26,7 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 
 ## Docs & misc (open)
 
-## #124. (open, 2026-09-30, plan45 — curated from todo_inbox worker-45 new-hire test; pre-approved class — agent-usage friction removal) block_transfer return-line / description clarity: the 3 new-hire friction findings
+## #124. (LANDED 2026-09-30, plan46 worker-46; curated from todo_inbox worker-45 new-hire test; pre-approved class — agent-usage friction removal) block_transfer return-line / description clarity: the 3 new-hire friction findings
 - **Problem / evidence:** the plan45 new-hire test (worker-45
   ses_f0fad3537ffe6BVZbeAUPPkoxi — battery 10/10 PASS, 0 escapes, the tool
   source never read) found 3 description/return gaps (full text in
@@ -51,8 +51,26 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 - **Suggested scope:** `.opencode/tools/block_transfer.ts` (description +
   possibly the PASTE return line), `.opencode/plugin/tests/
   block_transfer.smoke.mjs` (re-pin if behavior changes).
-- **Status:** OPEN — pre-approved (agent-usage friction removal); a small
-  build unit (worker-delegable).
+- **Status:** LANDED 2026-09-30 (plan46, worker-46 — description-only
+  build call, zero behavior change, no re-pins): new RETURN LINES
+  paragraph in the `block_transfer` description (per-mode range semantics:
+  PASTE = buffer's own 1..N; REPLACE = the replaced old span, N = old lines
+  removed; MOVE/CUT/DELETE = the source span; WRITE = the pre-call span,
+  N = new text lines; COPY/APPEND = resolved span / selected refs / text
+  1..N; `first:` always the NEW/extracted content's first line, capped
+  ~40 chars; `- buffer: M` = the count AFTER the op; destination landing =
+  after the targetMarker line or appended at EOF — the return line names
+  the file but not the insertion line) + the bounded non-unique error form
+  (match count + FIRST 3 match line numbers — all of them when 3 or fewer,
+  " …" appended when more) + buffer-on-failure note (a failed COPY/CUT/
+  APPEND leaves NO buffer; a later PEEK/MAP returns the empty-buffer
+  error) + the optional item 4 notes (PEEK head == tail overlap on small
+  buffers; residual blank-line adjacency after MOVE/CUT/DELETE). Gate
+  green: probe 352/352 + bt smoke 131/131 + sandbox 64/64 + all other
+  smokes ALL PASS (the description-only change broke no pin — the
+  sandbox-smoke description pins re-verified green in the same run).
+  (Commit hash recorded in the planner's follow-up bookkeeping commit —
+  no self-reference.)
 
 ## #123. (closed 2026-09-30, plan45 maintenance pass — scripted sweep + batch re-point + one-line annotations) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
 - **Problem / evidence:** the 2026-09-29 carve (filter-repo rewrite)

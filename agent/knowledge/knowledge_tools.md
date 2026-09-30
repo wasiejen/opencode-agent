@@ -536,3 +536,19 @@ instructions/protocol — facts that save lookups. Format per the README:
 ## submit gains a `memory` channel — the role-scoped memory inbox (2026-09-29, approved proposal 2026-09-28_submit-memory-channel.md)
 - **Do:** role-scoped verified lessons/experience go to `submit(memory=...)` → `agent/memory/<role>/memory_inbox.md` (`<role>` = the agent id BEFORE the first `_`, e.g. `planner_Q3S_245K_slow` → `planner`; fallback `agent`); repo-general facts stay on `submit(knowledge=...)`. The inbox FILE + role FOLDER are auto-created (ruling 3); the curation lane (the role's memory README write policy) cures inbox entries into `memory.md` + `destilled_mem.md` at the maintenance pass, then marks the line cured. The memory-entry format guideline (type/confidence/scope/evidence/review trigger) lives in the tool description — not in the prompts.
 - **Keys:** submit, memory channel, memory_inbox, role prefix, curation.
+
+## node child_process on win32: `execSync` shells via cmd.exe — a `^` in git rev syntax is escaped (2026-09-30, plan45)
+- **Do:** for git checks from node scripts use `execFileSync('git',
+  [args])` (no shell) — never `execSync` with an arg containing `^`
+  (e.g. `<hash>^{commit}`): cmd.exe treats `^` as an escape character, so
+  the argument arrives mangled and git fails (measured plan45: the first
+  #123 sweep run via execSync reported ALL 340 cited hashes DEAD — known-
+  alive post-carve hashes included).
+- **Why (evidence):** plan45 #123 sweep — execSync run: 33 alive / 307 dead
+  with known-alive hashes dead; the execFileSync re-run: 34 alive / 307
+  dead with the known-alive set correct.
+- **Ref:** the sweep script of the plan45 run (scratch
+  `C:\Users\Wasiejen\AppData\Local\Temp\opencode\hash_sweep.mjs`); TODO
+  #123 close note.
+- **Keys:** node, execSync, execFileSync, cmd.exe, caret escape, git
+  cat-file, win32, hash sweep.

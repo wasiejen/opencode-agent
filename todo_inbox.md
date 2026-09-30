@@ -182,10 +182,13 @@ Stale DoD baseline in plan31 spec (handover_task.md): the gate list says `submit
 
 ## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
 block_transfer description: PASTE/REPLACE/WRITE return lines report the source span or buffer range plus a `first:` field, but never the destination insertion line, and the `first:` label mixes old-span range with new-content first line — document the exact return shape (evidence: plan45/worker-45 battery, scratch `.opencode/temp/bt_newhire_plan45/`).
+- **curated 2026-09-30 (planner-45, plan45 maintenance pass):** folded into TODO #124 (block_transfer return-line / description clarity unit — item 1).
 
 ## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
 block_transfer description: the non-unique-anchor error message is good (marker + file + match count + line numbers) but the description says "match count + the first match line numbers" — state explicitly whether the error lists ALL match lines or only the first N (plan45/worker-45: 2 matches → both listed).
+- **curated 2026-09-30 (planner-45, plan45 maintenance pass):** folded into TODO #124 (item 2).
 
 ## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
 block_transfer description: document buffer creation on failure — a failed COPY/CUT (anchor-resolution error) leaves no buffer behind (PEEK → "buffer is empty"); the description is silent on it (observed plan45/worker-45, scratch `.opencode/temp/bt_newhire_plan45/`).
+- **curated 2026-09-30 (planner-45, plan45 maintenance pass):** folded into TODO #124 (item 3).
 

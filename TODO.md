@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #123, new
-entries start at #124 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #124, new
+entries start at #125 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -25,6 +25,34 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
 FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 — FST behavior / code / docs / env entries live there)
 
 ## Docs & misc (open)
+
+## #124. (open, 2026-09-30, plan45 — curated from todo_inbox worker-45 new-hire test; pre-approved class — agent-usage friction removal) block_transfer return-line / description clarity: the 3 new-hire friction findings
+- **Problem / evidence:** the plan45 new-hire test (worker-45
+  ses_f0fad3537ffe6BVZbeAUPPkoxi — battery 10/10 PASS, 0 escapes, the tool
+  source never read) found 3 description/return gaps (full text in
+  `todo_inbox.md` 2026-09-30_05-25 entries; scratch evidence
+  `.opencode/temp/bt_newhire_plan45/`): (1) PASTE/REPLACE/WRITE returns
+  report the source span / buffer range + a `first:` field but never the
+  destination insertion line, and `first:` mixes old-span range with
+  new-content first line; (2) the non-unique-anchor error lists ALL match
+  lines (2 → both) but the description says "the first match line numbers"
+  — ambiguous at scale; (3) a failed COPY/CUT leaves no buffer (PEEK →
+  "empty") — the description is silent. Same run, same unit (optional):
+  the PEEK head/tail overlap note on small buffers + the blank-line
+  adjacency after MOVE/DELETE (residual blank line stays).
+- **Desired outcome:** a new hire can predict every return line and error
+  from the description alone; PASTE reports where it landed (description
+  or return — the build's call inside the DoD).
+- **Acceptance criteria:** description updated (per-mode return-shape
+  block: range semantics + `first:` label + the PASTE destination line +
+  buffer-on-failure + all-match-line error listing); if any return line
+  changes, the bt smoke pins re-pinned (131/131 + 64/64 baseline) + the
+  standard gate green.
+- **Suggested scope:** `.opencode/tools/block_transfer.ts` (description +
+  possibly the PASTE return line), `.opencode/plugin/tests/
+  block_transfer.smoke.mjs` (re-pin if behavior changes).
+- **Status:** OPEN — pre-approved (agent-usage friction removal); a small
+  build unit (worker-delegable).
 
 ## #123. (closed 2026-09-30, plan45 maintenance pass — scripted sweep + batch re-point + one-line annotations) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
 - **Problem / evidence:** the 2026-09-29 carve (filter-repo rewrite)

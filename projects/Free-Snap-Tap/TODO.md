@@ -41,41 +41,6 @@ Moved out of the root `TODO.md` on 2026-09-29 (#117 per-project split).
 
 ## 45. (closed 2026-09-10, see todo_records.md) — Doc errors found adjacent to the #3 rework: WIKI invocation "evaluate to False" claim, WIKI `+a, +b` rebind notation, README "he first" (2026-09-10)
 
-## FST environment (open)
+## FST environment (closed)
 
-## #113. (open, 2026-09-28, plan29 planner gate run — ENVIRONMENT break, maintainer call) the repo venv's python.exe is broken — the base interpreter it points at is gone, so the standard gate's pytest + the probe's numword python checks are unrunnable
-- **Problem / evidence:** the plan29 gate run (2026-09-28) measured:
-  `./.venv/Scripts/python.exe -c "print(...)"` fails with
-  `No Python at '"C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312\python.exe"'`
-  (the error text carries an embedded quote). `.venv/pyvenv.cfg` points
-  `home`/`executable` at `C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312`
-  (ONE level above the repo root); that `python312` dir exists but holds
-  only `Doc` — `python.exe` is ABSENT. Consequence measured in the same
-  run: the probe's 11 numword python checks (136-146, `runPyW2n` over
-  VENV_PY) all FAIL with that message; the standard gate's pytest half is
-  unrunnable (the venv is the only python with the repo deps — bare PATH
-  `python` = 3.14 without deps per repo_commands.md). The 2026-09-27
-  baselines (probe 345, pytest 459+1w) predate the break.
-- **Desired outcome:** the venv's python works again (re-pointed or
-  rebuilt by the maintainer — repo_commands.md forbids agents from
-  reinstalling the venv from scratch); then one full standard-gate re-run
-  to re-establish the baselines (probe total + pytest count).
-- **Acceptance:** `./.venv/Scripts/python.exe -c "print(...)"` works;
-  standard gate green (probe self-annotated total + pytest count) with the
-  fresh counts recorded in the NAP Standing baselines.
-- **Suggested scope:** maintainer domain (the venv + the base python
-  install); the planner re-baselines on the next gate run.
-- **Status:** OPEN — ENVIRONMENT FIXED (2026-09-29, round 2): the venv
-  is REBUILT on 3.12.9 (verified 02:00 — `pyvenv.cfg` → the proper
-  `AppData\Local\Programs\Python\Python312` install, 459 tests collect)
-  after an interim 3.14.3 replacement (the original venv had been
-   REPLACED, not repaired — the `..\python312` base dir was gone from
-   disk; the 3.14 slip = the bare-`python`/`py` default, `py -0` marks
-   3.14 as `*`). 2026-09-30 plan39 (worker-39): the full standard-gate
-   re-run was measured in the FST workspace — ruff F=0, pytest 459
-   passed 1 warning (planner spot-verified: 459 tests collect in 0.19s).
-   RESIDUAL: the agent-repo probe's 11 numword checks (136-146) still
-   env-fail — post-split its VENV_PY points at the agent repo's own
-   `REPO_ROOT/.venv`, which no longer exists; re-pointing it at the FST
-   venv (or running the probe from the FST workspace) is a small
-   pre-approved follow-up (next session — this is what closes #113).
+## #113. (closed 2026-09-30, plan40 planner-40 — full text in todo_records.md) — the repo venv's python.exe was broken (base interpreter gone) — venv REBUILT on 3.12.9 by the maintainer (2026-09-29) + the agent-repo probe's VENV_PY re-pointed at the FST venv (fallback, agent-repo venv preferred if present) — probe 352/352 green, FST gate 459+1w + ruff F=0 re-established

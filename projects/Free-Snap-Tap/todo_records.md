@@ -486,3 +486,30 @@ One-line record: fixed in the adjacent commit of the #3 docs rework — WIKI [Su
   maintainer-side per #4).
 
 ## 11. General contradiction prevention disabled (XXX 241016-1101) — CLOSED (maintainer ruling D1-A, 2026-09-15) — kept OFF as an intentional decision; decision comment below the untouched pin; pinning tests unchanged.
+
+## 113. The repo venv's python.exe was broken — the base interpreter it points at is gone (2026-09-28, plan29 planner gate run — ENVIRONMENT break, maintainer call) — CLOSED (2026-09-30, plan40 planner-40) — venv REBUILT on 3.12.9 by the maintainer (2026-09-29) + the agent-repo probe's VENV_PY re-pointed at the FST venv (the agent repo has no .venv of its own post-split; the agent-repo venv is still preferred if present) — probe 352/352 (the 11 env-fails 136-146 resolved) + FST gate 459 passed 1 warning + ruff F=0 re-established.
+
+- **Problem / evidence:** the plan29 gate run (2026-09-28) measured:
+  `./.venv/Scripts/python.exe -c "print(...)"` fails with
+  `No Python at '"C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312\python.exe"'`
+  (the error text carries an embedded quote). `.venv/pyvenv.cfg` points
+  `home`/`executable` at `C:\Users\Wasiejen\Projects\OpenCodeProjects\Free-Snap-Tap\python312`
+  (ONE level above the repo root); that `python312` dir exists but holds
+  only `Doc` — `python.exe` is ABSENT. Consequence measured in the same
+  run: the agent-repo probe's 11 numword python checks (136-146, `runPyW2n`
+  over VENV_PY) all FAIL with that message; the FST standard gate's pytest
+  half is unrunnable (the venv is the only python with the repo deps — bare
+  PATH `python` = 3.14 without deps per repo_commands.md). The 2026-09-27
+  baselines (probe 345, pytest 459+1w) predate the break.
+- **Resolution trail:** (1) the maintainer REPLACED the venv with a fresh
+  3.14.3 build (2026-09-29), then REBUILT it on 3.12.9 (verified 02:00 —
+  `pyvenv.cfg` → the proper `AppData\Local\Programs\Python\Python312`
+  install, 459 tests collect). (2) plan39 (worker-39) measured the full FST
+  standard gate in the FST workspace: ruff F=0, pytest 459 passed 1
+  warning. (3) RESIDUAL (this close): the agent-repo probe's `VENV_PY`
+  pointed at the agent repo's own `REPO_ROOT/.venv`, which no longer
+  exists post-split — the probe's S17 python twin (numword `w2n` check,
+  pure stdlib) now resolves agent-repo-venv-first with the FST workspace
+  venv as fallback (`C:\Users\Wasiejen\Repos\Free-Snap-Tap\.venv\Scripts\
+  python.exe`, 3.12.9 verified). Probe re-run: **352/352 PASS** (was 341
+  + the 11 env-fails 136-146).

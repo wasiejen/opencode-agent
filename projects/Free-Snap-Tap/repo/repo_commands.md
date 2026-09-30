@@ -7,8 +7,8 @@ handover paths, the gauge) stays at `agent/readme/repo_commands.md`.
 - **Python**: bare `python` on PATH = 3.14, NO repo deps (fake-starts, then
   import-fails). Always `./.venv/Scripts/python.exe` (same for
   `./.venv/Scripts/ruff.exe`) — both verified working under bash.
-  (#113: the venv's python.exe is currently broken — the base interpreter it
-  points at is gone; environment break, maintainer call.)
+  (#113 closed 2026-09-30: the venv was rebuilt on 3.12.9 after the
+  2026-09-28 base-interpreter break.)
 - **Env var**: `FST` = repo root **with trailing `\`** — `$FSTtests`
   composes (the trailing backslash joins into the next path segment).
 

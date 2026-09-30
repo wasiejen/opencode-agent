@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #120, new
-entries start at #121 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #121, new
+entries start at #122 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -24,6 +24,8 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 — FST behavior / code / docs / env entries live there)
 
 ## Docs & misc (open)
+
+## #121. (closed 2026-09-30, plan40 planner-direct — inline, doc-only) two stale refs in the repo_commands.md parts post-#117/#113 — fixed: (a) `agent/readme/repo_commands.md`'s FST-commands pointer now points at `projects/Free-Snap-Tap/repo/repo_commands.md` (was a self-reference); (b) the FST part's "(#113: the venv's python.exe is currently broken …)" note updated to the 3.12.9 close
 
 ## 64. (closed 2026-09-16, plan9 planner-direct; finding 2026-09-16, worker-13 inbox) — stale "84/84" probe baseline in `.opencode/plugin/README.md` → replaced by the curate-don't-duplicate pointer to the probe's self-annotated header total (the #58 convention)
 

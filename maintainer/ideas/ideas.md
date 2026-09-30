@@ -5,7 +5,71 @@
 //   - e.g. research: you (the planner) can go trough feedback, maintainer folder files, archive log and identify problems/opportunities/things-to-optimise and research them
 // this is no priority sorting ... ideas are loosely grouped in topics but might contain crossrelevant snippets
 
-2026-09-29_23-19: compaction model as filters option in llama-swap? no reload needed and thus no cache invaliadation. can i set checkpoints to 0 ro presevere the planner and worker session in the limited ram cache?
+# 2026-09-30: llama.cpp server router
+- instead of using llama-swap directly use the integrated router function of llama.cpp to dynamically switch models .. and because everythign is offered with the same llama.cpp call and based on a config, no realoading or startig llama.cpp with other model is necessary.
+  - thus the cache stay intact while switching models (llama-swap mainly losing cache bacause the llama.cpp backend is called anew with each model change and thus the state is lost on exit of prior llama.cpp)
+  - but makes usage of multiple forks of llama.cpp impossible
+    - currently in use is beellama fork (max context window bought with slower prefill)
+    - alternative but not in use right now is ik_llama (+5% inference, + 33% prefill, but 20-25k less context)
+    - unclear of each of the forks has the same router functionality as mainline or if they have changed it in some ways.
+- would mainly save the cross model switching cost and compaction model checkpoint usage
+  - no additional benefit
+  - downsides are 
+    - less flexibility than llama-swap
+    - no other fork of llama.cpp or other backends like vllm or SGlang usable
+    - completely new config
+
+# 2026-09-30: use headings in TODO please
+- you bombard me :-) with e.g. "... Todo #109/#98/#104 ..." and i simply cannot follow along easily without reading the todo. a short heading for each like the "# <X> compact trim" is completely sufficient :-)
+
+# 2026-09-30: add vision to my agent
+- offloading into ram and not in gpu vram
+  - will be slow
+  - to see how much it will nontheless influence vram
+  - mmproj just to add - so testing for me in the backend
+- goal?: to have my agent also be able to look at picture or diagrams he found online or to self-check GUIs he might be building/adapting/optimizing in the future.
+  - but offloaded into ram it will be slooooww (not tested yes howww slow :_) )
+
+# 2026-09-30: FST config file check
+- big goal or ambition would be to have a gui that allows to configure each focus group
+  - first start would be to have a function or a set of functions that actually check the config for errors before the actual execution? that is just a guess.
+    - i imagine that having a function to pipe the confid through independent of the complete program would allow an easier check - but doubling of logic and needs to be updated alongside each change in code
+      - so a pure syntactic check? to make it easier to spot wrong syntax in the file
+  - another step would be to just have a window with multiple taps (for each focus group or set of focus groups) with a text window for editing and some displays
+    - what ready made texteditor with good abilities like text coloring/higlighing, multiselect are opensource and could be used for this? handling like sublime text or zed editor to make text handling easy?
+    - or do we just offer a window to select the current config file and check live without loading and direct the user to the wrong parts via display in the small gui? so the user can still use their own editor? also to include showing which key (and associated vk_code/vk_code_keys from vk_codes.py) is acutallly pressed at the moment to identify keys more easily and use them
+- GRAND goal/vision would be to have an easy to use drag and drop like interface to create the config in an easy manner and with support to show connectings and interactions via colorcoding (e.g. which macro use the same variables and thus influence each other)
+  - but might be just impractical
+  - it might be enough to offer better support for diagnosing config error or hidden interconnections
+    - atm it is very free to config everything one wants but thus free to introduce a lot of hidden bugs in behavior - forgotten suppression, interacting variables, unknown internal workings of how repeat functions work and other unknown interactions one has to have built the program to know how it works
+      - but even i do not remember all the details anymore - thus noone but the code is knowing what is actually happens :_)
+
+# 2026-09-30: FST logging
+- put in inbox already
+- how do instrument the whole repo to be helpful in finding causes of laggs, documenting errors and make it easier to accociate them to certain areas of code
+  - how best to control the logging to now overwhelm me?
+    - logg into different files dependent on a given start argument or loglevel via start argument?
+
+# 2026-09-30: goal overview for each Repo 
+- to help agent decide what is allowed to change, what direction the whole repo is going and what he can freely research to improve it. also what proposals are most likely to be useful
+- e.g. FST
+  - updates always in opencode_test so it is always checked out and can be directly tested by me
+  - One goal is: to always find and resolve cases that would lead to input lag - e.g. and failing part should never impede general responsiveness by blocking something or by causing laggs when it fails
+    - first start of any repeat can be a bit laggy and causing laggs in mouse movement or in general in whole execution of the computer
+  - another goal is: to keep wiki and readme up to date to make it easier for publishing new versions
+    - if successfully rework of the program is done and a new version e.g. v1.3.0 created and tested it will be published on github as a new release
+    - as test then may grant access to issue-tracker of github to find problems and maybe fix them directly
+- e.g Wacom Touch Driver (not yet given acces to)
+  - to add Pen support
+  - improve responsiveness and configurability via the GUI
+    - rotation of input options 
+  - based not only for one but multiple connected wacom touch pads
+  - have to give opentabletdrive repo as inspiration source
+    - (might have to add vision module to let my agent see the pictures of the GUI?) 
+      - # 2026-09-30: add vision to my agent
+
+# 2026-09-29: compaction model as filters option in llama-swap? 
+- no reload needed and thus no cache invaliadation. can i set checkpoints to 0 ro presevere the planner and worker session in the limited ram cache?
 - all JSON request values accepted in StripParam of llama-swap but checkpoints is not an option that can be set.
   - thus the idea is infeasable
 
@@ -17,8 +81,8 @@
 - merge into opencode branch or async branch?
 
 (stached into ideas to not let it be the first and only item in priority - so the agent can work more freely)
-# 3 3 destillation of knowledge
-2026-09-29_19-25
+# 2026-09-25: destillation of knowledge
+
 - find a good place to stash all the session and filter the ones out that are mostly empty
   - with the folder movement of root, the existing connection of opencode to this repo is broken and thus (for me at least) i can no longer see the old sessions. might be a non issue for you but just a headsup in case it is a problem.
 

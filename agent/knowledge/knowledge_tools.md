@@ -212,6 +212,11 @@ instructions/protocol — facts that save lookups. Format per the README:
   session's model (the default cross-compact runs on the target's own model,
   so the flush-budget rule of item (2) applies again). Factual source:
   `maintainer/draft/compaction_guide/full_guide.md` §12 Corrections.
+- **Repo identity (2026-09-30, plan44 — cures the plan43 re-derivation
+  friction):** the backend repo is `mostlygeek/llama-swap` on GitHub (owner
+  guesses 404 — do not re-derive); the example config now lives at
+  `docs/config.example.yaml` in that repo. Backend-config research starts
+  there (see `agent/research/2026-09-30_llama-swap-compaction-model.md`).
 - **Correction (2026-09-24, prompt wave task d):** item (3) — "NEVER use
   keepTokens/keepMessages 0" — is stale: `keepTokens` has been REMOVED from
   `compact_memory` (commit 7f253ea); a LOW `keepMessages` is legitimate — the

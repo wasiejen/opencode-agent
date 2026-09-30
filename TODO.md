@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #122, new
-entries start at #123 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #123, new
+entries start at #124 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -24,6 +24,24 @@ Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance /
 FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 — FST behavior / code / docs / env entries live there)
 
 ## Docs & misc (open)
+
+## #123. (open, 2026-09-30, plan44) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
+- **Problem / evidence:** the 2026-09-29 carve (filter-repo rewrite)
+  invalidated some commit hashes; status lines still cite them. Measured
+  DEAD revisions: `cbbebf8` (#106), `0c90abe` (#115), `12e3262` (#114),
+  `44c50a2` (R3 import fix); their post-carve equivalents (`7a9e291`,
+  `60f031b`, `fea1cbb`) are OK. TODO.md carries ~70 7-hex hash citations;
+  the NAP compressed-archive lines are affected too.
+- **Desired outcome:** every cited hash either re-pointed to the
+  post-carve equivalent or annotated pre-carve — a future `git cat-file -e`
+  never dead-ends.
+- **Acceptance criteria:** a scripted sweep (`git cat-file -e` over every
+  cited hash) reports zero dead revisions, or each dead one carries a
+  one-line annotation; TODO.md + todo_records.md + NAP archive covered.
+- **Suggested scope:** TODO.md, todo_records.md,
+  `agent/handover/handover_planner.md` (compressed archive), loop-folder
+  summaries (read-only annotation if stale).
+- **Status:** OPEN — maintenance-pass item (iter-45 queue).
 
 ## #121. (closed 2026-09-30, plan40 planner-direct — inline, doc-only) two stale refs in the repo_commands.md parts post-#117/#113 — fixed: (a) `agent/readme/repo_commands.md`'s FST-commands pointer now points at `projects/Free-Snap-Tap/repo/repo_commands.md` (was a self-reference); (b) the FST part's "(#113: the venv's python.exe is currently broken …)" note updated to the 3.12.9 close
 

@@ -4,13 +4,12 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
 
 
 
-## Current session — autorun, 2026-09-30 (ses_f0f80b612ffeneJo8m83pxjJoy, Qwen3.8-27B-Q3S-210K-slow-HQKV, 210k window)
-- plan47 (iter 47, unit-4 restart branch after planner-46 `action: restart`): idle lane — TODO #86 (DEFERRED worker audit) RAN: explorer-47 (ses_f0f768f33ffe79T7V9zKQGH6ao, explorer_Q3S 170K) read-only scan of all plugin/tool/script code — 11 findings (2 low stale-ids, 3 dup-config, 5 magic-numbers, 1 stale-ref; 0 dead code — 125 exports machine-verified used; 0 stale ses_* in non-test code) → 4 todo_inbox clusters; planner verified from files (git + handover + spot re-reads). Planner-direct fixes same session: 61cd612 (2 med findings — BUSY_TIMEOUT_MS exported from gauge.mjs + imported in context_trim.ts; the ctx_watchdog nudge-rung ladder named RUNG_* constants; smokes context_trim 20/20 + gauge_core ALL PASS + auto_resume 147/147) + f7f4100 (the explorer's observation 2 — the repo_map/repo_testgate/repo_gotchas index lines in ALL 3 role prompts re-pointed: agent-repo map = repo_overview.md, per-project doc sets under `projects/<name>/repo/`; the planner roster ref → root opencode.jsonc). Remaining 7 LOW findings + 2 doc-only duplicates → TODO #125 (OPEN, pre-approved cleanup batch); #86 CLOSED.
-- State: `git status` = only the pre-existing live `maintainer/ideas/ideas.md` modification (the 23-19 entry — researched plan43, NAP-only observation; still untouched). Triage at start: inbox_planner empty, no live markers, priority.md active list empty, todo_inbox fully cured, agent_ideas all addressed, agent_feedback entries all triaged.
-- Queue for the next session (ordered): (1) TODO #125 LOW cleanup batch (small, pre-approved — inline or one small worker unit); (2) an idle-lane pass (everything else clear is maintainer-blocked); (3) context_trim Unit 2 spec — HELD-ON-Unit-1-live-acceptance (his restart + registration brings compact-message items 1-3 + #106/#109/#122 live: accept both sets then); (4) compact-message-delivery item 4 — OPEN, awaiting his ruling (proposal at `proposals/2026-09-30_compact-message-delivery.md`); (5) live-acceptance residue (#109 / #115 / #119 / #120U1 / #91 / #99 / #98) — PENDING natural occurrence / his domain.
-## Compressed archive (one line each
+## Current session — autorun, 2026-09-30 (ses_f0f585f4fffeFhm4NY5KTCy3ju, Qwen3.8-27B-Q3S-210K-slow-HQKV, 210k window)
+- plan48 (iter 48, unit-4 restart branch after planner-47 `action: restart`): idle lane per plan47 queue — TODO #125 (#86-audit LOW batch) LANDED inline planner-direct: (1) loop_log.ts description example → live id Qwen3.8-27B-Q3S-170K; (2) submit.ts comment example ×2 → planner_Q3S; (3)–(6) auto_resume.ts inline literals named (LIMIT_STOP_WINDOW_RATIO 0.99 / LIMIT_STOP_IDLE_MS 60_000 / MAX_LOG_BYTES_DEFAULT 20MiB / LOG_TAIL_BYTES_DEFAULT 2MiB / TICK_MS_DEFAULT 5000); (7) the OVERLAP-ERA CAVEAT reworded to the retired-looprunner state (commented out in the live opencode.jsonc); (8) agent/scripts/README.md machine-path single-source-of-truth note (deliberate per-script duplication, canonical values named). Zero behavior change; gate green: probe 352/352 + all 11 smokes (auto_resume 147/147, submit 31/31, loop_log 69/69, context_trim 20/20, compact 82/82, bt 131/131+64/64, intercept 78/78, ctx_recovery 17/17, ctx_gauge 3/3, gauge_core, context_recovery). Baseline fix: the Standing submit count was stale 23/23 → 31/31 (post-plan39 memory channel — plan39 had already recorded 31/31). Triage at start: inbox empty, no live markers, priority list empty; live-state data point 12: injected ctx line notAvailable vs self-gauge works (live process still pre-context_trim — his restart pending).
+- Queue for the next session (ordered): (1) an idle-lane pass (everything clear is maintainer-blocked); (2) context_trim Unit 2 spec — HELD-ON-Unit-1-live-acceptance (his restart + registration brings compact-message items 1-3 + #106/#109/#122 live: accept both sets then); (3) compact-message-delivery item 4 — OPEN, awaiting his ruling (proposal at `proposals/2026-09-30_compact-message-delivery.md`); (4) live-acceptance residue (#109 / #115 / #119 / #120U1 / #91 / #99 / #98) — PENDING natural occurrence / his domain.
+## Compressed archive (one line each)
+  - 2026-09-30 autorun (ses_f0f80b612ffeneJo8m83pxjJoy, Qwen3.8-27B-Q3S-210K-slow-HQKV, 210k window) — plan47: #86 audit RAN (explorer-47 ses_f0f768f33ffe79T7V9zKQGH6ao, 11 findings, 4 todo_inbox clusters) + 2 med findings fixed inline (61cd616 — BUSY_TIMEOUT_MS export + RUNG_* nudge-ladder constants) + 3-prompt index stale-ref fix (f7f4100) + TODO #125 filed + #86 CLOSED — details: loop folder plan47_summary.md + git 3a506f3/926453e/61cd616/f7f4100/8423098
   - 2026-09-30 autorun (ses_f0f987895ffe9XriKa6gVZLn5s, Qwen3.8-27B-Q3S-210K-slow-HQKV, 210k window) — plan46: TODO #124 LANDED (worker-46 ses_f0f92d48effeA7eBbo01NDAaSM, description-only — RETURN LINES paragraph + bounded non-unique error + buffer-on-failure + item-4 notes; gate 352/352 + 131/131 + 64/64 worker-measured AND planner re-run green; 3fc0b27/dd01dbd/c8b6c8d) + opportunistic 13 stale `agent_readme_*` prompt-ref fixes (5c8d612) — details: loop folder plan46_summary.md + git 3fc0b27..6723ed5
-## Compressed archive (one line each
 
 Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve rewrote the entire history — every 7-hex hash cited below from before 2026-09-29 is a dead revision in the post-carve repo (historical text, not a live pointer). Measured remaps: cbbebf8→7a9e291 (#106), 0c90abe→60f031b (#115), 12e3262→fea1cbb (#114), 44c50a2→9e91878 (R3 import fix). The 4 pairs are re-pointed inline; the remaining dead citations are annotated by this line.
   - 2026-09-30 autorun (ses_f0fc7d5daffeVv6fOuHGVh6Nt2, Qwen3.8-27B-Q3S-210K-slow-HQKV, 210k window) — plan45: MAINTENANCE PASS (iter-45 counter trigger: #123 CLOSED — 340 7-hex cites swept, 307 dead / 33 alive, 4 pairs re-pointed + header annotations; records counter fixed; baselines re-verified vs plan42 gate; inboxes triaged; live data point 11) + idle-lane bt NEW-HIRE test (worker-45: 10/10 PASS, 0 escapes, 7 frictions → TODO #124) verified from files — details: loop folder plan45_summary.md + git e87e380/205c65a/534bea0
@@ -142,8 +141,7 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
   each save (normally triggered by the git add + commit). Pending changes
   ride the copy + this NAP's pending list. (Full entry: knowledge_inbox.md
   2026-09-27_23-40.)
-- Baselines (re-verified 2026-09-30 plan45, against the plan42 measured
-  gate): agent-repo standard gate =
+- Baselines (re-verified 2026-09-30 plan48): agent-repo standard gate =
     probe **352/352 PASS** (346 + S33's 6 context_trim checks post-plan39;
     the 11 #113 env-fails 136-146 RESOLVED — the probe's `VENV_PY` is now
     agent-repo-venv-first / FST-workspace-venv-fallback, the 3.12.9 venv)
@@ -152,7 +150,8 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
 auto_resume 147/147 (post-plan42 age-sweep pin +1), intercept_observer
 78/78,
     block_transfer 131/131 + 64/64, ctx_gauge 3/3 + gauge_core, loop_log
-    69/69, submit 23/23, context_trim 20/20 (post-plan39); the per-suite
+     69/69, submit 31/31 (post-plan39 memory channel), context_trim
+     20/20 (post-plan39); the per-suite
     counts are in each smoke's own readout — no total kept here. FST
     standard gate (separate repo, venv rebuilt on 3.12.9 — #113 CLOSED)
     = pytest **464 passed + 1 warning (the known #10 coroutine

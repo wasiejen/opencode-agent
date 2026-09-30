@@ -148,7 +148,7 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 
 ## Plugin & gauge (open)
 
-## #125. (open, 2026-09-30, planner-47; pre-approved class — behavior-unchanged cleanup) #86 audit LOW findings batch: 7 inline/stale code refs + 2 doc-only duplicates
+## #125. (closed 2026-09-30, plan48, planner-48 inline — all 8 items LANDED, zero behavior change; gate probe 352/352 + all 11 smokes green) #86 audit LOW findings batch: 7 inline/stale code refs + 2 doc-only duplicates
 - **Problem / evidence:** the #86 read-only audit (explorer-47 ses_f0f768f33,
   plan47 — handover in `agent/handover/handover_task_to_planner.md`, full
   per-finding detail in the `plan47 TODO #86 cluster A-D` todo_inbox entries,
@@ -182,9 +182,17 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
   values are unchanged).
 - **Suggested scope:** the files named above; worker-delegable as one small
   cleanup unit (spec names each literal + its replacement).
-- **Status:** OPEN — the 2 med findings of the same audit are already
-  LANDED (61cd616); the #86 entry itself is closed by this entry + the
-  landed fixes.
+- **Status:** CLOSED 2026-09-30 (plan48, planner-48, inline): (1)
+  loop_log.ts example → Qwen3.8-27B-Q3S-170K; (2) submit.ts comment
+  example ×2 → planner_Q3S; (3)–(6) auto_resume.ts literals named
+  (LIMIT_STOP_WINDOW_RATIO / LIMIT_STOP_IDLE_MS / MAX_LOG_BYTES_DEFAULT
+  / LOG_TAIL_BYTES_DEFAULT / TICK_MS_DEFAULT); (7) the OVERLAP-ERA
+  CAVEAT reworded to the retired-looprunner state; (8) the
+  agent/scripts/README.md machine-path single-source-of-truth note.
+  No smoke pin changes (values unchanged); ruff/pytest do not apply in
+  this repo (post-#117 split — the standard gate = probe + smoke
+  suite). The 2 med findings of the same audit were already LANDED
+  (61cd616).
 
 ## 74. (closed 2026-09-27, direct session ses_f20d1b39… — backend no longer on ik_llama, the offending PR was reverted — non-issue; full text in todo_records.md) — **Write tool fails on long content payloads on this host**
 

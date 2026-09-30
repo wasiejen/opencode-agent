@@ -6,8 +6,8 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
 
 ## Current session — direct, 2026-09-30 (ses_f0e129deeffeqmM5rc8mpnTY2Q, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window)
 - Post-restart live-acceptance pass (his restart landed; his commit 28fbd3a commented + approved both proposals + the llama-swap research; the model swapped 210K→235K across the restart; his uncommitted budget-file key swap 210K→235K committed in my bookkeeping):
-  - `context_trim` IS in the live toolset (Unit 1 registration verified) but the first live `report` call FAILED: `db-error: no in-process writable sqlite backend` (the live host has no in-process sqlite; the gauge works via the proven `spawn-sqlite3` cascade) → **TODO #126** + spec `agent/handover/handover_task.md` + **worker LAUNCHED (worker_Q3S, this session)**; live re-acceptance = his next restart.
-  - His rulings handled: compact-message item 4 = IN FAVOR (his interference question answered: NO blocking problem — the appended text is a labeled intent-hint, the successor rebuilds reality from committed state first) → **TODO #127** + spec `agent/handover/specs/2026-09-30_compact-message-unit4.md` (queue). Cross-override = option (b) WITH the cap clarification (cross spendable total ≤ model_budget + emergency_budget = same as self → the second slot at cap+1 RETRACTED; part 3 excluded — no ruling) → **TODO #128** + spec `agent/handover/specs/2026-09-30_compact-memory-cross-override.md` (queue) + verified-fact correction recorded in the spec (cap-0 self emergency is ALREADY allowed today — the proposal's "CPU denied for all" line was inaccurate; flagged to him). The llama-swap 23-19 direction = CLOSED (his comment: not feasible, no further action — research doc `--comment` → `comment`).
+  - `context_trim` IS in the live toolset (Unit 1 registration verified) but the first live `report` call FAILED: `db-error: no in-process writable sqlite backend` (the live host has no in-process sqlite; the gauge works via the proven `spawn-sqlite3` cascade) → **TODO #126** + spec `agent/handover/handover_task.md` + **worker DONE + planner-verified** (worker_Q3S ses_f0d49cb6; `a43311a` code + `a276ef1` close — my targeted re-run: context_trim smoke 25/25 rc 0; the handover's gate numbers match the spec DoD: probe 352/352 + all 11 smokes); live re-acceptance = his next restart (the planner runs a live `report` first; the build lands with that restart).
+  - His rulings handled: compact-message item 4 = IN FAVOR (his interference question answered: NO blocking problem — the appended text is a labeled intent-hint, the successor rebuilds reality from committed state first) → **TODO #127** + spec `agent/handover/specs/2026-09-30_compact-message-unit4.md` (queue). Cross-override = option (b) WITH the cap clarification (cross spendable total ≤ model_budget + emergency_budget = same as self → the second slot at cap+1 RETRACTED; part 3 INCLUDED per his LIVE comment "part 3 can be implemented as well") → **TODO #128** + spec `agent/handover/specs/2026-09-30_compact-memory-cross-override.md` (queue) + verified-fact correction recorded in the spec (cap-0 self emergency is ALREADY allowed today — the proposal's "CPU denied for all" line was inaccurate; flagged to him). The llama-swap 23-19 direction = CLOSED (his comment: not feasible, no further action — research doc `--comment` → `comment`).
   - The compact-message-delivery proposal still carries a `--wip` marker → left UNTOUCHED (its status rides the spec + this NAP; flagged to him — the cross-override proposal had no wip and was updated in place).
   - Live-acceptance residue verified from logs: #109 = NO limit-stop incident since the build (no -WARNING/exhausted lines); #91/#98 pending a compaction event (natural occurrence); #115 still not discriminating (config == name marker); #106/#119/#75 already PASS (plan41); #99 = his fork test; #122 = FST live testing (his domain).
   - Live-state data point 14: after the model swap the injected budget suffix transiently read `1 compactions left` (stale row model 210K, unlisted after his key swap → the default-1 fallback, `compaction_core.ts:211`) while the self-gauge read 5 (the row model updated to 235K after the first new-process prompt) — surfaced to him with the suggestion of a `default` key in `model_budget` (or keeping old names).
@@ -148,7 +148,8 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
   each save (normally triggered by the git add + commit). Pending changes
   ride the copy + this NAP's pending list. (Full entry: knowledge_inbox.md
   2026-09-27_23-40.)
-- Baselines (re-verified 2026-09-30 plan48): agent-repo standard gate =
+- Baselines (re-verified 2026-09-30 post-#126, planner re-run): agent-repo
+    standard gate =
     probe **352/352 PASS** (346 + S33's 6 context_trim checks post-plan39;
     the 11 #113 env-fails 136-146 RESOLVED — the probe's `VENV_PY` is now
     agent-repo-venv-first / FST-workspace-venv-fallback, the 3.12.9 venv)
@@ -157,8 +158,9 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
 auto_resume 147/147 (post-plan42 age-sweep pin +1), intercept_observer
 78/78,
     block_transfer 131/131 + 64/64, ctx_gauge 3/3 + gauge_core, loop_log
-     69/69, submit 31/31 (post-plan39 memory channel), context_trim
-     20/20 (post-plan39); the per-suite
+      69/69, submit 31/31 (post-plan39 memory channel), context_trim
+      25/25 (post-#126 spawn-sqlite3 fallback +5 forced-spawn pins;
+      planner re-run 2026-09-30); the per-suite
     counts are in each smoke's own readout — no total kept here. FST
     standard gate (separate repo, venv rebuilt on 3.12.9 — #113 CLOSED)
     = pytest **464 passed + 1 warning (the known #10 coroutine
@@ -170,8 +172,11 @@ auto_resume 147/147 (post-plan42 age-sweep pin +1), intercept_observer
   schema; the summarizer model resolves per `agent.compaction.model` (set in
   opencode.jsonc) ELSE from the target session's own config (live 2026-09-22:
   worker-11 dispatch resolved to `Qwen3.8-27B-Q3S-110K-MTP` = the target's
-  own model; compaction applied, session resumed clean). CPU models are
-    denied (cap 0). The SELF path was BROKEN on that build (race: queued
+   own model; compaction applied, session resumed clean). CPU models:
+     cap 0 — the NORMAL path is denied, but one EMERGENCY self-compact
+     IS still possible (verified 2026-09-30 at compact_memory.ts:424-426;
+     the #128 spec carries the same fact for the cross path). The SELF
+     path was BROKEN on that build (race: queued
     message delivers before compaction applies → cache invalidation →
     hard-limit stall) — held by the maintainer's temp fix 0f192e5 (the
     queued-message promptAsync commented out, verified live 2026-09-22 14:42);

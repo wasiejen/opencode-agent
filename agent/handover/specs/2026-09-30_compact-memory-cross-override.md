@@ -17,7 +17,8 @@ emergency_budget` — THE SAME AS SELF.
 cross. the same as when self-compacting." → the proposal's original Part 1
 (which also allowed a cross second slot at `count == cap+1` via the
 emergency arg → cap+2) is RETRACTED: cross at `count == cap+1` stays
-REFUSED. Part 3 (the `ovr` audit token) is EXCLUDED (no ruling).
+REFUSED. Part 3 (the `ovr` audit token) is INCLUDED (maintainer live
+comment 2026-09-30: "part 3 can be implemented as well").
 
 ## Verified facts (measured at spec time, 2026-09-30 — do not re-derive)
 
@@ -62,6 +63,12 @@ REFUSED. Part 3 (the `ovr` audit token) is EXCLUDED (no ruling).
   double consumption).
 - Denial keeps ZERO side effects (no increment, no COMPACT line) — the
   invariant stays.
+- Part 3 (audit token, zero behavior): when a CROSS dispatch SUCCEEDS with
+  pre-dispatch `count == cap` (the override slot is consumed — the target's
+  normal cap was already spent), the verified-success COMPACT line
+  (`compaction_core.ts:319-332`) gains the `ovr` token (next to the existing
+  `emergency` suffix). Self dispatches and cross dispatches at
+  `count < cap` get NO token.
 
 ## DO-NOT-touch
 
@@ -82,9 +89,12 @@ REFUSED. Part 3 (the `ovr` audit token) is EXCLUDED (no ruling).
    dispatched (0 < effCap 1), then refused at 1.
 2. The tool description + the `compaction_core.ts` header updated with the
    ruling wording (cross total = self total).
-3. `compact_memory.smoke.mjs`: 82/82 + the new pins green; probe 352/352
-   (re-pin the compact section IF it pings the refusal wording); all other
-   smokes green (standard gate).
+3. `compact_memory.smoke.mjs`: 82/82 + the new pins green — incl. the
+   Part-3 pins: the verified-success COMPACT line of a cross@cap dispatch
+   carries `ovr`; a cross dispatch at `count < cap` and the self emergency
+   dispatch do NOT; probe 352/352 (re-pin the compact section IF it pings
+   the refusal wording or the COMPACT line shape); all other smokes green
+   (standard gate).
 4. Checkpoint commits per verified unit; the TODO #128 status + the handover
    summary ride the FINAL commit (naming the pending planner-side doc
    parts).

@@ -1181,7 +1181,10 @@ All those IDs stay reserved — see the numbering rule in the header.
   unchanged); the gate allows `count < effCap`, else the existing emergency
   branch (`count == cap && emergency`). Cross at `count == cap+1` stays
   REFUSED — the cross spendable total = cap+1 = the same as self (no second
-  slot). Part 3 (the `ovr` audit token) EXCLUDED (no ruling). Part 2 docs:
+  slot). Part 3 (the `ovr` audit token) INCLUDED (his live comment
+  2026-09-30: "part 3 can be implemented as well" — a successful cross
+  dispatch at pre-dispatch `count == cap` gains the `ovr` token on the
+  COMPACT line). Part 2 docs:
   the tool description + the `compaction_core.ts` budget header (worker
   part); the planner-prompt line + the AGENTS.md staged copy = the planner's
   bookkeeping (workers have no edit access to `agent/prompts/**`).

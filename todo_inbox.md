@@ -180,3 +180,12 @@ Unresolved source-tree quirk found while tracing the keepTokens change set (open
 ## 2026-09-28_04-25 worker_Q3S_245K_slow ses_f1a403aecffeP658IC4yNdEFdr
 Stale DoD baseline in plan31 spec (handover_task.md): the gate list says `submit 20/20` but the committed submit smoke currently reports 23/23 (green, untouched by the #114 task). Not a regression — just the spec number predates the smoke growth. No action beyond awareness; close at curation.
 
+## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
+block_transfer description: PASTE/REPLACE/WRITE return lines report the source span or buffer range plus a `first:` field, but never the destination insertion line, and the `first:` label mixes old-span range with new-content first line — document the exact return shape (evidence: plan45/worker-45 battery, scratch `.opencode/temp/bt_newhire_plan45/`).
+
+## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
+block_transfer description: the non-unique-anchor error message is good (marker + file + match count + line numbers) but the description says "match count + the first match line numbers" — state explicitly whether the error lists ALL match lines or only the first N (plan45/worker-45: 2 matches → both listed).
+
+## 2026-09-30_05-25 worker_Q3S ses_f0fad3537ffe6BVZbeAUPPkoxi
+block_transfer description: document buffer creation on failure — a failed COPY/CUT (anchor-resolution error) leaves no buffer behind (PEEK → "buffer is empty"); the description is silent on it (observed plan45/worker-45, scratch `.opencode/temp/bt_newhire_plan45/`).
+

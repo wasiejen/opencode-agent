@@ -140,7 +140,6 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
   roles); the gemma speedup is nullified by cache invalidation on every
   model switch (the planner re-prefills per delegation) → gemma only for
   preliminary scanning. The `--defer` stays.**
-- an option is also; fuzzy name resolution search on read or when searching in files. or num_to_word autoreplace as intercept plugin on hook.execute.before to combine both and make tools calls more reliable even with bitshifts in numbers. worthwhile thing to research. but dont save research in your nap. make e.g. a agent/research folder if you want. see ideas #5 #6 #7
 
 ## 39. (closed 2026-09-10, see todo_records.md) — Looprunner prompt v2 proposal — applied + smoke test clean (2026-09-10)
 

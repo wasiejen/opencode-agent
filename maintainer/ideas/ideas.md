@@ -5,6 +5,10 @@
 //   - e.g. research: you (the planner) can go trough feedback, maintainer folder files, archive log and identify problems/opportunities/things-to-optimise and research them
 // this is no priority sorting ... ideas are loosely grouped in topics but might contain crossrelevant snippets
 
+# 2026-10-01: scope out Magic Context plugin
+- https://github.com/cortexkit/magic-context/tree/master
+- how they work with memory and how they make the best usage of the context window (how do they trim it? when do they trim? decided by agent or by the plugin?)
+
 # 2026-09-30: llama.cpp server router
 - instead of using llama-swap directly use the integrated router function of llama.cpp to dynamically switch models .. and because everythign is offered with the same llama.cpp call and based on a config, no realoading or startig llama.cpp with other model is necessary.
   - thus the cache stay intact while switching models (llama-swap mainly losing cache bacause the llama.cpp backend is called anew with each model change and thus the state is lost on exit of prior llama.cpp)

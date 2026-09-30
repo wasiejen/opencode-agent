@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #121, new
-entries start at #122 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #122, new
+entries start at #123 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).

@@ -1138,9 +1138,21 @@ All those IDs stay reserved — see the numbering rule in the header.
   session). LIVE-ACCEPTED (`report`) 2026-09-30 post-restart — the planner
   ran a live `report` on a real session (ses_f0e129deeffeqmM5rc8mpnTY2Q):
   a valid window map via the spawn-sqlite3 fallback, no db-error (code unit
-  a43311a). RESIDUE: `tail`'s live test = the maintainer's throwaway-
-  session call; context_trim Unit 2 stays HELD on it. (The final hash
-  rides the planner's follow-up bookkeeping commit.)
+  a43311a). LIVE DEBUG (2026-09-30/10-01, the forked test session): two
+  further live-only failures found and fixed in the planner's direct
+  session — (1) the TAB separator arg is whitespace-collapsed in the
+  Bun-compiled live host's Windows command-line join → CLI arg shift →
+  interactive mode → the deterministic 2500 ms kill (the gauge's
+  separator-less call worked live — same exe, same ro-URI; fixed:
+  `\x01` SOH separator, live-verified post-fix: the fork report reached
+  the big query and produced output); (2) the 1 MB SPAWN_MAX_BUFFER was
+  too small — the report pulls the window's part JSON through the CLI
+  (measured: fork 1271 KB, main 921 KB of parts) → ENOBUFS (fixed:
+  16 MB + a >1 MB smoke pin + stderr on the timeout error; smoke
+  26/26). PENDING: ONE MORE RESTART to load the 16 MB build, then the
+  `tail` live test proceeds on the fork (report → tail → verify →
+  floor-6 refusal); context_trim Unit 2 stays HELD on it. (The final
+  hash rides the planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

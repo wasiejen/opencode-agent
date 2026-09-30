@@ -467,3 +467,21 @@ fs/JSON stores (the `compact_budget.json` pattern).
    line itself is stale (§5).
 6. The 2026-09-12 "plugins-array-only registration" knowledge line is stale
    relative to the no-config-array live setup (§2).
+
+## 7. Model/agent switching (per-message semantics, 2026-09-30)
+
+Maintainer-verified (2026-09-29, his 2eba484 context-trim ruling + the
+proposal comment block, `proposals/approved/2026-09-28_context-trim-
+tool.md` L346-353): agent and model are **separately settable per
+message** — a message is the delivery of what agent/model is requested
+from the backend, and it stays that way until another message with a
+different agent/model is sent. A mid-session switch (select the new
+model/agent in the TUI + send a message) applies the new model+agent on
+the NEXT IDLE after a tool call — but causes a **COMPLETE reprefill**
+(no cache reuse) → per the maintainer "not very interesting atm".
+Per-step mid-session model toggling is not planned, and would break the
+planner-worker workflow's same-model cache requirement (planner and
+worker need the same model to allow fast switching from cache). The
+context-trim proposal's "model toggling" item is CLOSED on this basis —
+the intended use is a **STATIC** switch to a faster model (whole
+session), not per-step toggling.

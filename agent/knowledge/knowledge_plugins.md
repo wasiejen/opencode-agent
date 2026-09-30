@@ -382,3 +382,28 @@ Gained, verified knowledge for opencode plugins. Format per the README:
   gauge_core.smoke.mjs` (#115 section); TODO #115.
 - **Keys:** resolveWindow, limit.context, opencode.jsonc, JSONC, parseJsonc,
   name-marker fallback, gauge window, model rename, #115.
+## 2026-09-30 planner-41 ses_f102c4a2dffezocrIY7kzd44YA
+Compact-message delivery mechanics (source-verified 2026-09-30, research doc
+`agent/research/2026-09-30_compact-message-delivery.md`): (1) the
+`compact_memory` `message` arg is written to
+`.opencode/temp/compact_message_<sid>` at DISPATCH time, unconditionally
+(compact_memory.ts L494/L523 — write-before-dispatch) — **file presence ≠ a
+compaction happened** (a failed dispatch leaves a zombie file); (2) the file
+is delivered ONLY by the auto_resume unit-4 recovery (no-action-line idle)
+path (auto_resume.ts L1349-1357, single call site) — scope-none sessions
+(all Task-tool workers + direct sessions, the L1303 gate) NEVER get their
+queued message, and an in-scope session that closes with an `action:` line
+after compaction strands it (the restart branch never reads it); (3)
+discriminator for deliberate vs limit-driven compaction (signal, not proof —
+a self-compact without a `message` arg leaves no file): COMPACT line in
+ctx.log + queue file = deliberate self-compact; COMPACT line without file =
+limit-driven/auto; file without COMPACT line = failed dispatch (zombie).
+Measured: 3 of 4 queued messages unconsumed (both workers + the direct
+session); only the in-scope recovery path (planner-39) ever delivered.
+- **Ref:** `.opencode/plugin/compact_memory.ts` (L303-310, L494/L523),
+  `.opencode/plugin/auto_resume.ts` (L1303-1307, L1349-1357),
+  `agent/research/2026-09-30_compact-message-delivery.md`,
+  `proposals/2026-09-30_compact-message-delivery.md`.
+- **Keys:** compact_message, .consumed, relay=, queued message, zombie file,
+  scope none, task_id resume, deliberate vs limit compaction, ctx.log
+  COMPACT line.

@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #124, new
-entries start at #125 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #125, new
+entries start at #126 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -147,6 +147,44 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 ## 49. `handover_task.md` worktree/HEAD conflict (2026-09-10) (closed 2026-09-11, see todo_records.md)
 
 ## Plugin & gauge (open)
+
+## #125. (open, 2026-09-30, planner-47; pre-approved class — behavior-unchanged cleanup) #86 audit LOW findings batch: 7 inline/stale code refs + 2 doc-only duplicates
+- **Problem / evidence:** the #86 read-only audit (explorer-47 ses_f0f768f33,
+  plan47 — handover in `agent/handover/handover_task_to_planner.md`, full
+  per-finding detail in the `plan47 TODO #86 cluster A-D` todo_inbox entries,
+  2026-09-30) found 11 findings; the 2 med ones are already fixed
+  (61cd616: BUSY_TIMEOUT_MS dedup + ctx_watchdog nudge-ladder constants;
+  f7f4100: the role-prompt index stale refs from the explorer's
+  observation). Remaining (all low): (1) .opencode/tools/loop_log.ts:127 —
+  description example `Qwen3.8-27B-IQ4KT-120K` is not a live model id → a
+  live id (e.g. Qwen3.8-27B-Q3S-170K) or a neutral example; (2)
+  .opencode/tools/submit.ts:34 + :141 — comment example
+  `planner_Q3S_245K_slow` is a stale agent name → `planner_Q3S`; (3)
+  .opencode/plugin/auto_resume.ts:1536 — inline `0.99 * window`
+  (limitStopCheck #109 condition 2) → named constant
+  (LIMIT_STOP_WINDOW_RATIO); (4) auto_resume.ts:1538 — inline `60_000`
+  idle threshold (#109 condition 3) → named constant; (5)
+  auto_resume.ts:1885/1887 — inline `20MiB`/`2MiB` log-size defaults →
+  named constants; (6) auto_resume.ts:1901 — inline `5000` tickMs default →
+  named constant; (7) auto_resume.ts:173-177 — the "OVERLAP-ERA CAVEAT"
+  note describes the RETIRED looprunner_Q3S (commented out in the live
+  opencode.jsonc) as if live → update/remove; (8) doc-only: the opencode.db
+  path is defined 5x in the standalone agent/scripts/db/*.cjs CLIs +
+  gauge.mjs DEFAULT_DB_PATH, and HOST_EXE 2x in agent/scripts/binary/
+  {binwin,binhits}.cjs → document the single source of truth (no shared
+  .cjs helper unless wanted).
+- **Desired outcome:** every inline literal named/deduplicated, the stale
+  examples and the retired-looprunner note current — zero behavior change.
+- **Acceptance criteria:** grep-clean for the stale example strings and the
+  five inline literals (named constants in place); the caveat note removed
+  or reworded to the retired state; standard gate green (smokes + ruff F=0,
+  the #113 env-fail exclusion applies); no smoke pin changes expected (the
+  values are unchanged).
+- **Suggested scope:** the files named above; worker-delegable as one small
+  cleanup unit (spec names each literal + its replacement).
+- **Status:** OPEN — the 2 med findings of the same audit are already
+  LANDED (61cd616); the #86 entry itself is closed by this entry + the
+  landed fixes.
 
 ## 74. (closed 2026-09-27, direct session ses_f20d1b39… — backend no longer on ik_llama, the offending PR was reverted — non-issue; full text in todo_records.md) — **Write tool fails on long content payloads on this host**
 
@@ -357,9 +395,14 @@ All those IDs stay reserved — see the numbering rule in the header.
   edits; the `auto_resume.ts` PLANNER_AGENT_ID case excluded (handled by
   #85 part 2).
 - **Suggested scope:** explorer or worker, read-only grep-driven scan.
-- **Status:** DEFERRED — picked up only when nothing else is open (his
-  2026-09-23_01-08 inbox entry; runs after #85 part 3 lands — now clear
-  of that constraint).
+- **Status:** CLOSED (2026-09-30, plan47, planner-47 — the audit RAN,
+  explorer-47 read-only, zero code changes): 11 findings, all in the
+  `plan47 TODO #86 cluster A-D` todo_inbox entries — 0 dead code (125
+  exports verified used), 0 stale ses_* in non-test code, 2 low stale-ids,
+  3 dup-config, 5 magic-numbers, 1 stale-ref. The 2 med findings + the
+  prompt-index stale refs were fixed by planner-47 the same session
+  (61cd616 / f7f4100); the remaining LOW findings are carried by
+  TODO #125.
 
 ## #87. (closed 2026-09-23 - subsumed by #90; full text in todo_records.md) - Unit-4 cannot revive a dead self-spawned successor (the plugin-driven loop stalls): RESOLVED by #90 Part A — the self-spawned successor is now TRACKED (scope "autorun" via the restart prompt's own-line toggle) and RECOVERED after an idle without an action line (the #87 stall case, inverted); option (b)'s "committed progress" idea is replaced by the lineage-depth cap (N=2) on the spawn branch.
 

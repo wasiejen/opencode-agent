@@ -69,8 +69,13 @@ Moved out of the root `TODO.md` on 2026-09-29 (#117 per-project split).
   is REBUILT on 3.12.9 (verified 02:00 — `pyvenv.cfg` → the proper
   `AppData\Local\Programs\Python\Python312` install, 459 tests collect)
   after an interim 3.14.3 replacement (the original venv had been
-  REPLACED, not repaired — the `..\python312` base dir was gone from
-  disk; the 3.14 slip = the bare-`python`/`py` default, `py -0` marks
-  3.14 as `*`). Remaining: ONE full standard-gate re-run (worker or
-  next autorun) to re-baseline (probe total incl. the 11 numword checks
-  136-146 + pytest count) and close this.
+   REPLACED, not repaired — the `..\python312` base dir was gone from
+   disk; the 3.14 slip = the bare-`python`/`py` default, `py -0` marks
+   3.14 as `*`). 2026-09-30 plan39 (worker-39): the full standard-gate
+   re-run was measured in the FST workspace — ruff F=0, pytest 459
+   passed 1 warning (planner spot-verified: 459 tests collect in 0.19s).
+   RESIDUAL: the agent-repo probe's 11 numword checks (136-146) still
+   env-fail — post-split its VENV_PY points at the agent repo's own
+   `REPO_ROOT/.venv`, which no longer exists; re-pointing it at the FST
+   venv (or running the probe from the FST workspace) is a small
+   pre-approved follow-up (next session — this is what closes #113).

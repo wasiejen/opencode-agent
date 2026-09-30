@@ -1136,11 +1136,12 @@ All those IDs stay reserved — see the numbering rule in the header.
   `setBackends` test hook; report/tail logic unchanged; fail-closed end
   kept. Standard gate green: probe 352/352 + all 11 smokes (context_trim
   25/25 — the 20 old pins + 5 forced spawn-only pins on a second fixture
-  session). OPEN residue: live re-acceptance = the maintainer's NEXT
-  restart (planner runs a live `report` on a real session first —
-  read-only; `tail`'s live test stays the maintainer's throwaway-session
-  call); context_trim Unit 2 stays HELD on it. (The final hash rides the
-  planner's follow-up bookkeeping commit.)
+  session). LIVE-ACCEPTED (`report`) 2026-09-30 post-restart — the planner
+  ran a live `report` on a real session (ses_f0e129deeffeqmM5rc8mpnTY2Q):
+  a valid window map via the spawn-sqlite3 fallback, no db-error (code unit
+  a43311a). RESIDUE: `tail`'s live test = the maintainer's throwaway-
+  session call; context_trim Unit 2 stays HELD on it. (The final hash
+  rides the planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

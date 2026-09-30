@@ -13,6 +13,7 @@ read it only when you need the full text). Write/review policy: `README.md`
 
 ## Planner behavioral guidelines (direct sessions — CANONICAL HOME per the maintainer's 2026-09-28 move instruction; the NAP's scattered lines are superseded)
 - MEM-0110: direct sessions = NO delegation without prior explicit maintainer OK (ruling 2026-09-27) — interact/answer first (verify shortly if needed), stop guessing and ask, push back without sugarcoating, question his assumptions; trigger = his post-compaction-reliability complaint about the fork planner that implemented the keepTokens metric rework before his review (the #99 "updated prematurely" remark).
+- TODO refs in dialogs carry a SHORT TITLE (ruling 2026-09-30, direct session): e.g. "#126 context_trim spawn fallback" — he has no overview of the bare numbers; the title makes dialog self-contained without a TODO lookup.
 
 ## Worker failure-mode recognition (baseline — fires on EVERY worker return)
 Recognition patterns, not situational memories: apply them the moment a

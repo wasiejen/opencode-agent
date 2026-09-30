@@ -7,7 +7,7 @@
   "emergencyRecovery": true,
   "emergency_budget": 1,
   "model_budget": {
-    "default":3,
+    "default": 3,
     "Qwen3.8-27B-Q3XS-160K-MTP": 3,
     "Qwen3.8-27B-Q3S-110K-MTP": 3,
     "Qwen3.8-27B-Q2S-128K-x2": 3,
@@ -41,6 +41,11 @@
       "count": 1,
       "updated": "2026-09-30T01:48:10.051Z",
       "model": "Qwen3.8-27B-Q3S-210K-slow-HQKV"
+    },
+    "ses_f0b92a96fffeTf969H1IQU0pMs": {
+      "count": 1,
+      "updated": "2026-09-30T22:36:38.751Z",
+      "model": "Qwen3.8-27B-Q3S-235K-slow-HQKV"
     }
   },
   "version": 2

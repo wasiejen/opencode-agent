@@ -7,13 +7,6 @@ May be stale; nothing here is required to be maintained.
 
 
 
-2026-09-29_00-29
-
-Unit 1 LANDED+verified: context-erase/tail-trim research (explorer-36, doc .opencode/agent/research/2026-09-28_context-erase-tail-trim.md, 4591cd0/c32c5eb) — YES, the model context is re-derived from the DB at the top of every loop step (no in-memory history, no cached prompt); row-deletion is a viable trim channel with a narrow safe zone, and the cleaner lever is the host's own in-place tail_start_id rewrite (compaction.ts:461-466). All 4 key code refs spot-verified against the opencode-dev source copy. Follow-up (tail-trim tool) queued as a MAINTAINER CALL.
-
-
-
-
 
 260912-0953
 - we might need regular scheduale tasks like look over knowledge base and compact knowledge for each file.
@@ -29,61 +22,15 @@ another input field for compaction : role
 what message to put before and how?
 
 
-
-260909-1512:
+2026-09-30_14-07
 
 # WIP
-
-## WIP - referenced .opencode\ as base path in agents (small vialation of seperation): handover file reference unlear. define directly with path
-  - quote: "The git log references "handover v2.4.1" and "NAP: v2.2.2", and also has the context "plan state file", "task spec file", "worker summary file"."
-## WIP: needs testing: a lot of permission requests for .opencode/* 
-  - why? is it not allowed? - see following point
-    - generally deny these request automatically for the workers? how?
-## WIP: added bash to path - quote: "PowerShell quoting is annoying with % and such"
-  - is there a way to offer the agent a better shell?
-  - WIP: now need to inform the agents in agents_repo about the change/option
-## WIP: adapt peek to handle unknown models by only displaying the current context and not % and REM
-
-## WIP: needs compaction: ! Important ! 
-  - When the model observes a compaction in its session immediately stop working on task - this supersedes the close up routine. write a brief summary directly as a return to if you are a worker. do not write any files! corruption of context highly likely. end session as fast as possible while delivering a brief summery.
-
-
-  
+2026-09-23_17-23:
+kwargs setting correct? - is medium active or not? might be xhigh still - check online
 # OPEN
-## lets change the model for planner and default worker to q4_120k, slower but much more stable and precise
 
-## check correctness of quantization making "in head" calculation of models unreliable
-
-## clarify the planner role to clarify with maintainer 
-  - the planner is the only one who can directly interact with the user, use it to get info instead of trying to find an answer and burning your context window
-  - when used <|alone|> mode - no maintainer is available - so do only things that can be done without feedback and do not start requests
-  - 
-## add slots to the handover files
-
-## MAYBE STALE: how to make sure the agents do not read the old feedback and append blindly?
-  - agent_feedback_instruct.md as a seperate file to read and
-  - "<<END>>" special string that the agent can replace directly 
-  - and has to end it with the same special string
-  - 
 ## how to enable a subagent to ask for clarification?
   - via messenger app plugin?
-
-
-  
-# OPEN similar - likely same cause - context gauge/nudge mechanism
-
-### WIP:context gauge injection on worker start reports the data from the planner first
-  - lets include an ignore context gauge info on worker start in the prompt_of the worker
-### delaying receiving of user messages - likely causes by context gauge plugin
-- just wrong session_id ctx displayer - should be fixed with checking session_id
-- 
-### first ctx (starting prompt) after planner start was around 28000 token. that is huge. why? was the message send later and thus included the read files instructions?
-
-### Strange behavior: agent acts as if my messages come later - even mentioning that actions they have done based on it are done before the message arrived.
-  - quote: "... reconciling the #33/Call-4 items that are still stale (the curation worker ran before your ruling arrived):"
-
-
-
 
 # IDEAS/Random:
 
@@ -94,12 +41,16 @@ what message to put before and how?
   - maybe with self-reinforcement by feedback from the agents about the others
     - they can not comment about themselfes but only about other personas and this feedback would then influence their persona prompt in limited ways. so over time clear roles and preferences would be established and a hiearchy of how works in what ways with whom best or prefered.
 
-
 # Tabled
 ## mobile messsenger integration in opencode?
   - needed? not yet but for future interesting
 
 # DONE
+
+## DONE: added bash to path - quote: "PowerShell quoting is annoying with % and such"
+  - is there a way to offer the agent a better shell?
+  - WIP: now need to inform the agents in agents_repo about the change/option
+  - 
 ## DONE resolve agents.md
 - The agent runs on **Windows** with a **PowerShell (pwsh)** shell. **Heredocs do
   not exist in PowerShell** — `<<EOF` / `cat > file <<EOF` will NOT parse; never

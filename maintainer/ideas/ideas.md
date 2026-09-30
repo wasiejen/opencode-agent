@@ -5,6 +5,10 @@
 //   - e.g. research: you (the planner) can go trough feedback, maintainer folder files, archive log and identify problems/opportunities/things-to-optimise and research them
 // this is no priority sorting ... ideas are loosely grouped in topics but might contain crossrelevant snippets
 
+2026-09-29_23-19: compaction model as filters option in llama-swap? no reload needed and thus no cache invaliadation. can i set checkpoints to 0 ro presevere the planner and worker session in the limited ram cache?
+- all JSON request values accepted in StripParam of llama-swap but checkpoints is not an option that can be set.
+  - thus the idea is infeasable
+
 2026-09-29_20-31: second git identidy for the agents? planner + worker`? or just agent?
 
 2026-09-29_19-47:

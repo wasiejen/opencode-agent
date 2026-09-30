@@ -128,3 +128,6 @@ Research only — nothing built, no config touched. Decision: maintainer call
 (he owns `opencode.jsonc` + the llama-swap yaml + the backend). The live
 acceptance (does the running llama-swap build match current main's config
 surface) can be checked by him at his next backend touch.
+
+--comment:
+so intended setting of checkpoints value is not feasable. thanks for the research. no further action needed.

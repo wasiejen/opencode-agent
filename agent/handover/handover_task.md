@@ -1,82 +1,83 @@
-# Task spec — plan47: TODO #86 deferred audit (read-only, explorer)
+# Task spec — context_trim: the spawn-sqlite3 backend fallback (TODO #126)
+
+Worker: worker_Q3S (170K). Pre-approved class (agent-usage tool fix).
+Branch truth: stay on the current checkout.
 
 ## Goal
-Read-only audit of ALL agent plugin / tool / script code: stale hardcoded
-IDs, duplicated config, magic numbers, dead code, stale references.
-Deliverable = a prioritized findings list. **Zero code changes.**
 
-Worker: explorer_Q3S (170K window).
-Branch: stay on the current checkout (opencode_test). Never switch branches.
+`context_trim` must work in the LIVE host process: add a third, last-resort
+backend (`spawn-sqlite3` via `.opencode/plugin/tools/sqlite3.exe`) to
+`openDb`, mirroring the gauge core's proven spawn cascade. Keep fail-closed:
+when NO backend is available at all, the tool still returns a db-error
+(never a blind write).
 
-## Verified facts (measured at spec time — do NOT re-derive)
-- Live agent roster (opencode.jsonc, active only): planner_Q3S, worker_Q3S,
-  explorer_Q3S, planner_Q3S_slow, worker_Q3S_slow, explorer_Q3S_slow,
-  agent_gemma_Q4. All other agent blocks are commented out (looprunner_Q3S,
-  agent_Q3S, worker_Q3S_HQKV, planner_Q3XS, worker_Q3XS, worker_gemma_Q4) —
-  an UNCOMMENTED reference to any of them in code = stale.
-- Live model ids (llama-swap provider): Qwen3.8-27B-Q3S-160K-MTP-Thireus,
-  -140K-HQKV, -170K, -245K-slow, -210K-slow-HQKV. Note: NO live agent name
-  carries a numeric window suffix — so any agent-id string matching
-  `Q3S_[0-9]+K` (e.g. "worker_Q3S_170K", "planner_Q3S_160K") in non-test
-  code is stale against the roster.
-- Scope files (measured sizes):
-  - .opencode/plugin/: auto_resume.ts (93K), intercept_observer.ts (76K),
-    intercept_observer_core.ts (63K), ctx_watchdog.ts (38K),
-    compact_memory.ts (33K), compaction_core.ts (31K),
-    context_recovery.ts (13K)
-  - .opencode/tools/: block_transfer.ts (48K), context_trim.ts (25K),
-    loop_log.ts (13K), submit.ts (12K), ctx_gauge.ts (3K),
-    dev_get_tool_context_contents.ts (2K), session_info.ts (0.3K)
-  - agent/scripts/: db/ (6 .cjs), log/ (2 .cjs + tests/), binary/ (3 .cjs),
-    numword/ (numword.cjs, w2n.py, numwords.json)
-  - .opencode/plugin/tests/*.smoke.mjs + .opencode/plugin/probes/
-    handover_probe.mjs: audit for stale hardcoded VALUES in assertions /
-    comments only (stale fixture ses_* ids are NOT findings — fixture ids
-    are intentional). Do NOT audit test logic.
-- EXCLUSION per #86: the `PLANNER_AGENT_ID` case in auto_resume.ts was
-  already handled by #85 part 2 — do not report it.
+## Verified facts (measured at spec time, 2026-09-30 — do not re-derive)
 
-## Audit dimensions (one finding = severity + file + line + one-line fix)
-1. **Stale hardcoded agent / model ids** not matching the live roster
-   (the verified-facts list above). Severity high if it feeds a live
-   runtime call (spawn/inject/registration), low if doc/comment only.
-2. **Stale hardcoded session ids** (ses_*) in NON-TEST code.
-3. **Duplicated config**: the same value defined in >1 file where a single
-   source of truth already exists (compact_budget.json keys, context
-   window sizes, thresholds). Report each duplicate pair.
-4. **Magic numbers** without a named constant or config reference
-   (thresholds, timeouts, budgets, sizes) — report location + what it
-   encodes + whether a config source already covers it.
-5. **Dead code**: exported-but-unused symbols, unreachable branches,
-   constants referenced only by their own definition (verify with a
-   bounded grep for each candidate before reporting).
-6. **Stale doc / path references** in code comments (e.g. pre-#118
-   `agent_readme_*` filenames — the plan46 stale-ref cluster hit exactly
-   this class).
+- Live: the first live `report` call returned `db-error: no in-process
+  writable sqlite backend (bun:sqlite / node:sqlite both unavailable)`. The
+  live process IS the current build (`context_trim` is in the live toolset).
+- `.opencode/tools/context_trim.ts` L98-129 `openDb`: tries `bun:sqlite`
+  then `node:sqlite` only. The header L72-79 documents the deliberate
+  "NO spawn fallback for writes" design — this task reverses that for the
+  spawn case ONLY (the fail-closed end stays).
+- `.opencode/plugin/scripts/gauge.mjs` = the reference implementation (READ
+  the bounded regions only, do not copy blindly): `DEFAULT_BACKENDS` (L163,
+  order node→bun→spawn), `DEFAULT_EXE_PATH` (L161 — the exe is on the tree,
+  verified), the `setBackends` test hook (L187), the spawn-sqlite3 backend
+  with its hard-timeout discipline (see the `spawn-sqlite3` + `hard-timeout`
+  comment block L42-44), the backend-quirks notes (L12-32: NULL vs
+  undefined, busy_timeout, readOnly flags).
+- `context_trim.ts` already imports from gauge.mjs (`DEFAULT_DB_PATH,
+  BUSY_TIMEOUT_MS`, L86) — extending that import is the established pattern.
+- The smoke host = system node v24+ (`node:sqlite` available) → the
+  in-process pins never exercise the spawn path unless the backend list is
+  FORCED via a test hook.
+- win32 gotcha (plan45 lesson): never `execSync` with `^`-bearing args
+  (cmd-escape). Use `execFile`/`execFileSync` (no shell) — that is also the
+  gauge core's discipline.
 
-## Method (output discipline — context is the scarce resource)
-- Grep first, per dimension, across the scope with caps, e.g.
-  `grep -nE "Q3S_[0-9]+K|160K|170K" .opencode/plugin/*.ts .opencode/tools/*.ts | head -30`,
-  then narrow per file.
-- Read whole files only when < 400 lines (most tools/ + scripts/ qualify).
-  For the big plugin files: grep by dimension + read ±15-line windows
-  around each hit only.
-- No gate runs (nothing changes). Do not edit ANY repo file except the two
-  deliverables.
+## Design (suggestion — the HOW is yours within the DoD)
+
+- Backend 3 in `openDb`: `spawn-sqlite3` via `DEFAULT_EXE_PATH`. The
+  returned `Ctx` keeps the `{db, backend}` shape — a thin adapter object
+  over `execFile` (query → rows; the single tail transaction → ONE CLI
+  invocation carrying `PRAGMA busy_timeout…; BEGIN; …; COMMIT;`) keeps the
+  report/tail logic UNCHANGED.
+- A backend-list test hook (mirror `gauge.mjs` `setBackends`) so the smoke
+  can force `["spawn-sqlite3"]`-only.
+- The spawn path stays fail-closed: exe missing / spawn error / timeout →
+  the db-error path (no partial write).
+- `report` = read-only queries (fine via the CLI); `tail` = the single
+  transaction via ONE CLI invocation.
+
+## DO-NOT-touch
+
+- `gauge.mjs` internals (reference only — no edits to it).
+- The context_trim query/validation logic (the adapter isolates the change).
+- The smoke fixtures' live-DB discipline (the smoke NEVER points at the
+  live DB).
+- The maintainer's live files; anything under `maintainer/`; `agent/prompts/**`.
 
 ## Definition of done
-1. Findings appended to `todo_inbox.md` via the `submit` tool (`todo`
-   channel) — ONE entry per finding cluster (stale-ids / duplicated-config /
-   magic-numbers / dead-code / stale-refs), each entry self-contained
-   (file + line + suggested fix per finding; clusters may be multi-line).
-2. `agent/handover/handover_task_to_planner.md`: executive summary — count
-   per dimension, the top ~10 findings inline, the full list referenced to
-   the todo_inbox entries, plus what was deliberately not done.
-3. `git status`: ONLY the handover file (+ todo_inbox.md) modified; zero
-   code changes.
-4. ONE final commit carrying the handover + todo_inbox (no code units to
-   checkpoint).
 
-## DO-NOT-TOUCH
-Anything under `maintainer/`; `opencode.jsonc` (read-only reference);
-`.opencode/archive/`; `projects/`; any `--wip` file.
+1. Code: `openDb` gains the spawn-sqlite3 fallback + the backend test hook;
+   report/tail logic unchanged.
+2. Smoke (`context_trim.smoke.mjs`): the existing 20/20 pins stay green +
+   2-3 new pins FORCING the spawn-only backend: (a) report on the fixture DB
+   returns the same key fields as the in-process path, (b) a tail rewrite
+   lands in the fixture DB (tail_start_id changed, readable back), (c) at
+   least one validation rejection still fires via the spawn path.
+3. Standard gate green: probe 352/352 + all 11 smokes (auto_resume 147/147,
+   block_transfer 131/131 + sandbox 64/64, compact_memory 82/82,
+   intercept_observer 78/78, loop_log 69/69, submit 31/31,
+   context_recovery 17/17, context_trim (new total), ctx_gauge 3/3,
+   gauge_core).
+4. Checkpoint commits per verified unit (code only); the TODO #126 status +
+   the handover summary ride the FINAL commit (per the commit routine).
+5. Live re-acceptance = the maintainer's NEXT restart (the live process lags
+   HEAD) — name it in the handover: the planner runs `report` on a real
+   session (read-only, first); `tail`'s live test stays the maintainer's
+   throwaway-session call.
+
+Context discipline: bounded reads only (the named regions + the smoke file,
+~350 lines); grep with `| head -30`; no broad research.

@@ -129,5 +129,9 @@ Research only — nothing built, no config touched. Decision: maintainer call
 acceptance (does the running llama-swap build match current main's config
 surface) can be checked by him at his next backend touch.
 
---comment:
+CLOSED 2026-09-30 (maintainer ruling in the comment below: the intended
+checkpoints direction is not feasible — no further action; the direction is
+dropped).
+
+comment:
 so intended setting of checkpoints value is not feasable. thanks for the research. no further action needed.

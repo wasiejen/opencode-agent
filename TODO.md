@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #125, new
-entries start at #126 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #128, new
+entries start at #129 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -1103,3 +1103,96 @@ All those IDs stay reserved — see the numbering rule in the header.
   maintainer's restart + registration; `tail` = a throwaway session, the
   maintainer's call. (The final hash rides the planner's follow-up
   bookkeeping commit.)
+
+## #126. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — live acceptance run of #120U1 after the maintainer's restart; pre-approved class — agent-usage tool fix) context_trim's in-process-only sqlite backend fails in the live host process (no spawn fallback)
+- **Problem / evidence:** the first live `report` call (2026-09-30 ~15:55; the
+  live process is the current build — `context_trim` IS in the live toolset,
+  registration confirmed) returned `db-error: no in-process writable sqlite
+  backend (bun:sqlite / node:sqlite both unavailable)`. The header design
+  (`context_trim.ts` L72-79) deliberately has no spawn fallback (a "no blind
+  CLI write" rule). The gauge core proves the third backend works in this
+  live host: `spawn-sqlite3` via `.opencode/plugin/tools/sqlite3.exe`
+  (`gauge.mjs` `DEFAULT_BACKENDS` L163, `DEFAULT_EXE_PATH` L161, the
+  "PROVEN IN PRODUCTION" comment L42-44) — all live gauge reads use it.
+- **Desired outcome:** `context_trim` works in the live host process
+  (`report` AND `tail`), staying fail-closed when NO backend is available at
+  all (no blind write).
+- **Acceptance:** the existing 20/20 fixture pins stay green; 2-3 new pins
+  forcing the spawn-sqlite3-only backend (report content parity with the
+  in-process path on the fixture DB; a tail rewrite lands in the fixture DB;
+  at least one validation rejection still fires via the spawn path); the
+  standard gate green (probe 352/352 + all 11 smokes); live re-acceptance =
+  the maintainer's NEXT restart (the live process lags HEAD — the planner
+  runs `report` on a real session; `tail`'s live test stays the maintainer's
+  throwaway-session call).
+- **Suggested scope:** `.opencode/tools/context_trim.ts` (`openDb` L98-129 +
+  a backend-list test hook), `.opencode/plugin/tests/context_trim.smoke.mjs`;
+  reference (read-only): `.opencode/plugin/scripts/gauge.mjs` (the
+  spawn-sqlite3 cascade region).
+- **Status:** spec committed `agent/handover/handover_task.md` (2026-09-30,
+  this direct session) + worker launch (worker_Q3S — his OK given in the
+  direct session).
+
+## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
+- **Problem / evidence:** a queued `compact_message_<sid>` stranded by an
+  `action:` close after compaction (root cause B, research doc
+  `agent/research/2026-09-30_compact-message-delivery.md`) is lost to the
+  restart-spawned successor — the restart branch never reads it. Items 1-3
+  LANDED (`f96a39c` STEP-0 protocol / `b025159` zombie guard / `0a89e7c` age
+  sweep); item 4 was the open ruling.
+- **Ruling + design:** the maintainer is in favor (his 2026-09-30 comment —
+  "more truthful"). Planner's interference analysis (settled): NO blocking
+  problem with the planner instructions — the appended text is a labeled
+  INTENT HINT (the successor still rebuilds reality from committed state
+  first — a stale intent gets corrected by the file check; the size is
+  bounded to one queued message). Read `.opencode/temp/compact_message_<sid>`
+  at the restart branch (`auto_resume.ts` L1409 call site / `restartText`
+  L898-915); if present: append the labeled section + rename the file
+  `.consumed` (the item-3 tombstone); fail-open (absent / unreadable → the
+  base text unchanged, no throw).
+- **Acceptance:** 3 new pins in `auto_resume.smoke.mjs` (file present → the
+  labeled content in the spawn text + the file renamed `.consumed`; absent →
+  the base text byte-identical; unreadable → the base text); the existing
+  147/147 stay green; the standard gate (probe 352/352 + all 11 smokes); live
+  acceptance = the next restart-branch spawn with a queued file present
+  (natural occurrence).
+- **Suggested scope:** `.opencode/plugin/auto_resume.ts` (the `restartText`
+  region + the L1409 call site), `.opencode/plugin/tests/auto_resume.smoke.mjs`.
+- **Status:** spec committed
+  `agent/handover/specs/2026-09-30_compact-message-unit4.md`; queue order
+  after #126.
+
+## #128. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-memory-cross-override.md`: option (b), cross spend ≤ model_budget + emergency_budget, "the same as when self-compacting"; pre-approved class — agent-usage) compact_memory caller-scoped compaction override (a cross caller gets effective cap+1)
+- **Problem / evidence:** a worker dead at the wall at `count == cap` is
+  resolvable only by a cross call that BURNS its one self-rescue (the
+  emergency arg); at `count == cap+1` it is refused outright — no planner
+  rescue path (`compact_memory.ts:422-440`).
+- **Design (ruling-adjusted — the proposal's original Part 1 is RETRACTED):**
+  `isCross` (explicit id ≠ the caller) → `effCap = cap + 1` (the SELF path
+  unchanged); the gate allows `count < effCap`, else the existing emergency
+  branch (`count == cap && emergency`). Cross at `count == cap+1` stays
+  REFUSED — the cross spendable total = cap+1 = the same as self (no second
+  slot). Part 3 (the `ovr` audit token) EXCLUDED (no ruling). Part 2 docs:
+  the tool description + the `compaction_core.ts` budget header (worker
+  part); the planner-prompt line + the AGENTS.md staged copy = the planner's
+  bookkeeping (workers have no edit access to `agent/prompts/**`).
+  VERIFIED-FACT CORRECTION (the proposal's "CPU cap 0 denied for all" line
+  is inaccurate): at cap 0 the current gate ALLOWS one EMERGENCY self
+  compact (`count 0 === cap 0 && emergency`, L425) — under "the same as
+  self" a cap-0 cross gets exactly 1 as well; no special CPU denial is
+  added (flagged to the maintainer in the direct session).
+- **Acceptance:** the adjusted pin set in the `compact_memory.smoke.mjs`
+  Gate-M block (~L422-500, fixture cap 2): cross@cap no-emergency →
+  dispatched; cross@cap+1 → refused (names the override consumed);
+  self@cap no-emergency → refused (regression, wording unchanged);
+  self@cap+emergency → dispatched (regression); self@cap+1 → refused
+  (regression); the cap-0 corner pinned; the old cross@cap-refusal pins
+  re-pinned; 82/82 total; the standard gate (probe 352/352 + all 11 smokes);
+  live acceptance = the next real cross-override dispatch (maintainer
+  domain).
+- **Suggested scope:** `.opencode/plugin/compact_memory.ts` (the gate
+  L410-440 + the tool description), `.opencode/plugin/compaction_core.ts`
+  (the budget header comment), `.opencode/plugin/tests/compact_memory.smoke.mjs`.
+- **Status:** spec committed
+  `agent/handover/specs/2026-09-30_compact-memory-cross-override.md`; queue
+  order after #127.

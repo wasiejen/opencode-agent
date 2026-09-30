@@ -1,4 +1,16 @@
-# specs/ — pre-written task spec queue (trusted compaction system)
+# specs/ — pre-written task spec queue
+
+## 2026-09-30 wave (direct session ses_f0e129deeffeqmM5rc8mpnTY2Q)
+- `2026-09-30_compact-message-unit4.md` (TODO #127) — restart-branch
+  inheritance (compact-message-delivery item 4, maintainer "in favor").
+- `2026-09-30_compact-memory-cross-override.md` (TODO #128) — the
+  caller-scoped compaction override (ruling-adjusted: cross total = self
+  total).
+Queue order: the current `agent/handover/handover_task.md` (#126 context_trim
+spawn fallback — launching from this session) → #127 → #128.
+Status (2026-09-30): all committed, OPEN (pre-launch for #127/#128).
+
+## 2026-09-24 wave (trusted compaction system) — COMPLETE
 
 Purpose: task specs written by the planner (2026-09-24, direct session) from the
 consolidated change list (`maintainer/inbox_planner/compaction_feedback_by_planner.md`)

@@ -1129,9 +1129,18 @@ All those IDs stay reserved — see the numbering rule in the header.
   a backend-list test hook), `.opencode/plugin/tests/context_trim.smoke.mjs`;
   reference (read-only): `.opencode/plugin/scripts/gauge.mjs` (the
   spawn-sqlite3 cascade region).
-- **Status:** spec committed `agent/handover/handover_task.md` (2026-09-30,
-  this direct session) + worker launch (worker_Q3S — his OK given in the
-  direct session).
+- **Status:** LANDED 2026-09-30 (worker session ses_f0d49cb6bffeNMhGpmF7O3DyjU,
+  code+smoke commit `a43311a`): `openDb` chain bun→node→spawn-sqlite3 (the
+  gauge core's execFileSync discipline; the tail transaction = ONE CLI
+  invocation `PRAGMA busy_timeout; BEGIN; UPDATE; COMMIT;`) + the
+  `setBackends` test hook; report/tail logic unchanged; fail-closed end
+  kept. Standard gate green: probe 352/352 + all 11 smokes (context_trim
+  25/25 — the 20 old pins + 5 forced spawn-only pins on a second fixture
+  session). OPEN residue: live re-acceptance = the maintainer's NEXT
+  restart (planner runs a live `report` on a real session first —
+  read-only; `tail`'s live test stays the maintainer's throwaway-session
+  call); context_trim Unit 2 stays HELD on it. (The final hash rides the
+  planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

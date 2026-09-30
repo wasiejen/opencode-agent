@@ -1,70 +1,101 @@
-# handover_task_to_planner.md — plan47: TODO #86 deferred audit (EXPLORER, FINAL)
+# Worker handover — TODO #126: context_trim spawn-sqlite3 backend fallback
 
-Session ses_f0f768f33ffe79T7V9zKQGH6ao (explorer_Q3S, llama-swap/Qwen3.8-27B-Q3S-170K).
-Task DONE — read-only audit of ALL agent plugin/tool/script code complete.
-**Zero code changes** (verified: `git status` shows only todo_inbox.md + this file modified).
+Worker: worker_Q3S (llama-swap/Qwen3.8-27B-Q3S-170K), session ses_f0d49cb6bffeNMhGpmF7O3DyjU.
+2026-09-30. Task spec: `agent/handover/handover_task.md` (the committed #126 spec).
+State: DONE — code + smoke committed, standard gate green, live re-acceptance pending.
 
-## Findings per dimension (11 total, all in todo_inbox.md — 4 clusters via submit)
+## What changed
 
-| dimension | findings | severity spread |
-|---|---|---|
-| 1. stale agent/model ids | 2 | both low (comment/description only) |
-| 2. stale ses_* in non-test code | 0 | the 3 example ids in db/README.md verified to still exist |
-| 3. duplicated config | 3 | 1 med, 2 low |
-| 4. magic numbers | 5 | 1 med, 4 low |
-| 5. dead code | 0 | all 125 exported symbols verified used (machine-checked) |
-| 6. stale doc/path refs | 1 | low |
+`.opencode/tools/context_trim.ts` (the only code file touched; gauge.mjs read-only,
+untouched):
+- `openDb` is now a CHAIN tried in order, first success wins: `bun:sqlite` →
+  `node:sqlite` → **`spawn-sqlite3`** (the new last-resort backend). Every
+  backend failure is collected; the all-fail end is the SAME fail-closed
+  db-error as before (now naming all three: `no writable sqlite backend
+  (bun:sqlite …; node:sqlite …; spawn-sqlite3 …)`).
+- The spawn backend = a thin Ctx-shaped adapter (`openSpawnDb`) over
+  `execFileSync` on the gauge's `DEFAULT_EXE_PATH` (import extended from
+  gauge.mjs — the established pattern): ARGS ARRAY, no shell (the plan45
+  win32 gotcha), hard 2500 ms KILL per call, 1 MB maxBuffer.
+  - `report` reads: ONE CLI invocation each on a READ-ONLY URI
+    (`file:<path>?mode=ro` — no journal write while the host writes).
+  - `tail` write: the BEGIN..COMMIT batch is BUFFERED and flushed as ONE
+    read-write CLI invocation carrying `PRAGMA busy_timeout = 2500; BEGIN;
+    UPDATE; COMMIT;` (the single-transaction guarantee survives the process
+    boundary; ROLLBACK discards the buffer — nothing was executed yet).
+  - Column separator forced to TAB (`-separator '\t'`): the CLI default is
+    `|`, and pipe can occur inside the JSON data columns (a raw tab never
+    does — JSON.stringify escapes control bytes).
+  - `?` bindings are inlined with single-quote escaping (the CLI takes ONE
+    SQL text); rows parse back to named objects (the in-process shape).
+- `setBackends(list?)` test hook (the gauge core's `setBackends` pattern) +
+  exported `TRIM_BACKENDS` — the smoke forces `["spawn-sqlite3"]`; omit the
+  arg to restore the default. The production host never calls it.
+- The report/tail logic (loadSession / computeWindow / validation / the
+  single-transaction write) is UNCHANGED — the adapter isolates the change.
+- Header block L72-79 rewritten (the old "NO spawn fallback for writes"
+  design note is reversed for the spawn case; the fail-closed end is
+  documented as staying) + one sentence in the tool description naming the
+  backend chain.
 
-## Top findings inline
-1. [med, dup-config] `BUSY_TIMEOUT_MS = 2500` defined twice — gauge.mjs:151 AND context_trim.ts:88 (context_trim already imports from gauge.mjs). Fix: export + import, drop the local.
-2. [med, magic] ctx_watchdog.ts:394-398 — the nudge-rung ladder thresholds (5000/10k/20k/30k + 90/80/70/50) are inline, unnamed, no config source.
-3. [low, stale-ids] loop_log.ts:127 — tool-description example `Qwen3.8-27B-IQ4KT-120K` is not a live model id.
-4. [low, stale-ids] submit.ts:34/:141 — comment example `planner_Q3S_245K_slow` is a stale agent name.
-5. [low, stale-ref] auto_resume.ts:173-177 — the looprunner "OVERLAP-ERA CAVEAT" describes a retired agent (looprunner_Q3S commented out) as if live.
-6. [low, magic] auto_resume.ts:1536 `0.99 * window`, :1538 `60_000` idle, :1885/:1887 `20MiB`/`2MiB` defaults, :1901 `5000` tick — inline unnamed.
-7. [low, dup] db-path string in 5 standalone .cjs scripts + gauge.mjs DEFAULT_DB_PATH; HOST_EXE in binwin/binhits.
+`.opencode/plugin/tests/context_trim.smoke.mjs`:
+- The existing 20 pins stay in place and green (the fixture discipline
+  untouched — the smoke never points at the live DB).
+- NEW section 4b (5 pins) on a SECOND fixture session `ses_ct_spx` (its own
+  quartet — the in-process pins' `ses_ct_fix` state is untouched), chain
+  FORCED to `["spawn-sqlite3"]` via the hook: (a) spawn report byte-exact
+  against BOTH the in-process report and the expected text; (b) spawn tail
+  rewrite return line byte-exact + the part row reads back the new
+  `tail_start_id` + the post-rewrite spawn report shows retained=6 with the
+  new tail head row; (c) a validation rejection fires via the spawn path
+  (target at the compaction row → `target-not-before-compaction`).
+  Total now 25/25.
 
-Full per-finding detail (file + line + suggested fix): the four `plan47 TODO #86 cluster A-D`
-entries appended to `todo_inbox.md` this session (stamps 2026-09-30_06-30/_06-31).
+## Measured verification (standard gate, 2026-09-30, this checkout)
 
-## Verified clean (negative results — do not re-derive)
-- No `Q3S_[0-9]+K` agent ids and no commented-out agent names (looprunner_Q3S, agent_Q3S,
-  worker_Q3S_HQKV, planner_Q3XS, worker_Q3XS, worker_gemma_Q4) anywhere in live
-  plugin/tool/script code. The only such strings in scope are intentional test fixtures
-  (auto_resume.smoke.mjs, submit.smoke.mjs, compact_memory.smoke.mjs) — not findings.
-- The #85 part-2 `PLANNER_AGENT_ID` case (the #86 exclusion) was not re-reported.
-- Dead code: all exported symbols in scope (125) are used — internally, cross-file, or by
-  tests. No orphan constants.
-- Stale refs: no pre-#118 `agent_readme_*` filename references remain in live code (the
-  plan46 cluster is resolved); all checked doc/path references (readme_post_compaction.md,
-  handover_task.md, ctx.log, compact_budget.json, dump_session.cjs, peek.mjs, gauge.mjs)
-  resolve to existing files.
+- probe: `PROBE handover: 352/352 PASS` (rc 0, 0 FAIL lines)
+- auto_resume 147/147, block_transfer 131/131 + sandbox 64/64,
+  compact_memory 82/82, context_recovery 17/17, context_trim 25/25,
+  ctx_gauge 3/3, gauge_core ALL PASS, intercept_observer 78/78,
+  loop_log 69/69, submit 31/31 — all rc 0.
 
-## Observations (NOT todo_inbox findings — out of scope, planner's call)
-1. `.opencode/temp/compact_budget.json` model_budget lists model ids not in the live roster
-   (Q3XS-160K-MTP, Q3S-110K-MTP, Q2S-128K-x2, Q2S-210K-MTP, Q3XS-262K). The file is a live
-   temp config (gitignored, outside the scope file list) — stale entries there are harmless
-   (they only grant caps to unlisted models), so not reported as a finding.
-2. The explorer role prompt's instruction index references `agent/readme/repo_map.md`,
-   `repo_testgate.md`, `repo_gotchas.md`, `agent_readme_todo.md` — none exist in
-   `agent/readme/` (actual set: README, readme_loop, readme_post_compaction,
-   readme_proposals, readme_task_spec, readme_todo, repo_commands, repo_custom_tools,
-   repo_opencode, repo_overview). The prompt file (agent/prompts/agent_explorer.md) likely
-   carries the same stale index — prompt files are outside this audit's scope.
+All spec DoD numbers match (the context_trim new total = 25).
+
+## Commits
+
+- `a43311a` — the code + smoke unit (checkpoint commit, code only).
+- THIS commit — TODO #126 status + this handover + the loop-log START/DONE
+  + the friction/knowledge/memory inboxes (the close-down commit).
+
+## TODO entries
+
+- #126 status updated to LANDED (live re-acceptance still open — see below).
+  No new TODO entries (nothing out-of-scope found).
+
+## Live re-acceptance (DoD item 5 — the planner's next session)
+
+The live process lags HEAD — the build lands with the maintainer's NEXT
+restart. After it:
+1. the planner runs `context_trim report` on a REAL session (read-only,
+   first) — pre-restart it returned `db-error: no in-process writable
+   sqlite backend`; with this build the chain must fall through to
+   `spawn-sqlite3` (the gauge reads already prove that backend is live).
+2. `tail`'s live test stays the maintainer's throwaway-session call.
+3. context_trim Unit 2 stays HELD on this live re-acceptance (per the NAP).
 
 ## Deliberately not done
-- No code changes at all (read-only task). No gate runs. Test logic not audited (per spec).
-  `.opencode/plugin/deactivated/`, `.opencode/tools/deactivated/`, `.opencode/archive/`,
-  `projects/`, `maintainer/`, `opencode.jsonc` untouched.
-- No per-finding TODO.md entries (explorer deliverable = todo_inbox loose entries; the planner
-  assigns IDs at curation).
 
-## Files touched
-- `todo_inbox.md` (4 cluster entries appended via submit)
-- `agent/handover/handover_task_to_planner.md` (this file)
-- `loop/autorun-2026-09-21_15-33/loop_log.md` (START + DONE lines via the loop_log tool)
-- NOT committed / NOT touched: `maintainer/ideas/ideas.md` carries an uncommitted
-  maintainer-side edit (2026-09-29_23-19 entry, not mine — left as-is, per the
-  DO-NOT-TOUCH list).
+- No edits to gauge.mjs (reference only), the report/tail validation logic,
+  the smoke's live-DB discipline, `maintainer/`, `agent/prompts/**`.
+- No probe pins added (the spec scoped the new pins to the smoke; the
+  probe's 6 S33 pins stay green as-is — 352/352).
+- No live test (restart-gated, above).
 
-Gauge (final, verbatim): see the DONE loop-log line / closing message.
+Lessons: the sqlite3 CLI's default column separator is `|` (force `-separator
+'\t'` for JSON data columns), `PRAGMA busy_timeout` echoes to stdout, and an
+uncommitted BEGIN batch rolls back silently at process exit with exit 0 —
+all three captured in the knowledge inbox; the one reusable gotcha
+(a buffered CLI flush must include the COMMIT statement) in my memory inbox.
+
+Final context gauge (verbatim):
+`SESSION=ses_f0d49cb6bffeNMhGpmF7O3DyjU CTX=101449 (59%) REM=68551 | 5 compactions left`

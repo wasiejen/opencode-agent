@@ -5,6 +5,7 @@ entries start at #124 (closed IDs stay reserved in the `todo_records.md` files �
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
+Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve rewrote the entire history — every 7-hex hash cited below from before 2026-09-29 is a dead revision in the post-carve repo (historical text, not a live pointer). Measured remaps: cbbebf8→7a9e291 (#106), 0c90abe→60f031b (#115), 12e3262→fea1cbb (#114), 44c50a2→9e91878 (R3 import fix). The 4 pairs are re-pointed inline; the remaining dead citations are annotated by this line.
 
 ## Maintainer calls (open, in order)
 
@@ -25,13 +26,15 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 
 ## Docs & misc (open)
 
-## #123. (open, 2026-09-30, plan44) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
+## #123. (closed 2026-09-30, plan45 maintenance pass — scripted sweep + batch re-point + one-line annotations) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
 - **Problem / evidence:** the 2026-09-29 carve (filter-repo rewrite)
-  invalidated some commit hashes; status lines still cite them. Measured
-  DEAD revisions: `cbbebf8` (#106), `0c90abe` (#115), `12e3262` (#114),
-  `44c50a2` (R3 import fix); their post-carve equivalents (`7a9e291`,
-  `60f031b`, `fea1cbb`) are OK. TODO.md carries ~70 7-hex hash citations;
-  the NAP compressed-archive lines are affected too.
+  invalidated every pre-carve commit hash; status lines still cited them.
+  The 4 measured DEAD revisions with known post-carve equivalents:
+  `cbbebf8` (#106) -> `7a9e291`, `0c90abe` (#115) -> `60f031b`,
+  `12e3262` (#114) -> `fea1cbb`, `44c50a2` (R3 import fix) ->
+  `9e91878`. Full sweep over TODO.md + todo_records.md + NAP: 340 unique
+  7-hex citations, 307 dead (the carve rewrote the whole history, not just
+  the 4 measured), 33 alive.
 - **Desired outcome:** every cited hash either re-pointed to the
   post-carve equivalent or annotated pre-carve — a future `git cat-file -e`
   never dead-ends.
@@ -41,7 +44,13 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 - **Suggested scope:** TODO.md, todo_records.md,
   `agent/handover/handover_planner.md` (compressed archive), loop-folder
   summaries (read-only annotation if stale).
-- **Status:** OPEN — maintenance-pass item (iter-45 queue).
+- **Status:** CLOSED (2026-09-30, plan45) — the 4 verified pairs re-pointed
+  inline (33 occurrences; each target script-verified on the current
+  branch); the one-line pre-carve annotation landed in the headers of
+  TODO.md, todo_records.md, and the NAP compressed archive, covering the
+  other 303 dead historical citations; the loop-folder summaries carry
+  179 dead citations (historical — not re-pointed per the read-only scope,
+  covered by this entry + the TODO.md header note).
 
 ## #121. (closed 2026-09-30, plan40 planner-direct — inline, doc-only) two stale refs in the repo_commands.md parts post-#117/#113 — fixed: (a) `agent/readme/repo_commands.md`'s FST-commands pointer now points at `projects/Free-Snap-Tap/repo/repo_commands.md` (was a self-reference); (b) the FST part's "(#113: the venv's python.exe is currently broken …)" note updated to the 3.12.9 close
 
@@ -115,7 +124,7 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
 
 ## 66. (closed 2026-09-23, planner-13 bookkeeping; full text in todo_records.md) — 5.3+5.4 restart acceptance was stale: the read-scope mutation channel was proven LIVE by #68's one-shot live-acceptance (2026-09-17); the §5.4 sentinel torn down; intercept.log accumulated to 3076 lines / 139 sessions by 2026-09-23.
 
-## 67. (closed 2026-09-28, plan30 maintenance pass — R3 build LANDED 2026-09-26 (3ec1c5c/44c50a2/20d5a48, gate 337/337 + io 77/77) + live acceptance COMPLETE 2026-09-26 (plan23 re-test: grep/glob pair + bash quoted-form + bt anchor-marker pair live-accepted; section-anchor pinned-only, schema-shadowed — dormant by design on this host; see #95 closed status)) — Fuzzy scope extension: glob / grep / section-anchor resolvers (2026-09-16, plan2 queue)
+## 67. (closed 2026-09-28, plan30 maintenance pass — R3 build LANDED 2026-09-26 (3ec1c5c/9e91878/20d5a48, gate 337/337 + io 77/77) + live acceptance COMPLETE 2026-09-26 (plan23 re-test: grep/glob pair + bash quoted-form + bt anchor-marker pair live-accepted; section-anchor pinned-only, schema-shadowed — dormant by design on this host; see #95 closed status)) — Fuzzy scope extension: glob / grep / section-anchor resolvers (2026-09-16, plan2 queue)
 
 ## 68. (closed 2026-09-16, full text in todo_records.md) - Write-scope fuzzy (R2): approved + build landed green (35f8143) + one-shot live-accepted 2026-09-17 (benign mistype corrected; the #72 hazard live-measured; residual hazard -> #72 M1)
 
@@ -339,13 +348,13 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Acceptance:** per sub-item (each spec at launch); overall: a controlled CRLF-drift edit and a single-typo edit both resolve without agent action (log evidence), gate green at each landing.
 - **Suggested scope:** `.opencode/plugin/intercept_observer.ts` (+ core), `.opencode/plugin/tests/`, `.opencode/plugin/probes/handover_probe.mjs`, the `research/fuzzy-numword/` specs.
 - **Status:** LANDED 2026-09-26 (all four sub-items: (1) R6 acb6323;
-  (2) edit-fuzzy 15761d8+78b68e7; (3) R3 3ec1c5c/44c50a2/20d5a48;
+  (2) edit-fuzzy 15761d8+78b68e7; (3) R3 3ec1c5c/9e91878/20d5a48;
   (4) R8 + return-info #97 07bdd56/0d9b8e6). Live acceptances
   2026-09-26 (plan22): the grep/glob pair + bash quoted-form R3 channels
   live-accepted (worker-22) + the #97 Windows-root redirect form
   (planner spot-check); the section-anchor + bt anchor-marker channels
   NOT live-verifiable — ROOT CAUSE: the live opencode process was
-  restarted DURING the 14-26 incident, before the R3 import fix 44c50a2
+  restarted DURING the 14-26 incident, before the R3 import fix 9e91878
   landed, so both anchor channels throw the swallowed
   `LOCATOR_MAX_FILE_CHARS is not defined` ReferenceError live (planner
    spot-check: a pair-form startMarker reached the tool VERBATIM + the
@@ -353,7 +362,7 @@ All those IDs stay reserved — see the numbering rule in the header.
    shadowed by the integer `offset` schema (constrained decoding — the
    worker's 7/7 integer-1 observation).
    2026-09-26 (plan23, planner-23, post-restart): the re-test — the
-   import-fix 44c50a2 is now LIVE (canary: anchor channels run clean, zero
+   import-fix 9e91878 is now LIVE (canary: anchor channels run clean, zero
    new `intercept-error` lines). (b) the bt anchor-marker PAIR channel is
    LIVE-ACCEPTED — the pair-form `startMarker` reached the hook VERBATIM +
    resolved (`pair=[7:seven] canon=7 dist=0 gate=mutated line=2 arg=
@@ -407,7 +416,7 @@ All those IDs stay reserved — see the numbering rule in the header.
     Next: sub-item (3) R3 (gate cleared — absorbs the anchor-drift fix).
    **CLOSED (plan28 maintenance pass, 2026-09-28):** all four sub-items
    LANDED 2026-09-26 — (1) R6 `acb6323`, (2) edit-fuzzy `15761d8`+`78b68e7`,
-   (3) R3 `3ec1c5c`/`44c50a2`/`20d5a48`, (4) R8 + return-info `#97`
+   (3) R3 `3ec1c5c`/`9e91878`/`20d5a48`, (4) R8 + return-info `#97`
    `07bdd56`/`0d9b8e6` — + the R3 live-acceptance is COMPLETE for this
    model class (plan23 2026-09-26 re-test: grep/glob pair + bash quoted-
    form + bt anchor-marker pair live-accepted; section-anchor pinned-only,
@@ -782,7 +791,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   the 60 s silence gate tested with a global `Date.now` warp — no real
   60 s waits); every other smoke at baseline UNCHANGED (block_transfer
   131/131 + 64/64, intercept_observer 78/78 — the spec DoD's "77" is
-  stale, the baseline was already 78 since #106 `cbbebf8`, compact_memory
+  stale, the baseline was already 78 since #106 `7a9e291`, compact_memory
   78/78, context_recovery 17/17, submit 23/23); probe 346 = 335 pass +
   11 ENVIRONMENTAL #113 failures 136-146 (`No Python at python312` — the
   venv NOT fixed, per spec: MAINTAINER CALL); ruff F=0; the pytest half
@@ -835,7 +844,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   `.opencode/plugin/probes/handover_probe.mjs` (re-pin only if affected),
   `agent/knowledge/knowledge_plugins.md` (one-liner).
 - **Status:** LANDED (plan34, 2026-09-28, worker-34
-  `worker_Q3S_245K_slow`, code **0c90abe** — gauge.mjs: replicated
+  `worker_Q3S_245K_slow`, code **60f031b** — gauge.mjs: replicated
   string-aware `parseJsonc` + exported `resolveWindow(modelId)` (config-
   first, first-`/` provider split, per-call root-config read, never-throw)
   + `setConfigFileForTest` hook; `gaugeFromRaw` switched; 7 new resolveWindow

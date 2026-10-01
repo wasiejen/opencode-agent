@@ -1,49 +1,51 @@
-# Task spec — U0: keep-N surface (`keepMessages`) for context_trim tail
+# Task spec — U1: the recommendation leg on context_trim report
 
-Design source (read first): `proposals/approved/2026-10-01_context-budget-package.md` §U0.
+Design source (read first): `proposals/approved/2026-10-01_context-budget-package.md` §U1.
 
 ## Goal
-A `keepMessages` argument on `context_trim` **tail** mode (mutually exclusive
-with `target`), delegating to the existing `tailSetKeep` core export — zero
-new validation logic, zero new rejections. The keep form is the post-
-compaction shrink lever (the emergency-keep=18 fix case); growing stays
-available (no extra gating).
+A token-efficient, cut-down report form + a recommendation block + a
+biggest-droppable list, on `context_trim` report.
 
 ## Verified facts (measured 2026-10-01 by the planner)
-- `.opencode/tools/context_trim.ts` is a SINGLE file (no core split).
-- `tailSetKeep` export at L686: signature `(dbPath: string, sessionID:
-  string, keep: number): Promise<string>`; rejections already exist:
-  keep-invalid, keep-exceeds-history, floor 6, no-completed-compaction,
-  session-not-found.
-- Mode dispatch at L752-753: `report` → `reportWindow`; `tail` → the
-  messageID form today. The keep-COUNT boundary form (L671 comment) already
-  exists in the core — only the tool surface is missing.
-- Smoke: `.opencode/plugin/tests/context_trim.smoke.mjs` = 29/29 (measured
-  2026-10-01); it uses fixture DBs only (live opencode.db NEVER written —
-  follow the existing fixture pattern).
-- Probe: the S33 section covers context_trim (plan39 landed checks 346-351
-  when the probe was 352; the probe is now 355 — verify the current S33
-  range against the probe header tally before touching it).
+- `.opencode/tools/context_trim.ts` — `reportWindow` dispatch at L752
+  (U0 edited this file AFTER this spec was written — re-verify the
+  dispatch line by grep at run); the
+  report already emits per-message rows with token mass (`info.tokens`
+  in+out+cache.read, bytes/4 fallback — the existing logic, reuse it) and
+  tool-target detail (read filePath + offset/limit, bash command, webfetch
+  url).
+- The window slice reported = retained-tail slice + post-summary slice
+  (the context_trim report semantics — read the function before extending).
+- Smoke: `.opencode/plugin/tests/context_trim.smoke.mjs` — 34/34 post-U0
+  (measured at this spec's authoring; re-verify at run); fixture DBs
+  only. NOTE: `bun` may be unavailable mid-build (it vanished from the
+  global install 2026-10-01 ~17:45) — the smoke runs under `node`
+  (v24.19.0 verified for this smoke); the probe/gate prefer bun when
+  present, else node.
 
 ## DoD (measured end states)
-- Tool surface: `tail <session> keep=N` (keep form) → the `tail=` return
-  line identical in shape to the messageID form; the five rejections →
-  their plain rejection lines, no DB write.
-- Tool DESCRIPTION updated (MODES line + the tail-mode parameter note:
-  keep form, mutually exclusive with target, count semantics = compact_
-  memory keepMessages — NOT a token budget).
-- Smoke: new keep-form pins THROUGH THE TOOL SURFACE (valid + each
-  rejection); existing 29 pins stay green (count re-verified at run).
+- Cut-down form: NUMBERED rows (1..N from the window start; number →
+  messageID mapped internally — the agent never sees/enters dense ids),
+  tool-target detail only (no content echoes), `last: N` flag.
+- Recommendation block: **3 retention options — low / medium / high —
+  each anchored at a messageID** (stable), each with the read / thought /
+  shell mass split of retained vs dropped + the oldest-kept message's
+  one-line hint. The mass figures are MACHINE-RECOMPUTED in the smoke
+  from the fixture DB (the #99 pin style — never hardcoded tokens).
+- Biggest-droppable list: top-N (default 5) heavy finished turns /
+  call-result pairs — turn number + mass (the U2 target list).
+- The FULL report form stays available and byte-identical (existing
+  report pins stay green).
+- Tool DESCRIPTION updated (the cut-down form + the recommendation block +
+  the flags).
 - Standard gate green: probe 355/355 + all 11 smokes.
-- Checkpoint: one verified unit → ONE code commit; TODO + handover ride
-  the final commit (hashes recorded by the planner, not the worker).
+- Checkpoint: one code commit per verified unit; TODO + handover in the
+  final commit.
 
 ## DO-NOT-touch
-- the live opencode.db (fixture DBs only); the fork
-  (`C:\Users\Wasiejen\Repos\opencode`); `maintainer/`; other tools/plugins;
-  the proposal files; `agent/prompts/**` (U4's domain).
-- New TODO entries: file ONLY a genuine discrepancy found (expectation,
-  never a promise).
+- the live opencode.db (fixture DBs only); the fork; `maintainer/`; other
+  tools/plugins; the proposal files; `agent/prompts/**`.
+- New TODO entries: expectation only, never a promise.
 
 ## Worker
-worker_Q3S (small surface wiring + pins + docs).
+worker_Q3S (report extension + machine-recomputed pins).

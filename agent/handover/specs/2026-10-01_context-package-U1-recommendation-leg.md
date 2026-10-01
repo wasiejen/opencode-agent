@@ -7,15 +7,21 @@ A token-efficient, cut-down report form + a recommendation block + a
 biggest-droppable list, on `context_trim` report.
 
 ## Verified facts (measured 2026-10-01 by the planner)
-- `.opencode/tools/context_trim.ts` — `reportWindow` dispatch at L752; the
+- `.opencode/tools/context_trim.ts` — `reportWindow` dispatch at L752
+  (U0 edited this file AFTER this spec was written — re-verify the
+  dispatch line by grep at run); the
   report already emits per-message rows with token mass (`info.tokens`
   in+out+cache.read, bytes/4 fallback — the existing logic, reuse it) and
   tool-target detail (read filePath + offset/limit, bash command, webfetch
   url).
 - The window slice reported = retained-tail slice + post-summary slice
   (the context_trim report semantics — read the function before extending).
-- Smoke: `.opencode/plugin/tests/context_trim.smoke.mjs` (post-U0 count —
-  re-verify at run); fixture DBs only.
+- Smoke: `.opencode/plugin/tests/context_trim.smoke.mjs` — 34/34 post-U0
+  (measured at this spec's authoring; re-verify at run); fixture DBs
+  only. NOTE: `bun` may be unavailable mid-build (it vanished from the
+  global install 2026-10-01 ~17:45) — the smoke runs under `node`
+  (v24.19.0 verified for this smoke); the probe/gate prefer bun when
+  present, else node.
 
 ## DoD (measured end states)
 - Cut-down form: NUMBERED rows (1..N from the window start; number →

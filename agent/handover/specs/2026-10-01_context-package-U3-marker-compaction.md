@@ -27,7 +27,8 @@ restart).
   `.opencode/plugin/tests/context_trim.smoke.mjs` — read that fixture
   builder (bounded) and REUSE its exact row shapes; never hand-derive a
   row shape.
-- `tailSet` (messageID form) at `.opencode/tools/context_trim.ts` L586 —
+- `tailSet` (messageID form) at `.opencode/tools/context_trim.ts` L586
+  (U0 edited this file after this spec — re-verify by grep at run) —
   the single-sqlite-transaction precedent (fail-closed, WAL-safe).
 - The relay = the auto_resume unit-4 CONTINUE relay (compact_memory.ts
   L34 — the existing queued-message store).

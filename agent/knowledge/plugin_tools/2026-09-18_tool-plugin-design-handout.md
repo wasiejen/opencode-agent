@@ -84,3 +84,6 @@ Rules:
    description or example gap; wrong tool chosen → boundary/naming problem.
 5. Let an agent draft description fixes from the failure transcripts; accept only changes
    validated on held-out tasks (guards against overfitting to the eval).
+
+## Tool registration clarification
+- see agent\knowledge\plugin_tools\2026-09-17_plugin.tool.registration.md if needed

@@ -1,7 +1,7 @@
 # TODO — maintainer's open items
 
-Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #132, new
-entries start at #133 (closed IDs stay reserved in the `todo_records.md` files —
+Numbering: every entry ID is UNIQUE and NEVER REUSED — used so far up to #133, new
+entries start at #134 (closed IDs stay reserved in the `todo_records.md` files —
 root (agent entries) + `projects/Free-Snap-Tap/todo_records.md` (FST entries)).
 Closed entries live in those `todo_records.md` files (one-line records — resolution in file/git log).
 Entries follow the AGENTS.md contract (title / evidence / outcome / acceptance / scope / status).
@@ -1150,6 +1150,32 @@ All those IDs stay reserved — see the numbering rule in the header.
   (`agent/prompts/agent_planner.md` — the CROSS-dispatch bullet).
   Live acceptance = the next real cross-override dispatch (maintainer
   domain).
+
+## #133. (LANDED 2026-10-01, plan8 planner-direct — the 4 new-hire-test frictions of the context_trim description; pre-approved class — agent-usage friction) context_trim new-hire test: 4 description frictions found + fixed (the report rejection surface + 3 missing description lines)
+- **Problem / evidence:** the plan8 new-hire test (worker_Q3S_slow
+  ses_f09aca202ffe7Dn08BNLLCObnQ — battery 6/6 PASS from the tool's
+  description alone, zero source reads; findings
+  `loop/autorun-2026-10-01_03-27/plan8_newhire_context_trim.md`) found 4
+  frictions: (F1) the report dry-run on a no-marker session degenerates to
+  a bare rejection with no counts — the shared fail-closed validation was
+  undocumented; (F2) the report rejection `error: session-not-found` made
+  the host inject a spurious SYSTEM-Warning retry nudge (the tail mode
+  returns the SAME cause as a plain `tail= rejected:` line — no warning);
+  (F3) the report rows include the CURRENT in-flight message with
+  `tokens=0` (uncommitted, not zero-mass) — undocumented; (F4) the row
+  format is under-specified (epoch-ms `time`, the `bytes4=` fallback label,
+  the conditional offset/limit display).
+- **Status:** LANDED (plan8, planner-direct, inline): the report rejection
+  now returns the plain two-line `session <id>\nreport= rejected:
+  session-not-found` (no error surface — the genuine `db-error:` / `error:`
+  lines stay for real backend failures) + the 4 description lines (the
+  uniform rejection-surface note, the in-flight-message note, the
+  row-field note, the dry-run-shared-validation note); the smoke
+  exact-string check re-pinned. Gate green: probe 355/355 + all 11 smokes
+  (context_trim 29/29). LIVE acceptance (natural occurrence, post-restart —
+  the live host process predates the change): the next report call on a
+  dead session shows the `report= rejected:` line WITHOUT the host
+  SYSTEM-Warning retry nudge (the detector: the warning line's absence).
 
 ## #132. (LANDED 2026-10-01, plan6 worker_Q3S_slow — the byte-exact readout marker ` (unlisted)` on the silent built-in cap-1 fallback; gate probe 355/355 + all 11 smokes + ruff F=0; filed in the plan5 maintenance pass — agent_feedback 2026-09-30_16-57; pre-approved class — agent-usage friction) the silent default-cap-1 budget fallback is invisible: an unlisted model row falls back to cap 1 with no marker
 - **Problem / evidence:** agent_feedback 2026-09-30_16-57 (planner): after the maintainer's model key swap, the row model was no longer listed in `model_budget` → the silent default-cap-1 fallback (compaction_core.ts ~L205-211 — the file has no `default` key) → the injected ctx suffix read `1 compactions left` while the self-gauge read 5; ~4 tool calls to diagnose.

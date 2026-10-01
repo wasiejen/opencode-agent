@@ -1185,9 +1185,13 @@ All those IDs stay reserved — see the numbering rule in the header.
   never failed). Cause: the live Bun host's execFileSync spawns only
   once per process (compiled-Bun Windows stdio-handle issue). Fix:
   the spawn path now uses the ASYNC execFile — the gauge's proven
-  pattern (gauge.mjs readSpawnSqlite3) — smoke 26/26. PENDING: one
-  restart → live re-verification (repeated in-process calls + the
-  floor-6 refusal). The residual fork question (dynamic
+  pattern (gauge.mjs readSpawnSqlite3) — smoke 26/26. LIVE-RE-VERIFIED
+  (2026-10-01, after the restart): THREE in-process spawn calls in
+  one process, all green — report ✓, report again ✓ (pre-fix: every
+  call after the first 2500 ms-killed), floor-6 refusal
+  `tail= rejected: retained-tail-below-floor 5` ✓ (byte-exact) —
+  #120 U1 context_trim FULLY LIVE-ACCEPTED (report + tail rewrite +
+  floor refusal, live + smoke). The residual fork question (dynamic
   bun:sqlite/node:sqlite imports fail in the live tool context while
   the host's static import works) stays in the todo-inbox finding.
   (The final hash rides the planner's follow-up bookkeeping commit.)

@@ -501,3 +501,20 @@ session); only the in-scope recovery path (planner-39) ever delivered.
   not-to-borrow.
 - **Review trigger:** a maintainer ruling on any of the 3 proposals, or a
   re-research of Magic Context.
+
+## The probe's total = the number of check() calls — the check IDs are hand-assigned and SPARSE (worker_Q3S 2026-10-01, U0)
+- **Do:** to verify a probe section range against the header tally, RUN
+  the probe and count the `PASS [N]` lines (the total is the number of
+  check() calls, NOT the max id). The ids are hand-assigned with gaps
+  (44 / 100 / 227-230 / 240-249 / 316) and legacy duplicates (257-263,
+  285-288); the header section annotations ("checks 346-351") are id
+  RANGES, not totals.
+- **Why (evidence):** measured 2026-10-01 (U0): the probe total is 355
+  (355 PASS lines, `PROBE handover: 355/355 PASS`) while the emitted ids
+  only reach 353; S33 = 346-351 (6 checks) + S34 = 352-353 (2 checks)
+  matched the header annotation exactly.
+- **Ref:** `.opencode/plugin/probes/handover_probe.mjs` (the `check` fn,
+  the header section-sum annotations; verified by a run + a scripted
+  id-tally).
+- **Keys:** probe, handover_probe, check ids, section tally, 355, sparse
+  ids, re-pin in place.

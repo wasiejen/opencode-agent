@@ -583,3 +583,27 @@ instructions/protocol — facts that save lookups. Format per the README:
 - **Ref:** agent/agent_feedback.md 2026-09-30_01-56.
 - **Keys:** bash, python -c, embedded quotes, ${...}, edit tool, written
   script.
+
+## context_trim `tail` keep form: `keepMessages` is a MESSAGE count (not a token budget) — the tailSetKeep surface (worker_Q3S 2026-10-01, U0 of the context budget package)
+- **Do:** to shrink/grow the retained tail after a compaction WITHOUT a new
+  compaction, use `context_trim tail <session> keepMessages=N` (mutually
+  exclusive with the `<messageID>` form — the surface decides the form):
+  N = the retained-tail MESSAGE count (the N-th message strictly before
+  the compaction user row becomes the new tail head; the compact_memory
+  keepMessages count semantics). The core returns `tail-set= <old> ->
+  <new> keep=N` (the same shape as the messageID form). Primarily a SHRINK
+  lever (the post-compaction trim); keep=0 stays rejected by the floor 6.
+  The five fail-closed rejections (no DB write): keep-invalid /
+  keep-exceeds-history / floor 6 / no-completed-compaction / session-not-
+  found.
+- **Why (evidence):** U0 build (2026-10-01) — the tool surface delegates
+  to the already-pinned `tailSetKeep` core export (zero new validation
+  logic, zero new rejections); the tool resolves its db path via the
+  gauge's `getDbPath()` (the smoke/probe steer it via `setDbPath`).
+  Verified: context_trim smoke 34/34 (5 new surface keep-form pins,
+  dedicated ses_ct_sfc fixture) + probe 355/355 (check 346 re-pinned in
+  place for the 4th arg).
+- **Ref:** `.opencode/tools/context_trim.ts` (execute + the keepMessages
+  arg); `.opencode/plugin/tests/context_trim.smoke.mjs` section 10.
+- **Keys:** context_trim, keepMessages, tailSetKeep, tail-set, keep-N,
+  retained tail, post-compaction shrink, setDbPath.

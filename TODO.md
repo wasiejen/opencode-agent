@@ -1176,11 +1176,21 @@ All those IDs stay reserved — see the numbering rule in the header.
   successful tail, while the identical report worked live before it —
   trigger unknown; candidates: a checkpoint window under the host's
   streaming writes / an AV rescan of the just-modified DB — noted,
-  not chased at the stop line). Unit 2 UNHELD (its hold was the tail
-  live test). The residual fork question (dynamic bun:sqlite/node:
-  sqlite imports fail in the live tool context while the host's static
-  import works) stays in the todo-inbox finding. (The final hash rides
-  the planner's follow-up bookkeeping commit.)
+  not chased at the stop line).   Unit 2 UNHELD (its hold was the tail
+  live test). POST-TAIL HANG RESOLVED (2026-10-01, same session): the
+  pattern across all restarts was FIRST spawned CLI call per process
+  succeeds, every later one 2500 ms-kills (the maintainer's "first
+  call poisons the following" guess, confirmed: bash/node parents and
+  the gauge's async execFile keep working — the gauge's ctx lines
+  never failed). Cause: the live Bun host's execFileSync spawns only
+  once per process (compiled-Bun Windows stdio-handle issue). Fix:
+  the spawn path now uses the ASYNC execFile — the gauge's proven
+  pattern (gauge.mjs readSpawnSqlite3) — smoke 26/26. PENDING: one
+  restart → live re-verification (repeated in-process calls + the
+  floor-6 refusal). The residual fork question (dynamic
+  bun:sqlite/node:sqlite imports fail in the live tool context while
+  the host's static import works) stays in the todo-inbox finding.
+  (The final hash rides the planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

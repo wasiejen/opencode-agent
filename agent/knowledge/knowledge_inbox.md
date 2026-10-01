@@ -20,3 +20,6 @@ _Curation log (planner):_
 
 
 
+## 2026-10-01_10-40 planner_Q3S_slow ses_f0999d65dffeFxiJylRzecRbhu
+Host out-of-sandbox guard chain (verified 2026-10-01, plan9, from intercept.log + fork source): (1) the intercept plugin's tool.execute.before hook covers host write/edit/read filePath fields via the R8 typed-path redirect (intercept_observer.ts REDIRECT_PATH_FIELDS L574-578) but is FAIL-CLOSED PASS-THROUGH on unmappable forms (runRedirect: resolveRedirect → null → continue) — it logs the `out-of-sandbox` note, never blocks; the only hard rejection is block_transfer's own core sandboxCheck. (2) The host write tool flow (fork tool/write.ts): assertExternalDirectoryEffect (L44, the external_directory ask) → ctx.ask permission "edit" (L54) → fs.writeWithDirs (L64); unlisted external paths resolve to the DEFAULT `action: "ask"` (fork permission/index.ts L28-38) — which in a plugin-spawned session did NOT stop the call (observed 2026-10-01: the call proceeded to fs and died at makeDirectory only because the typo'd root doesn't exist). Root cause of the gate pass-through is OPEN (TODO #134): spawned-session permission asks vs installed-build-vs-fork divergence. Keys: out-of-sandbox, R8, external_directory, permission gate, fail-closed pass-through, makeDirectory.
+

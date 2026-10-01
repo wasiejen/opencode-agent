@@ -42,6 +42,22 @@ worked the idle lane per orientation.md:
    cluster (all acted-on: #133 + the plan8 close-down friction entry);
    agent_ideas.md fully cured per its plan42 curation note.
 
+4. **Direct maintainer engagement (mid-session)** — "write access with
+   users/users should have been blocked via intercept plugin" (the
+   session's own typo'd write to `C:\Users\Users\...`). Verified the full
+   chain from files + fork source: the intercept before-hook FIRED (the
+   09:48 `out-of-sandbox` intercept.log line), but the R8 typed-path
+   redirect is fail-closed pass-through on unmappable forms for host
+   tools; the host's `external_directory` permission gate (default
+   `ask` per fork permission/index.ts:28-38) did NOT stop the call — it
+   reached `fs.writeWithDirs` and died at `FileSystem.makeDirectory`
+   (Windows refused `C:\Users\Users` — the accidental save; nothing
+   written). The #102 design premise ("unmappable forms STOP the loop" =
+   the gate stops the session) did not hold in this plugin-spawned
+   session. → **TODO #134 FILED** (maintainer call: gate behavior in
+   spawned sessions + a hard-stop layer for unmappable mutating paths) +
+   feedback + knowledge inbox entries.
+
 ## Verification
 
 Doc/proposal-only session — zero code change, no gate needed. The NAP
@@ -50,5 +66,9 @@ discipline.
 
 ## Commits
 
-See git log (this summary's commit carries the 2 proposals, the 2
-knowledge files, the NAP, and this file).
+- `8f9b0d4` — the 2 proposals, the 2 knowledge files, the NAP, the
+  summary (first form), the loop-log START.
+- `229484c` — TODO #134, the NAP (the engagement bullet + the queue
+  update), the feedback + knowledge inbox entries.
+- the loop-log DONE + the summary's engagement section ride the final
+  bookkeeping commit.

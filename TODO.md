@@ -1151,21 +1151,27 @@ All those IDs stay reserved — see the numbering rule in the header.
   16 MB + a >1 MB smoke pin + stderr on the timeout error; smoke
   26/26). 16 MB build loaded on the maintainer's 2026-10-01 restart:
   **`report` LIVE-ACCEPTED** (valid window map: marker + retained=31 +
-  post-summary=51 on the fork). `tail` live WRITE blocked by a
-  live-process-specific RW hang: the exact tail CLI call completes in
-  19 ms from bash (full shape: -separator \x01, PRAGMA busy_timeout,
-  BEGIN, zero-change UPDATE, COMMIT) but 2500 ms-kills from the live
-  Bun process (3+ times, on both the 1 MB and 16 MB builds) while RO
-  calls work live — the 81 MB stale WAL was ruled out (manual
-  checkpoint → 61 KB, hang persisted). Prime candidate: the host
-  holds the WAL write lock / a transaction open across in-process tool
-  execution → deadlock with the tool's own write CLI (the opencode
-  fork's DB-transaction handling around in-process tools needs the
-  maintainer's check — filed as a todo-inbox finding). The tail logic
-  itself is verified by the smoke (spawn path, ONE-CLI-call
-  transaction byte-exact + read-back). context_trim Unit 2 stays HELD
-  on the tail live acceptance. (The final hash rides the planner's
-  follow-up bookkeeping commit.)
+  post-summary=51 on the fork).   `tail` live WRITE was blocked by a
+  live-process-specific RW hang — MECHANISM FOUND: the tail SQL
+  inlined a JSON.stringify literal (double quotes); Bun's Windows
+  command-line join mangles double-quote-bearing argv (same family as
+  the TAB collapse) → the CLI loses its SQL arg → interactive mode →
+  the deterministic 2500 ms kill (the report's single-quote-only SQL
+  works live; the identical call 19 ms from bash with correct quoting;
+  the 81 MB stale WAL ruled out; the fork's DB layer checked —
+  bun:sqlite static import works there, semaphore-scoped short
+  executes, no transaction across tool execution, so the earlier
+  deadlock candidate is withdrawn). FIX LANDED (2026-10-01): the
+  single-field edit now happens INSIDE sqlite via json_set (JSON1,
+  bundled CLI 3.53.4 verified) — only the new tail_start_id binds, the
+  SQL text carries no double quotes; smoke 26/26 (byte-exact JSON
+  output via both the in-process and the spawn path). PENDING: one
+  restart → the live tail pass on the fork (report → tail keep=6 →
+  verify → floor-6 refusal). The residual fork question (dynamic
+  bun:sqlite/node:sqlite imports fail in the live tool context while
+  the host's static import works) stays in the todo-inbox finding.
+  context_trim Unit 2 stays HELD on the tail live acceptance. (The
+  final hash rides the planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

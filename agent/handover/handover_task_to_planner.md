@@ -1,77 +1,69 @@
-# Worker handover — #130 FST first-toast lag (diagnose + fix)
+# Explorer handover — #131 FST DEBUG→logging research (read-only)
 
-Worker: worker-4 (Qwen3.8-27B-Q3S-170K), looprun 2026-10-01_03-27.
+Explorer: explorer-4 (Qwen3.8-27B-Q3S-170K), looprun 2026-10-01_03-27.
 
-## FST code commit (carried here, never self-referenced)
-- `b513bf2` on `fst_work3` — pre-warm fix + pin test (2 files, +21 lines, additions only).
-- FST gate at that commit: **pytest 466 passed + 1 warning** (baseline 465 + the new pin), **ruff F=0**.
+## Result
+Research doc: `agent/research/2026-10-01_fst-logging-design.md` — complete per the
+spec's DoD: concrete logging design (levels, per-area loggers, 2 files,
+`-log=LEVEL`/`-flow` start-arg control), per-flag disposition for all 5 flags,
+DEBUG4 successor design, opinionated recommendation (**structured logging wins;
+retire the flags in one FST worker unit**).
 
-## Root cause (evidence in handover per DoD)
-Diagnosis = offscreen segment-timing instrumentation (scratch script, scratchpad — nothing
-left in the repo) + code analysis of the first-call inits.
+Files touched: `agent/research/2026-10-01_fst-logging-design.md` (new) + this
+handover. **No FST repo edits/commits** (read-only over `fst_work3` @ b513bf2,
+clean at start, still clean at end). No maintainer live files touched.
 
-Measured segments (offscreen, ms; fresh-process cold values first):
-- queued emit → `add_toast` delivery (cross-thread): ~0.7 (5.71 incl. a deliberate 5 ms emit delay)
-- `ToastWidget` build: **18.61 cold / 1.06 warm** (the cold one includes the process-wide
-  first font/stylesheet/font-directory cost)
-- `addWidget`: 0.33–0.76 · `update_position`: 0.06–1.62
-- first `show()` of the toast window [COLD]: 0.44 (windowHandle null before, set after)
-- first paint delivered: 5.92 · second `show()` [WARM, after hide]: 0.16
-- full first `add_toast` cold: 0.55 · full retrigger warm: 1.17 (same order — no delta)
+## Key findings beyond the spec's verified facts (doc §7, 8 items)
+1. **`fst.log` uses `filemode='w'`** — every launch wipes the log; error evidence
+   from a crashed run is destroyed. Biggest argument for the redesign.
+2. **Two parallel flag channels** (`CONSTANTS.*` vs `Argument_Manager` snapshot at
+   `fst_manager.py:1287-1290`): runtime numpad toggles write only `CONSTANTS`, so
+   `self.DEBUG` reads (`fst_manager.py:1360,1374`) and `self._arg_manager.DEBUG2`
+   (`fst_keyboard.py:953`) don't follow the toggle.
+3. **`check_result` (`fst_keyboard.py:908-914`) is `pass`** (the
+   `logger.error(fut.result())` is commented out) — repeat-task crashes are
+   swallowed, never documented.
+4. Stale print `fst_keyboard.py:869-870` says "suppressed" where the suppression
+   is commented out at `:873` — a lying DEBUG line.
+5. Dead nested `clear_all_variables` (`fst_manager.py:454-459`, self-recursive;
+   shadowed by the real method at `:781`) — safe to delete.
+6. Spec bookkeeping: "4 logging calls outside tests" is actually ~14 live calls
+   (embryonic still); flag-toggle lines are `free_snap_tap.py:30-41` (spec said
+   32-41); `fst_manager.py` is 1943 lines (spec said ~1900).
+7. `-debug`/`-debug_numpad` are the only debug start args — **no
+   `-debug2/-debug3/-debug4` args exist** (those flags: source edit, numpad, or
+   menu option 0 only).
+8. The CLI-keep-open behavior at `fst_manager.py:1856` is **functional** (any debug
+   flag → don't `cls`), not just a print — the design preserves it via
+   "any area logger at DEBUG".
 
-Conclusion: every in-process segment is millisecond-scale offscreen — the ~2 s is the
-Windows-native portion, which offscreen cannot measure (spec-acknowledged limit). By
-elimination, though, the first-toast path's first-call-only costs are exactly two, both
-confirmed:
-1. **The toast window's native side is created only on its first `show()`** —
-   `add_toast` (fst_overlay.py:794) is the only show call site; `check_empty` hides the
-   window when empty, so retriggers re-show the same hidden native window (handle
-   persistence probed offscreen: set after first show, still set after hide). This is the
-   spec's strong lead — CONFIRMED as the only first-call window segment.
-2. **The first `ToastWidget` build pays the process-wide first font/stylesheet cost**
-   (measured 18.61 ms cold vs 1.06 ms warm offscreen; the live Consolas bold load can only
-   be larger). A second first-call candidate — also pre-warmed.
+## Design in one breath
+- Loggers: `fst` (root, main) + `fst.flow` (own file `fst_flow.log`, the DEBUG4
+  successor), `fst.eval`, `fst.state`, `fst.macro`, `fst.config`.
+- `fst.log` appended (never wiped), INFO default, WARNING+ always on;
+  `fst_flow.log` DEBUG only when enabled; console WARNING (headless) + existing
+  error toasts (GUI) unchanged.
+- Control: `-log=LEVEL`, `-flow` (extends the existing `apply_start_arguments`
+  pattern; re-applied on focus change like the other args), `-debug_numpad` kept
+  as the safety gate; `alt+num1`/`num4` + menu option 0 become runtime logger
+  level toggles (workflow parity with today).
+- Dispositions: DEBUG/DEBUG2/DEBUG3 → kill flag, convert sites (error-class sites
+  promoted to always-on WARNING — esp. the silently-ignored constraint NameError
+  at `fst_manager.py:684`); DEBUG4 → keep as `fst.flow` with the same
+  `-->/--/XX/-->` arrow vocabulary + IN/OUT relative-ms latency pairs;
+  DEBUG_NUMPAD → keep (safety gate), targets remapped.
+- Hot-path cost unchanged (one `isEnabledFor` check ≈ one boolean read).
 
-The INCONCLUSIVE escape was NOT taken: instrumentation + analysis identified the dominant
-first-call segment (first `show()` = native window creation), so a targeted pre-warm (not a
-speculative fix) was landed per the spec's scope item 3.
-
-## The fix (FST `b513bf2`)
-`GUI_Manager.__init__`, right after `ToastManager` construction:
-- `self.toast_manager.show()` + `self.toast_manager.hide()` before the event loop:
-  `show()` creates the native window handle synchronously (probed), `hide()` keeps it —
-  the first trigger then only re-shows the existing window, structurally identical to the
-  verified-instant retrigger path. The window is invisible (frameless + translucent +
-  empty 500×0 + WindowTransparentForInput + Tool).
-- `ToastWidget("prewarm", 0.1, 12)` — throwaway widget paying the first font/stylesheet
-  cost; its own master timer destroys it after the first tick (no parent, no layout,
-  never shown).
-
-Pin test: `tests/test_gui_manager.py::test_toast_window_prewarmed_at_startup` — after
-`GUI_Manager` construction the toast manager's `windowHandle()` is not None and the
-manager is hidden (matches the steady/retrigger state). Without the fix the handle is
-None (never shown before the first toast) → the pin would fail.
-
-## Deliberately NOT done
-- **Live confirmation** (first toast instant on the real display) = maintainer domain —
-  no live FST run was made (spec DO-NOT-TOUCH).
-- **The first expose/paint (DWM surface) of the toast window itself still happens on the
-  first toast** — it cannot be pre-paid without a visible toast at startup: a zero-area
-  window never receives Paint events (probed), and an explicit pre-resize is not an
-  alternative — it permanently disables top-level auto-resize to the layout sizeHint
-  (probed) and would clip multi-toast stacking. If the maintainer's live test still shows
-  lag, the remaining suspects are that expose/surface cost or the first cross-thread
-  queued delivery — planner decides the next step.
-- No changes to `fst_keyboard.py` tap-group, maintainer files, branch (`fst_work3` kept),
-  no pushes.
+## Recommendation
+Opinionated, doc §8: **structured logging beats the DEBUG constants** for the
+maintainer's use case (same mental model, one channel, errors that survive
+across runs, per-key latency structure, no-overwhelm by construction). Build
+would be one FST worker unit (task list deliberately NOT detailed here, per spec).
 
 ## TODO
-- `projects/Free-Snap-Tap/TODO.md` #130 status → LANDED (this commit), with the FST commit
-  hash and the live-confirmation-is-maintainer-domain note. No new TODO entries.
+- No new TODO entries expected/added; the 8 discrepancies above are noted for
+  planner curation (none warrant a standalone TODO entry on their own — items 1–4
+  are all inside the future #131 build scope; the rest are bookkeeping).
 
-## Knowledge
-- One verified Qt/PySide fact set submitted to the knowledge inbox (windowHandle()
-  semantics, offscreen Expose/Paint behavior, auto-resize disable on explicit resize).
-
-## Lessons
-- None beyond the knowledge submission.
+## Gauge
+Final readout at end of session (see DONE loop-log line): gauge below.

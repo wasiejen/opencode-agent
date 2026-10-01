@@ -15,3 +15,4 @@
 2026-10-01_05-34 -->START worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K #130 FST first-toast lag: diagnose + pre-warm fix in FST repo
 2026-10-01_05-58 DONE<--- worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K #130 done — root cause = first show() native window creation + first ToastWidget font/stylesheet; pre-warm fix FST b513bf2, pin test, gate 466 passed. SESSION=ses_f0a79494cffeSBGQwPzwXhXKBj CTX=101975 (59%) REM=68025 | 5 compactions left
 2026-10-01_06-04 -RETURN- planner-4 ses_f0a800624ffe8CVXBLVwWX7y4N Qwen3.8-27B-Q3S-235K-slow-HQKV worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K — #130 verified from files (FST b513bf2, pin re-run green)
+2026-10-01_06-06 -->START explorer-4 ses_f0a5c156effeaF2xWmLo9UoZdk Qwen3.8-27B-Q3S-170K #131 FST DEBUG-flag usage map + logging scheme + DEBUG4 successor research (read-only FST, doc in agent repo)

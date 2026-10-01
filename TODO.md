@@ -1165,13 +1165,22 @@ All those IDs stay reserved — see the numbering rule in the header.
   single-field edit now happens INSIDE sqlite via json_set (JSON1,
   bundled CLI 3.53.4 verified) — only the new tail_start_id binds, the
   SQL text carries no double quotes; smoke 26/26 (byte-exact JSON
-  output via both the in-process and the spawn path). PENDING: one
-  restart → the live tail pass on the fork (report → tail keep=6 →
-  verify → floor-6 refusal). The residual fork question (dynamic
-  bun:sqlite/node:sqlite imports fail in the live tool context while
-  the host's static import works) stays in the todo-inbox finding.
-  context_trim Unit 2 stays HELD on the tail live acceptance. (The
-  final hash rides the planner's follow-up bookkeeping commit.)
+  output via both the in-process and the spawn path). **tail LIVE-
+  ACCEPTED** (2026-10-01, json_set build): the rewrite returned
+  `tail= msg_0f46d581… -> msg_0f46d58e… keep=6`; DB readback confirms
+  the part row carries the new tail_start_id (JSON byte-exact); the
+  host re-derived the shrunken window — context 204k → ~169k (the
+  lever; the maintainer's prediction confirmed). Floor-6 refusal:
+  smoke-verified byte-exact; the live attempts were blocked by a NEW
+  post-tail hang mode (report + floor-tail 2500 ms-killed after the
+  successful tail, while the identical report worked live before it —
+  trigger unknown; candidates: a checkpoint window under the host's
+  streaming writes / an AV rescan of the just-modified DB — noted,
+  not chased at the stop line). Unit 2 UNHELD (its hold was the tail
+  live test). The residual fork question (dynamic bun:sqlite/node:
+  sqlite imports fail in the live tool context while the host's static
+  import works) stays in the todo-inbox finding. (The final hash rides
+  the planner's follow-up bookkeeping commit.)
 
 ## #127. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-message-delivery.md` item 4: "in favor"; pre-approved class — agent-usage) restart-branch inheritance: the closing session's queued compact-message appended to the successor's restartText
 - **Problem / evidence:** a queued `compact_message_<sid>` stranded by an

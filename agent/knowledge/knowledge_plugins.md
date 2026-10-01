@@ -471,3 +471,33 @@ session); only the in-scope recovery path (planner-39) ever delivered.
   2026-10-01_01-03 (the fork retry path, SUSPECTED).
 - **Keys:** CUDA, GPU clocks, backend restart, self-healing, manual
   interrupt, retry path.
+
+## Magic Context (external context-manager plugin, cortexkit/magic-context) — evaluated 2026-10-01; full doc `agent/research/2026-10-01_magic-context-plugin.md`
+- **Do:** do NOT re-research Magic Context. It is an external context
+  manager that replaces host compaction (their trim = agent `ctx_reduce`
+  + plugin-side historian on a hidden cheap model; tiered compartment
+  summaries; 5-category shared-SQLite memory). Our adoption list (doc
+  §Adoption implications, 2026-10-01): (2) explicit keep-N surface →
+  proposed `proposals/2026-10-01_explicit-keep-N-surface.md` (plan8,
+  pending); (1) usage-adaptive keep `usable × 0.3 × (1 − usage)` (floor 8 %
+  of usable, clamped 2,000–12,000) + (4) usage-band nudges ({U,T} bands
+  0.20/0.40/0.60/0.75) → proposed `proposals/2026-10-01_usage-adaptive-keep.md`
+  + `proposals/2026-10-01_gauge-nudge-bands.md` (plan9, pending); (3)
+  importance-scored tiered summaries → PARKED (effort L; assumes their
+  head-render model m[0]/m[1], which our host lacks). NOT to borrow
+  (reasons in the doc): cache-aware flush/defer scheduling (no meaningful
+  provider prompt cache on the single local slot), the dreamer overnight
+  cron + historian-as-cheap-model (no second model slot), the shared-SQLite
+  cross-session memory DB + embeddings (our memory track is file-based by
+  design at this scale), fail-safe plugin conflict detection (we run one
+  context manager).
+- **Why (evidence):** explorer_Q3S_slow research 2026-10-01
+  (ses_f09d877e4ffe7sI5ZnOHKWKBQ6) — source reads of historian.md /
+  reclaim.md / nudges.md / CONFIGURATION.md via raw.githubusercontent.
+- **Ref:** `agent/research/2026-10-01_magic-context-plugin.md` (396 lines),
+  the 3 pending proposals at the proposals/ root.
+- **Keys:** Magic Context, cortexkit, protected tail, ctx_reduce,
+  historian, compartments, usage-adaptive keep, nudge bands,
+  not-to-borrow.
+- **Review trigger:** a maintainer ruling on any of the 3 proposals, or a
+  re-research of Magic Context.

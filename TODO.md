@@ -1037,6 +1037,26 @@ All those IDs stay reserved — see the numbering rule in the header.
   maintainer's call. (The final hash rides the planner's follow-up
   bookkeeping commit.)
 - **Status note (2026-10-01, plan1):** U1 is now FULLY LIVE-ACCEPTED (see #126 close — report + tail + floor refusal live + smoke). Unit 2 (the plugin-side post-compaction tail-set, zero fork) is UNHELD — the next build unit for this entry (its hold was the #126 tail live test).
+- **Status (Unit 2, 2026-10-01, worker-Q3S-slow ses_f0a1d6a5affeFgN9YsdlKV7LNr):** LANDED —
+  code commits `ad7db12` (the `tailSetKeep` core export — the keep-count
+  boundary form of `tailSet`, the exact write path reused — +
+  context_trim smoke 26 -> 29) + `f625a65` (the auto-resume tail-set
+  leg — `tailSetLeg` after `tailCompactRearm`, before `limitStopCheck`;
+  every NEW ctx.log COMPACT line's `keep=<N>m` (watched or not) drives
+  `tailSetKeep` + one `tail-set=` log line; the stale line-format
+  comment fixed; the factory `dbPath` option (test-only lever) +
+  auto_resume smoke 152 -> 155) + `9bdcfc9` (probe S34, checks 352-353).
+  Gate: probe 354/354 (fully green — the 11 #113 env-fails are gone since
+  the plan40 VENV_PY re-point); all 11 smokes green (context_trim 29/29,
+  auto_resume 155/155, compact_memory 89/89, the rest at baseline); ruff
+  F=0; pytest 466+1w (the planner-verified 2026-10-01 baseline — this
+  task touches no FST code). The live opencode.db is NEVER written by
+  the smokes (fixture only — the factory's dbPath option). Live
+  acceptance (NOT a DoD gate): the next REAL host compaction shows a
+  `tail-set=` line in auto_resume.log (the tail rewritten to the
+  agent-requested keep boundary — natural occurrence; the host process
+  must postdate the build for the leg to run — the maintainer's
+  restart).
 
 
 ## #126. (closed 2026-10-01, plan1 maintenance pass — #120 U1 context_trim FULLY LIVE-ACCEPTED: the spawn-sqlite3 fallback + the json_set tail fix + the async-execFile fix (execFileSync once-per-process) all live-verified post-restart (report ×2 + floor-6 refusal in one process); the live-debug saga (TAB-arg collapse → \x01, 1 MB → 16 MB, double-quote argv mangling → json_set) in full text in todo_records.md) context_trim's in-process-only sqlite backend fails in the live host process

@@ -11,3 +11,5 @@
 2026-10-01_05-12 -->START worker_Q3S ses_f0a8d978effem4PJrbIaas9Zfb worker_Q3S #129 FST indicator context-menu crash — fix fst_overlay.py:595 globalPosition on QContextMenuEvent + pin test
 2026-10-01_05-15 DONE<--- worker_Q3S ses_f0a8d978effem4PJrbIaas9Zfb worker_Q3S #129 FST context-menu crash fixed (mapToGlobal(event.pos())) + pin; FST gate 465 passed+1 warn, ruff F=0; FST c61bce5; agent handover+TODO committed
 2026-10-01_05-25 DONE<--- planner_Q3S_slow ses_f0a9543a0ffeOmHASvp72Lj7JI planner_Q3S_slow #129 LANDED + planner-verified (FST c61bce5 on fst_work3 — gate 465 passed + 1 warning / ruff F=0; spot re-run test_status_overlay.py 20/20) + the two built proposals -> implemented/ with verdicts — details: plan3_summary.md
+2026-10-01_05-33 -->START planner-4 ses_f0a800624ffe8CVXBLVwWX7y4N Qwen3.8-27B-Q3S-235K-slow-HQKV plan4 (iter 4, looprun 2026-10-01_03-27): launch #130 FST first-toast lag diagnose+fix (worker_Q3S — spec handover_task.md)
+2026-10-01_05-34 -->START worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K #130 FST first-toast lag: diagnose + pre-warm fix in FST repo

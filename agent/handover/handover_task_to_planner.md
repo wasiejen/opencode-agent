@@ -1,68 +1,77 @@
-# Worker handover — TODO #129: FST indicator context-menu crash
+# Worker handover — #130 FST first-toast lag (diagnose + fix)
 
-Session: ses_f0a8d978effem4PJrbIaas9Zfb (worker_Q3S, Qwen3.8-27B-Q3S-170K).
-FST repo: `C:/Users/Wasiejen/Repos/Free-Snap-Tap`, stayed on `fst_work3`
-(verified clean at spec time, e77c01f). Agent repo: `opencode_test`
-(unchanged). Spec: `agent/handover/handover_task.md`. One small verified unit
-(the one-line fix + its pin) — landed in a single FST code commit.
+Worker: worker-4 (Qwen3.8-27B-Q3S-170K), looprun 2026-10-01_03-27.
 
-## What changed (FST repo)
+## FST code commit (carried here, never self-referenced)
+- `b513bf2` on `fst_work3` — pre-warm fix + pin test (2 files, +21 lines, additions only).
+- FST gate at that commit: **pytest 466 passed + 1 warning** (baseline 465 + the new pin), **ruff F=0**.
 
-### `fst_overlay.py` (`StatusOverlay.contextMenuEvent`, ~L594-597)
-- Replaced the broken accessor `self.context_menu.exec_(event.globalPosition().toPoint())`
-  with `self.context_menu.exec_(self.mapToGlobal(event.pos()))`.
-  `QContextMenuEvent` has no `globalPosition()` (unlike `QMouseEvent`); its
-  `pos()` is the widget-local QPoint, which `mapToGlobal` converts to the
-  global QPoint `QMenu.exec_(point)` expects. One line + a 2-line comment.
-- L541 / L555 (`QMouseEvent.globalPosition()`) UNTOUCHED (correct mouse-event
-  usages, per the spec's DO-NOT-TOUCH).
+## Root cause (evidence in handover per DoD)
+Diagnosis = offscreen segment-timing instrumentation (scratch script, scratchpad — nothing
+left in the repo) + code analysis of the first-call inits.
 
-### `tests/test_status_overlay.py`
-- New pin `test_context_menu_event_executes_at_global_point`: spies on
-  `overlay.context_menu.exec_` (instance-level monkeypatch capturing the
-  QPoint — guarantees no modal block), dispatches a REAL
-  `QContextMenuEvent(QContextMenuEvent.Reason.Mouse, local,
-  overlay.mapToGlobal(local))` through the real `overlay.contextMenuEvent(event)`,
-  asserts (a) no AttributeError and (b) `exec_` received
-  `overlay.mapToGlobal(QPoint(3, 4))`.
-- Imports: added `QContextMenuEvent` to the `PySide6.QtGui` import.
-- Docstring L4-5: the "blocking contextMenuEvent/exec_ path is NOT exercised"
-  line updated — the path is now exercised with a captured `exec_`.
+Measured segments (offscreen, ms; fresh-process cold values first):
+- queued emit → `add_toast` delivery (cross-thread): ~0.7 (5.71 incl. a deliberate 5 ms emit delay)
+- `ToastWidget` build: **18.61 cold / 1.06 warm** (the cold one includes the process-wide
+  first font/stylesheet/font-directory cost)
+- `addWidget`: 0.33–0.76 · `update_position`: 0.06–1.62
+- first `show()` of the toast window [COLD]: 0.44 (windowHandle null before, set after)
+- first paint delivered: 5.92 · second `show()` [WARM, after hide]: 0.16
+- full first `add_toast` cold: 0.55 · full retrigger warm: 1.17 (same order — no delta)
 
-## Measured verification (FST gate, run from the FST root)
-- `./.venv/Scripts/python.exe -m pytest -q` → **465 passed, 1 warning**
-  (baseline 464 + 1 new pin; the 1 warning is the pre-existing
-  `fst_keyboard.py:817` coroutine-never-awaited RuntimeWarning, unchanged).
-- `./.venv/Scripts/ruff.exe check --select F .` → **All checks passed** (F=0).
+Conclusion: every in-process segment is millisecond-scale offscreen — the ~2 s is the
+Windows-native portion, which offscreen cannot measure (spec-acknowledged limit). By
+elimination, though, the first-toast path's first-call-only costs are exactly two, both
+confirmed:
+1. **The toast window's native side is created only on its first `show()`** —
+   `add_toast` (fst_overlay.py:794) is the only show call site; `check_empty` hides the
+   window when empty, so retriggers re-show the same hidden native window (handle
+   persistence probed offscreen: set after first show, still set after hide). This is the
+   spec's strong lead — CONFIRMED as the only first-call window segment.
+2. **The first `ToastWidget` build pays the process-wide first font/stylesheet cost**
+   (measured 18.61 ms cold vs 1.06 ms warm offscreen; the live Consolas bold load can only
+   be larger). A second first-call candidate — also pre-warmed.
 
-## FST code commit(s)
-- `c61bce5` — `#129: fix indicator context-menu crash — mapToGlobal(event.pos())`
-  (fst_overlay.py + tests/test_status_overlay.py). This is the ONLY FST commit
-  for the task. (Its hash is recorded here / in the planner's follow-up
-  bookkeeping commit — a commit never carries its own hash.)
+The INCONCLUSIVE escape was NOT taken: instrumentation + analysis identified the dominant
+first-call segment (first `show()` = native window creation), so a targeted pre-warm (not a
+speculative fix) was landed per the spec's scope item 3.
 
-## Agent-repo changes (this commit)
-- `projects/Free-Snap-Tap/TODO.md` — #129 status open → LANDED (with the fix
-  summary + gate numbers; hash noted as recorded in the planner's follow-up).
-- This handover file (overwritten from the prior #128 handover).
-- `loop/autorun-2026-10-01_03-27/loop_log.md` — START line (this session).
+## The fix (FST `b513bf2`)
+`GUI_Manager.__init__`, right after `ToastManager` construction:
+- `self.toast_manager.show()` + `self.toast_manager.hide()` before the event loop:
+  `show()` creates the native window handle synchronously (probed), `hide()` keeps it —
+  the first trigger then only re-shows the existing window, structurally identical to the
+  verified-instant retrigger path. The window is invisible (frameless + translucent +
+  empty 500×0 + WindowTransparentForInput + Tool).
+- `ToastWidget("prewarm", 0.1, 12)` — throwaway widget paying the first font/stylesheet
+  cost; its own master timer destroys it after the first tick (no parent, no layout,
+  never shown).
 
-## TODO entries
-- #129 → LANDED (no new TODO entry needed; nothing out of scope surfaced).
+Pin test: `tests/test_gui_manager.py::test_toast_window_prewarmed_at_startup` — after
+`GUI_Manager` construction the toast manager's `windowHandle()` is not None and the
+manager is hidden (matches the steady/retrigger state). Without the fix the handle is
+None (never shown before the first toast) → the pin would fail.
 
-## What was deliberately NOT done
-- `fst_overlay.py` L541 / L555 (correct mouse-event `globalPosition()` calls) — untouched.
-- `fst_keyboard.py` tap-group section — untouched (2026-09-15 maintainer ruling).
-- Maintainer live files (`opencode.jsonc`, `maintainer/**`) — untouched/never staged.
-- #130 (first-toast lag) — NOT chased (separate entry, per the spec). No
-  root-cause-relevant observation surfaced during this fix (nothing to report).
-- No branch switches in FST; no pushes.
+## Deliberately NOT done
+- **Live confirmation** (first toast instant on the real display) = maintainer domain —
+  no live FST run was made (spec DO-NOT-TOUCH).
+- **The first expose/paint (DWM surface) of the toast window itself still happens on the
+  first toast** — it cannot be pre-paid without a visible toast at startup: a zero-area
+  window never receives Paint events (probed), and an explicit pre-resize is not an
+  alternative — it permanently disables top-level auto-resize to the layout sizeHint
+  (probed) and would clip multi-toast stacking. If the maintainer's live test still shows
+  lag, the remaining suspects are that expose/surface cost or the first cross-thread
+  queued delivery — planner decides the next step.
+- No changes to `fst_keyboard.py` tap-group, maintainer files, branch (`fst_work3` kept),
+  no pushes.
 
-## Discrepancies found
-- None. (One implementation note for the record, not a bug: the
-  2-arg `QContextMenuEvent(reason, pos)` constructor is deprecated in
-  PySide6 6.11.2 and emits a DeprecationWarning — the pin uses the
-  non-deprecated 3-arg form `(reason, pos, globalPos)` to keep the gate at
-  exactly 1 warning.)
+## TODO
+- `projects/Free-Snap-Tap/TODO.md` #130 status → LANDED (this commit), with the FST commit
+  hash and the live-confirmation-is-maintainer-domain note. No new TODO entries.
 
-Lessons: (none beyond the deprecation note above).
+## Knowledge
+- One verified Qt/PySide fact set submitted to the knowledge inbox (windowHandle()
+  semantics, offscreen Expose/Paint behavior, auto-resize disable on explicit resize).
+
+## Lessons
+- None beyond the knowledge submission.

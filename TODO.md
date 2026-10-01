@@ -1102,9 +1102,19 @@ All those IDs stay reserved — see the numbering rule in the header.
   (natural occurrence).
 - **Suggested scope:** `.opencode/plugin/auto_resume.ts` (the `restartText`
   region + the L1409 call site), `.opencode/plugin/tests/auto_resume.smoke.mjs`.
-- **Status:** spec committed
-  `agent/handover/specs/2026-09-30_compact-message-unit4.md`; queue order
-  after #126.
+- **Status:** LANDED 2026-10-01 (worker_Q3S ses_f0ad0bbfcffeCKb4FmU2gK7c29 —
+  spec `agent/handover/specs/2026-09-30_compact-message-unit4.md`): the
+  restart branch appends the closing session's queued `compact_message_<sid>`
+  as a labeled INTENT HINT section (`restartIntentSection` in
+  `auto_resume.ts` — fail-open read, `.consumed` tombstone rename,
+  `intent=` log line; appended at the spawn call site, `restartText` stays
+  pure). Smoke 152/152 (5 new pins — the 3 required scenarios, scenario
+  (a) split into section + tombstone + log-line asserts; the absent case
+  byte-identical to the base). Standard gate green: probe 352/352 + all
+  11 smokes (code unit 5ed36cf). RESIDUE: live acceptance = the next
+  restart-branch spawn with a queued file present (natural occurrence —
+  the `intent= sid=` log line in `auto_resume.log` is the detector).
+  (The final hash rides the planner's follow-up bookkeeping commit.)
 
 ## #128. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-memory-cross-override.md`: option (b), cross spend ≤ model_budget + emergency_budget, "the same as when self-compacting"; pre-approved class — agent-usage) compact_memory caller-scoped compaction override (a cross caller gets effective cap+1)
 - **Problem / evidence:** a worker dead at the wall at `count == cap` is

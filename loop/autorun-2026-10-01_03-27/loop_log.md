@@ -3,3 +3,4 @@
 2026-10-01_03-52 DONE<--- planner-1 ses_f0af35202ffeX6nthxp8kWxtPv Qwen3.8-27B-Q3S-235K-slow-HQKV 87%/29K
 2026-10-01_03-55 -->START planner_Q3S_slow ses_f0ad5d279ffe5cso7Q0CL60RD2 planner_Q3S_slow plan2 (iter 2, new looprun): launch #127 compact-message unit 4 (worker — spec 2026-09-30_compact-message-unit4.md)
 2026-10-01_04-06 -->START worker_Q3S ses_f0ad0bbfcffeCKb4FmU2gK7c29 worker_Q3S worker (iter 2, looprun 2026-10-01_03-27): implement #127 compact-message unit 4 — restart-branch inheritance in auto_resume.ts (spec handover_task.md)
+2026-10-01_04-09 DONE<--- worker_Q3S ses_f0ad0bbfcffeCKb4FmU2gK7c29 worker_Q3S worker DONE: #127 restart-branch inheritance LANDED (unit 5ed36cf; smoke 152/152, gate probe 352/352 + all 11 smokes; live acceptance pending natural occurrence — intent= line is the detector) SESSION=ses_f0ad0bbfcffeCKb4FmU2gK7c29 CTX=100101 (58%) REM=69899 | 5 compactions left

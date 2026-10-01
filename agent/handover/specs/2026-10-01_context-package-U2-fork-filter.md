@@ -37,6 +37,11 @@ a build/swap bat for the maintainer.
 - Session dump: on every filter change, ONE current dump file per session
   (overwrite — no `_c<N>` chain; the DB is not destructively changed).
   Locate the existing dump machinery with one bounded grep before writing.
+- Probe pin 346 asserts the tool's EXACT surface arg-key list
+  (`[mode, session, target, keepMessages]` post-U0/U1) — the `filter`
+  mode's new surface arg(s) REQUIRE re-pinning 346 (in scope — it is a
+  behaviour-pinning test; re-pin it like U0 did, do NOT flag it as a
+  constraint instead).
 
 ## DoD (measured end states)
 - Fork tests (its `bun test` infra): flagged row excluded from assembly +

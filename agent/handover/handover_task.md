@@ -1,51 +1,63 @@
-# Task spec — U1: the recommendation leg on context_trim report
+# Task spec — U3: marker compaction, the cap backstop (compact_memory mode)
 
-Design source (read first): `proposals/approved/2026-10-01_context-budget-package.md` §U1.
+Design source (read first): `proposals/approved/2026-10-01_context-budget-package.md` §U3.
 
 ## Goal
-A token-efficient, cut-down report form + a recommendation block + a
-biggest-droppable list, on `context_trim` report.
+A new `compact_memory` mode: the agent supplies the summary text (compaction
+style, current model) + the boundary; the tool writes the **marker quartet**
+into the target session's DB (sqlite — the same access `context_trim tail`
+uses) and runs the FULL compaction protocol (budget increment + ctx.log
+COMPACT line + pre-compaction dump + queued-message relay). It consumes
+ONE budget compaction. The window re-derives at the NEXT STEP (zero
+restart).
 
 ## Verified facts (measured 2026-10-01 by the planner)
-- `.opencode/tools/context_trim.ts` — `reportWindow` dispatch at L752
-  (U0 edited this file AFTER this spec was written — re-verify the
-  dispatch line by grep at run); the
-  report already emits per-message rows with token mass (`info.tokens`
-  in+out+cache.read, bytes/4 fallback — the existing logic, reuse it) and
-  tool-target detail (read filePath + offset/limit, bash command, webfetch
-  url).
-- The window slice reported = retained-tail slice + post-summary slice
-  (the context_trim report semantics — read the function before extending).
-- Smoke: `.opencode/plugin/tests/context_trim.smoke.mjs` — 34/34 post-U0
-  (measured at this spec's authoring; re-verify at run); fixture DBs
-  only. NOTE: `bun` may be unavailable mid-build (it vanished from the
-  global install 2026-10-01 ~17:45) — the smoke runs under `node`
-  (v24.19.0 verified for this smoke); the probe/gate prefer bun when
-  present, else node.
+- The tool is PLUGIN-registered (not in `.opencode/tools/`):
+  `.opencode/plugin/compact_memory.ts` (dispatch + the pre-compaction dump
+  hook L93-105; the dump script is `agent/scripts/db/dump_session.cjs
+  <sid> --out <relpath>`) + `.opencode/plugin/compaction_core.ts` (the
+  budget / ctx.log writes — the verified-success-only COMPACT line).
+- Marker quartet schema: a user row carrying the compaction part
+  `{type:"compaction", tail_start_id:<target id>}` + the first assistant
+  row strictly AFTER it with `info.summary` set + the tail target id.
+  The window guard: `tailIndex < compactionIndex && summaryIndex >
+  compactionIndex` (fork message-v2.ts:568, mirrored in
+  `.opencode/tools/context_trim.ts`).
+- The quartet FIXTURE CONSTRUCTION already exists in
+  `.opencode/plugin/tests/context_trim.smoke.mjs` — read that fixture
+  builder (bounded) and REUSE its exact row shapes; never hand-derive a
+  row shape.
+- `tailSet` (messageID form) at `.opencode/tools/context_trim.ts` L586
+  (U0 edited this file after this spec — re-verify by grep at run) —
+  the single-sqlite-transaction precedent (fail-closed, WAL-safe).
+- The relay = the auto_resume unit-4 CONTINUE relay (compact_memory.ts
+  L34 — the existing queued-message store).
+- The new mode = a SELF dispatch where the summary text is agent-provided
+  (the host summarize call is skipped); the budget increment +
+  verified-success-only COMPACT line + dump reuse the existing dispatch
+  machinery (do not re-derive them).
 
 ## DoD (measured end states)
-- Cut-down form: NUMBERED rows (1..N from the window start; number →
-  messageID mapped internally — the agent never sees/enters dense ids),
-  tool-target detail only (no content echoes), `last: N` flag.
-- Recommendation block: **3 retention options — low / medium / high —
-  each anchored at a messageID** (stable), each with the read / thought /
-  shell mass split of retained vs dropped + the oldest-kept message's
-  one-line hint. The mass figures are MACHINE-RECOMPUTED in the smoke
-  from the fixture DB (the #99 pin style — never hardcoded tokens).
-- Biggest-droppable list: top-N (default 5) heavy finished turns /
-  call-result pairs — turn number + mass (the U2 target list).
-- The FULL report form stays available and byte-identical (existing
-  report pins stay green).
-- Tool DESCRIPTION updated (the cut-down form + the recommendation block +
-  the flags).
-- Standard gate green: probe 355/355 + all 11 smokes.
+- Fixture-DB pin THROUGH THE TOOL SURFACE: the quartet is written —
+  `context_trim report` afterwards shows the new marker + tail (the
+  window re-derives); the budget increment lands in the fixture budget
+  file; the COMPACT-line + dump mechanics fire (fixture equivalents).
+- Budget: ONE budget compaction consumed (the normal cap applies — pin
+  the increment; no new budget line).
+- One live throwaway-session test (probe-style spawn — the probe already
+  spawns sessions; fixture pins first).
+- Tool DESCRIPTION updated (the new mode + when to use it: cap/full-window
+  case, when the filter can't free enough mass, one budget consumed).
+- Standard gate green: probe + all 11 smokes (compact_memory smoke at its
+  current baseline — re-verify the count at run).
 - Checkpoint: one code commit per verified unit; TODO + handover in the
-  final commit.
+  final commit (hashes recorded by the planner, not the worker).
 
 ## DO-NOT-touch
-- the live opencode.db (fixture DBs only); the fork; `maintainer/`; other
-  tools/plugins; the proposal files; `agent/prompts/**`.
+- the live opencode.db of REAL sessions (fixture DBs + throwaway sessions
+  only); the fork; `maintainer/`; other tools/plugins; the proposal
+  files; `agent/prompts/**`.
 - New TODO entries: expectation only, never a promise.
 
 ## Worker
-worker_Q3S (report extension + machine-recomputed pins).
+worker_Q3S (one DB-write mode + protocol reuse + fixture pins).

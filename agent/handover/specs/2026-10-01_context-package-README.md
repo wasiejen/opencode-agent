@@ -10,7 +10,7 @@ loop folder before each launch):
 | # | spec | worker | status |
 |---|------|--------|--------|
 | U0 | `2026-10-01_context-package-U0-keep-N-surface.md` | worker_Q3S | LANDED 2026-10-01 (0538aa4 — smoke 34/34, probe 355/355, all 11 smokes; planner-verified spot re-run under node) |
-| U1 | `2026-10-01_context-package-U1-recommendation-leg.md` | worker_Q3S | COMMITTED 2026-10-01 |
+| U1 | `2026-10-01_context-package-U1-recommendation-leg.md` | worker_Q3S | LANDED 2026-10-01 (9f1f668 — smoke 40/40, probe 355/355, all 11 smokes under node; surface report = cut-down form by default, full form via core export — decision recorded) |
 | U2 | `2026-10-01_context-package-U2-fork-filter.md` | worker_Q3S_slow | COMMITTED 2026-10-01 (effort L — the long pole; LIVE gate = the maintainer's `build_fork.bat` run) |
 | U3 | `2026-10-01_context-package-U3-marker-compaction.md` | worker_Q3S | COMMITTED 2026-10-01 |
 | U4 | `2026-10-01_context-package-U4-nudge-policy.md` | worker_Q3S | COMMITTED 2026-10-01 (depends on U1; the prompt-ladder reduction is the PLANNER'S direct follow-up — planner HAS agent/prompts/** access, only .git/.github denied) |

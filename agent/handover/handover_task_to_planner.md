@@ -38,6 +38,9 @@ provider cache this host lacks). (2) is the clearest concrete build →
 planner triage as maintainer call if wanted. No build done (task scope).
 
 Commit: `6862348` (doc). No TODO entries; no discrepancies found.
+Note: this file superseded the prior #132 worker handover (already consumed —
+planner verified it in `87927fa`; archived copy in the loop folder; full
+prior content in git history at `87927fa^`).
 Lessons: GitHub HTML pages are navigation-heavy — `raw.githubusercontent.com`
 fetches kept all research output clean; one large page (CONFIGURATION.md)
 truncated to a saved file and was grepped in place (no context bloat).

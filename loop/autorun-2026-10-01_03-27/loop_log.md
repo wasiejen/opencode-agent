@@ -14,3 +14,4 @@
 2026-10-01_05-33 -->START planner-4 ses_f0a800624ffe8CVXBLVwWX7y4N Qwen3.8-27B-Q3S-235K-slow-HQKV plan4 (iter 4, looprun 2026-10-01_03-27): launch #130 FST first-toast lag diagnose+fix (worker_Q3S — spec handover_task.md)
 2026-10-01_05-34 -->START worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K #130 FST first-toast lag: diagnose + pre-warm fix in FST repo
 2026-10-01_05-58 DONE<--- worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K #130 done — root cause = first show() native window creation + first ToastWidget font/stylesheet; pre-warm fix FST b513bf2, pin test, gate 466 passed. SESSION=ses_f0a79494cffeSBGQwPzwXhXKBj CTX=101975 (59%) REM=68025 | 5 compactions left
+2026-10-01_06-04 -RETURN- planner-4 ses_f0a800624ffe8CVXBLVwWX7y4N Qwen3.8-27B-Q3S-235K-slow-HQKV worker-4 ses_f0a79494cffeSBGQwPzwXhXKBj Qwen3.8-27B-Q3S-170K — #130 verified from files (FST b513bf2, pin re-run green)

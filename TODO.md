@@ -1160,7 +1160,9 @@ All those IDs stay reserved — see the numbering rule in the header.
    cap-0 corner ×2, the IQ4 cap-3 override pin; the old cross-shape pins
    re-pinned — incl. the CPU plain-call pins → SELF shape); probe
   352/352 (S13 92/93/95/222/223/225/226 + S32 340 re-pinned). PENDING
-  PLANNER-SIDE: the AGENTS.md Compaction Guidelines "Budgets" block (staged
-  copy) + the planner-prompt budget line (`agent/prompts/agent_planner.md`).
+  PLANNER-SIDE (done 2026-10-01, plan2 bookkeeping): the AGENTS.md
+  Compaction Guidelines "Budgets" block (staged copy at repo root
+  `AGENTS_pending_2026-10-01.md`) + the planner-prompt budget line
+  (`agent/prompts/agent_planner.md` — the CROSS-dispatch bullet).
   Live acceptance = the next real cross-override dispatch (maintainer
   domain).

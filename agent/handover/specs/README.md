@@ -9,8 +9,9 @@
 Queue order: #126 (context_trim spawn fallback — LANDED + live-accepted
 2026-10-01, plan1) → #127 (LAUNCHING 2026-10-01, plan2, live in
 `agent/handover/handover_task.md`) → #128.
-Status (2026-10-01): all committed; #127 LANDED (plan2, worker_Q3S, gate
-green); #128 OPEN (launching from plan2).
+Status (2026-10-01): all committed; #127 + #128 LANDED (plan2, worker_Q3S,
+gates green); #128 live acceptance + the AGENTS.md Budgets-block paste
+(maintainer domain) pending.
 
 ## 2026-09-24 wave (trusted compaction system) — COMPLETE
 

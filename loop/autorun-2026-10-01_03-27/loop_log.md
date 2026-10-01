@@ -7,3 +7,4 @@
 2026-10-01_04-21 -->START worker_Q3S ses_f0abc032dffenb1K8yrfXKOg5V worker_Q3S TODO #128 compact_memory caller-scoped override: gate + Part-3 ovr token + pins
 2026-10-01_04-51 DONE<--- worker_Q3S ses_f0abc032dffenb1K8yrfXKOg5V worker_Q3S TODO #128 LANDED: gate isCross/effCap + Part-3 ovr token + docs; smoke 89/89, probe 352/352, all 11 smokes green — gauge: SESSION=ses_f0abc032dffenb1K8yrfXKOg5V CTX=158746 (93%) REM=11254 | 5 compactions left
 2026-10-01_05-02 DONE<--- planner_Q3S_slow ses_f0ad5d279ffe5cso7Q0CL60RD2 planner_Q3S_slow 63%/85K — #127 + #128 LANDED and verified (5ed36cf/f78f556 + 5c1af35; auto_resume 152/152 + compact_memory 89/89 planner re-run) + maintainer question.md answered (bash avoid-list provenance) — details: plan2_summary.md
+2026-10-01_05-11 -->START planner_Q3S_slow ses_f0a9543a0ffeOmHASvp72Lj7JI planner_Q3S_slow plan3 (iter 3, looprun 2026-10-01_03-27): launch #129 FST indicator context-menu fix (worker — spec handover_task.md)

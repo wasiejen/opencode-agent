@@ -1116,7 +1116,7 @@ All those IDs stay reserved — see the numbering rule in the header.
   the `intent= sid=` log line in `auto_resume.log` is the detector).
   (The final hash rides the planner's follow-up bookkeeping commit.)
 
-## #128. (open, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-memory-cross-override.md`: option (b), cross spend ≤ model_budget + emergency_budget, "the same as when self-compacting"; pre-approved class — agent-usage) compact_memory caller-scoped compaction override (a cross caller gets effective cap+1)
+## #128. (LANDED, 2026-09-30, direct session ses_f0e129deeffeqmM5rc8mpnTY2Q — maintainer ruling on `proposals/approved/2026-09-30_compact-memory-cross-override.md`: option (b), cross spend ≤ model_budget + emergency_budget, "the same as when self-compacting"; pre-approved class — agent-usage) compact_memory caller-scoped compaction override (a cross caller gets effective cap+1)
 - **Problem / evidence:** a worker dead at the wall at `count == cap` is
   resolvable only by a cross call that BURNS its one self-rescue (the
   emergency arg); at `count == cap+1` it is refused outright — no planner
@@ -1152,4 +1152,15 @@ All those IDs stay reserved — see the numbering rule in the header.
   (the budget header comment), `.opencode/plugin/tests/compact_memory.smoke.mjs`.
 - **Status:** spec committed
   `agent/handover/specs/2026-09-30_compact-memory-cross-override.md`; queue
-  order after #127.
+  order after #127. **LANDED 2026-10-01** (worker session
+  ses_f0abc032dffenb1K8yrfXKOg5V): gate (`isCross`/`effCap` — the emergency
+  branch fires only for SELF) + Part-3 `ovr` token + Part-2 worker-part docs
+   (tool description + `compaction_core.ts` header); smoke 82 → 89 (net +7:
+   the override pins (a)/(b)/(c) + Part-3 line pins, self regressions (d)/(e)/(f),
+   cap-0 corner ×2, the IQ4 cap-3 override pin; the old cross-shape pins
+   re-pinned — incl. the CPU plain-call pins → SELF shape); probe
+  352/352 (S13 92/93/95/222/223/225/226 + S32 340 re-pinned). PENDING
+  PLANNER-SIDE: the AGENTS.md Compaction Guidelines "Budgets" block (staged
+  copy) + the planner-prompt budget line (`agent/prompts/agent_planner.md`).
+  Live acceptance = the next real cross-override dispatch (maintainer
+  domain).

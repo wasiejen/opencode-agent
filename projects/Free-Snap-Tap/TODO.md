@@ -5,12 +5,12 @@ Moved out of the root `TODO.md` on 2026-09-29 (#117 per-project split).
 
 ## FST code & tests (open)
 
-## #129. (open, 2026-10-01, maintainer inbox `FST_bugs.md`) — Indicator context-menu crash: right-click on the status indicator raises AttributeError (`QContextMenuEvent` has no `globalPosition`)
+## #129. (LANDED, 2026-10-01, maintainer inbox `FST_bugs.md`) — Indicator context-menu crash: right-click on the status indicator raises AttributeError (`QContextMenuEvent` has no `globalPosition`)
 - **Problem / evidence:** right-clicking the status indicator (context menu) opens no menu and raises: `AttributeError: 'PySide6.QtGui.QContextMenuEvent' object has no attribute 'globalPosition'` at `fst_overlay.py:595` in `contextMenuEvent` → `self.context_menu.exec_(event.globalPosition().toPoint())`.
 - **Desired outcome:** right-click opens the indicator context menu without the error.
 - **Acceptance criteria:** the menu opens on right-click (maintainer live test); no AttributeError in the console; a pinning test where the repo's test harness can cover the overlay event path.
 - **Suggested scope:** `fst_overlay.py` `contextMenuEvent` (~L595) — replace `globalPosition()` with the correct PySide6 position accessor for a context-menu event (local `position()` vs global coordinates — the worker verifies against the installed PySide6 version + the menu's exec_ semantics).
-- **Status:** open — maintainer bug report (inbox 2026-10-01, FST_bugs.md).
+- **Status:** LANDED (2026-10-01, worker) — `contextMenuEvent` now calls `self.context_menu.exec_(self.mapToGlobal(event.pos()))` (one line, `fst_overlay.py`); new pin test in `tests/test_status_overlay.py` dispatches a real `QContextMenuEvent` and spies on `exec_` (no modal block). FST gate green: pytest 465 passed + 1 warning, ruff F=0. FST code commit hash recorded in the planner's follow-up bookkeeping commit.
 
 ## #130. (open, 2026-10-01, maintainer inbox `FST_bugs.md`) — First toast of a session lags input ~2 s (mouse inclusive); retriggers are instant
 - **Problem / evidence:** the first trigger of a function that sends a toast (displayed under the status indicator) lags input extremely for ~2 s (mouse inclusive) until the toast is displayed; retriggering the same macro shows no such delay (toast appears immediately). Toast causation is the maintainer's current guess (the only observable change).

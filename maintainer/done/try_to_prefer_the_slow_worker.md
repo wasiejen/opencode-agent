@@ -1,0 +1,2 @@
+the normal worker_q3s causes a model switch (because other model than your planner is running on) and thus reprefill of you planner session. low context ok - above 150k i do not think the saved time of the worker can make up for this. 
+also the bigger context window is really helpful for look up heavy tasks - which nearly all programming tasks on plugins with this much smokes are. so might save a resume of a worker, delegation to another worker or compaction - and saves thus even more wall time.

@@ -13,7 +13,7 @@ loop folder before each launch):
 | U1 | `2026-10-01_context-package-U1-recommendation-leg.md` | worker_Q3S | LANDED 2026-10-01 (9f1f668 — smoke 40/40, probe 355/355, all 11 smokes under node; surface report = cut-down form by default, full form via core export — decision recorded) |
 | U2 | `2026-10-01_context-package-U2-fork-filter.md` | worker_Q3S_slow | COMMITTED 2026-10-01 (effort L — the long pole; LIVE gate = the maintainer's `build_fork.bat` run) |
 | U3 | `2026-10-01_context-package-U3-marker-compaction.md` | worker_Q3S | LANDED 2026-10-01 (5c1e286/40e008f — compact_memory 110/110, gate green under node; worker limit-death after final commit — no handover (planner reconstructed from files), probe 86 re-pinned by the planner) |
-| U4 | `2026-10-01_context-package-U4-nudge-policy.md` | worker_Q3S | COMMITTED 2026-10-01 (depends on U1; the prompt-ladder reduction is the PLANNER'S direct follow-up — planner HAS agent/prompts/** access, only .git/.github denied) |
+| U4 | `2026-10-01_context-package-U4-nudge-policy.md` | worker_Q3S | LANDED 2026-10-01 (4e2b901 — auto_resume 165/165, gate green under node) + prompt-ladder reduction done by the planner (planner + worker prompts + AGENTS_pending note); the `nudge1-4` keys are NOT enabled in the live config (absent = off — enabling is the maintainer's call) |
 
 Notes: U1 must land before U4 (the triage line carries the U1 recommendation
 one-liner). U2's fork work lives in `C:\Users\Wasiejen\Repos\opencode`;

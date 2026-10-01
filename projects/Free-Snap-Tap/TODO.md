@@ -1,5 +1,5 @@
 # TODO — Free-Snap-Tap (per-project entries)
-IDs continue the global sequence — counter in the root `TODO.md` (used so far up to #131, new entries start at #132).
+IDs continue the global sequence — counter in the root `TODO.md` (used so far up to #132, new entries start at #133).
 Full texts of closed entries: `todo_records.md` (this folder). FST repo docs: `repo/` (this folder).
 Moved out of the root `TODO.md` on 2026-09-29 (#117 per-project split).
 

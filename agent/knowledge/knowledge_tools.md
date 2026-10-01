@@ -570,3 +570,16 @@ instructions/protocol — facts that save lookups. Format per the README:
   (AGENTS.md protocol line).
 - **Keys:** AGENTS.md, copy protocol, watch, context refill,
   AGENTS_pending.
+
+## Bash `python -c` with embedded quotes / ${...} mangles under this host's bash — use the edit tool or a written script (worker feedback 2026-09-30_01-56)
+- **Do:** for multi-line string replacements in code files, use the edit
+  tool or a written `.py`/`.mjs` file run via `python`/`node` — do NOT
+  embed quoted code in `bash` `python -c "..."` calls (silent no-ops +
+  syntax errors under this host's bash).
+- **Why (evidence):** worker_Q3S_slow ses_f10a06089ffeVKusSGiE20Hjw9
+  (2026-09-30, agent_feedback 2026-09-30_01-56): `python -c` with embedded
+  quotes/${...} silently no-oped and produced syntax errors; the edit tool
+  / written script worked.
+- **Ref:** agent/agent_feedback.md 2026-09-30_01-56.
+- **Keys:** bash, python -c, embedded quotes, ${...}, edit tool, written
+  script.

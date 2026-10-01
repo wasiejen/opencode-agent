@@ -43,3 +43,18 @@ thin index pointing at the parts.
   binaries) must probe the REAL host (P06): inside the plugin/process or with
   the bundled runtime — never a same-named system CLI (the system-bun vs.
   opencode.exe-bun false confidence, #37).
+- Qt/PySide6 offscreen + first-show facts (verified 2026-10-01, worker-4
+  #130, measured offscreen): (1) `QWidget.windowHandle()` is None until the
+  widget has been shown at least once (it does NOT create the window); a
+  `show()` BEFORE the event loop creates the native handle synchronously and
+  the handle persists after `hide()` — re-showing a hidden top-level window is
+  cheap (the #130 pre-warm relies on this). (2) Offscreen: a shown zero-area
+  (e.g. 500x0 childless) top-level window never receives a Paint event, and
+  no Expose event is delivered offscreen at all — paint-based triggers need a
+  non-zero area; QWindow has no exposed signal bound in PySide6. (3) An
+  explicit `resize()` on a top-level widget WITH a layout PERMANENTLY disables
+  auto-resize to the layout sizeHint (top-level auto-resize tracks sizeHint
+  only until the first explicit resize) — children then get clipped. (4) The
+  first build of a widget with a custom font/stylesheet pays the
+  process-wide first font/stylesheet cost (18.6 ms cold vs 1.1 ms warm
+  offscreen) — pre-payable by building one throwaway widget at startup.

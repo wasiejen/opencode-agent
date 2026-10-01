@@ -6,9 +6,10 @@
 - `2026-09-30_compact-memory-cross-override.md` (TODO #128) — the
   caller-scoped compaction override (ruling-adjusted: cross total = self
   total).
-Queue order: the current `agent/handover/handover_task.md` (#126 context_trim
-spawn fallback — launching from this session) → #127 → #128.
-Status (2026-09-30): all committed, OPEN (pre-launch for #127/#128).
+Queue order: #126 (context_trim spawn fallback — LANDED + live-accepted
+2026-10-01, plan1) → #127 (LAUNCHING 2026-10-01, plan2, live in
+`agent/handover/handover_task.md`) → #128.
+Status (2026-10-01): all committed; #127 in flight; #128 OPEN (pre-launch).
 
 ## 2026-09-24 wave (trusted compaction system) — COMPLETE
 

@@ -1,83 +1,73 @@
-# Task spec — context_trim: the spawn-sqlite3 backend fallback (TODO #126)
+# Task spec — compact-message-delivery item 4: restart-branch inheritance (TODO #127)
 
-Worker: worker_Q3S (170K). Pre-approved class (agent-usage tool fix).
-Branch truth: stay on the current checkout.
+Worker: worker_Q3S (170K). Pre-approved class (agent-usage). Queue: #126 is
+LANDED (2026-10-01, plan1) — this is the live task spec. Branch truth: stay
+on the current checkout (`opencode_test`).
 
 ## Goal
 
-`context_trim` must work in the LIVE host process: add a third, last-resort
-backend (`spawn-sqlite3` via `.opencode/plugin/tools/sqlite3.exe`) to
-`openDb`, mirroring the gauge core's proven spawn cascade. Keep fail-closed:
-when NO backend is available at all, the tool still returns a db-error
-(never a blind write).
+The auto_resume unit-4 restart branch appends the CLOSING session's queued
+`compact_message_<sid>` to the successor's restartText (closing-intent
+inheritance), marks the file consumed (the `.consumed` tombstone), and stays
+fail-open.
+
+## Ruling + design context (settled — do not re-litigate)
+
+- Maintainer ruling (2026-09-30, comment in
+  `proposals/approved/2026-09-30_compact-message-delivery.md`): IN FAVOR of
+  item 4 ("this appending would be more truthful").
+- Planner's interference analysis (his question, answered in the direct
+  session): NO blocking problem with the planner instructions — the
+  appended text is a labeled INTENT HINT; the successor's protocol already
+  rebuilds reality from committed state first (a stale intent is corrected
+  by the file check); the size is bounded to one queued message.
+- Items 1-3 already LANDED (`f96a39c` STEP-0 protocol / `b025159` zombie
+  guard / `0a89e7c` age sweep) — the relay path and those behaviors are
+  UNCHANGED by this task.
 
 ## Verified facts (measured at spec time, 2026-09-30 — do not re-derive)
 
-- Live: the first live `report` call returned `db-error: no in-process
-  writable sqlite backend (bun:sqlite / node:sqlite both unavailable)`. The
-  live process IS the current build (`context_trim` is in the live toolset).
-- `.opencode/tools/context_trim.ts` L98-129 `openDb`: tries `bun:sqlite`
-  then `node:sqlite` only. The header L72-79 documents the deliberate
-  "NO spawn fallback for writes" design — this task reverses that for the
-  spawn case ONLY (the fail-closed end stays).
-- `.opencode/plugin/scripts/gauge.mjs` = the reference implementation (READ
-  the bounded regions only, do not copy blindly): `DEFAULT_BACKENDS` (L163,
-  order node→bun→spawn), `DEFAULT_EXE_PATH` (L161 — the exe is on the tree,
-  verified), the `setBackends` test hook (L187), the spawn-sqlite3 backend
-  with its hard-timeout discipline (see the `spawn-sqlite3` + `hard-timeout`
-  comment block L42-44), the backend-quirks notes (L12-32: NULL vs
-  undefined, busy_timeout, readOnly flags).
-- `context_trim.ts` already imports from gauge.mjs (`DEFAULT_DB_PATH,
-  BUSY_TIMEOUT_MS`, L86) — extending that import is the established pattern.
-- The smoke host = system node v24+ (`node:sqlite` available) → the
-  in-process pins never exercise the spawn path unless the backend list is
-  FORCED via a test hook.
-- win32 gotcha (plan45 lesson): never `execSync` with `^`-bearing args
-  (cmd-escape). Use `execFile`/`execFileSync` (no shell) — that is also the
-  gauge core's discipline.
+- The restart branch: `.opencode/plugin/auto_resume.ts` —
+  `restartText(sid, exhausted)` L898-915 (pure string construction), call
+  site L1409 `spawnPlanner(restartText(sid, exhausted), msgs)`.
+- The queue file: `.opencode/temp/compact_message_<sid>` — the SAME `logDir`
+  the plugin already uses for `COMPACT_BUDGET_FILE` (L240). The `.consumed`
+  tombstone convention = item 3 (`0a89e7c`, the age sweep).
+- The existing unit-4 restart-branch pins live in
+  `.opencode/plugin/tests/auto_resume.smoke.mjs` (current total 147/147).
+  AUDIT the restartText/spawn pins BEFORE adding yours — any pin asserting
+  the exact base text is behaviour-pinning (the absent-file case must stay
+  byte-identical).
 
 ## Design (suggestion — the HOW is yours within the DoD)
 
-- Backend 3 in `openDb`: `spawn-sqlite3` via `DEFAULT_EXE_PATH`. The
-  returned `Ctx` keeps the `{db, backend}` shape — a thin adapter object
-  over `execFile` (query → rows; the single tail transaction → ONE CLI
-  invocation carrying `PRAGMA busy_timeout…; BEGIN; …; COMMIT;`) keeps the
-  report/tail logic UNCHANGED.
-- A backend-list test hook (mirror `gauge.mjs` `setBackends`) so the smoke
-  can force `["spawn-sqlite3"]`-only.
-- The spawn path stays fail-closed: exe missing / spawn error / timeout →
-  the db-error path (no partial write).
-- `report` = read-only queries (fine via the CLI); `tail` = the single
-  transaction via ONE CLI invocation.
+- At the L1409 call site or inside `restartText` (your choice): if
+  `compact_message_<sid>` exists, read it; append a labeled section (e.g.
+  a line naming it as the closing session's queued message for `<sid>`,
+  consumed by the restart branch, to be treated as an INTENT HINT — verify
+  state from committed state before acting — then the content); then rename
+  the file to `compact_message_<sid>.consumed`.
+- Fail-open: file absent / unreadable → the base text unchanged, no throw,
+  no tombstone.
 
 ## DO-NOT-touch
 
-- `gauge.mjs` internals (reference only — no edits to it).
-- The context_trim query/validation logic (the adapter isolates the change).
-- The smoke fixtures' live-DB discipline (the smoke NEVER points at the
-  live DB).
-- The maintainer's live files; anything under `maintainer/`; `agent/prompts/**`.
+- The relay delivery path, items 1-3 behavior, the budget file, the
+  maintainer's live files, anything under `maintainer/`, `agent/prompts/**`.
 
 ## Definition of done
 
-1. Code: `openDb` gains the spawn-sqlite3 fallback + the backend test hook;
-   report/tail logic unchanged.
-2. Smoke (`context_trim.smoke.mjs`): the existing 20/20 pins stay green +
-   2-3 new pins FORCING the spawn-only backend: (a) report on the fixture DB
-   returns the same key fields as the in-process path, (b) a tail rewrite
-   lands in the fixture DB (tail_start_id changed, readable back), (c) at
-   least one validation rejection still fires via the spawn path.
-3. Standard gate green: probe 352/352 + all 11 smokes (auto_resume 147/147,
-   block_transfer 131/131 + sandbox 64/64, compact_memory 82/82,
-   intercept_observer 78/78, loop_log 69/69, submit 31/31,
-   context_recovery 17/17, context_trim (new total), ctx_gauge 3/3,
-   gauge_core).
-4. Checkpoint commits per verified unit (code only); the TODO #126 status +
-   the handover summary ride the FINAL commit (per the commit routine).
-5. Live re-acceptance = the maintainer's NEXT restart (the live process lags
-   HEAD) — name it in the handover: the planner runs `report` on a real
-   session (read-only, first); `tail`'s live test stays the maintainer's
-   throwaway-session call.
+1. Code: the append + rename, fail-open.
+2. Smoke: 3 new pins — (a) file present → the spawn text contains the
+   labeled section AND the file is renamed `.consumed`; (b) file absent →
+   the restartText/spawn text byte-identical to the base (existing no-file
+   pins unchanged); (c) unreadable file → the base text. The existing
+   147/147 stay green (150 total).
+3. Standard gate green: probe 352/352 + all 11 smokes.
+4. Checkpoint commits per verified unit; the TODO #127 status + the handover
+   summary ride the FINAL commit.
+5. Live acceptance = the next restart-branch spawn with a queued file
+   present (natural occurrence) — name it in the handover.
 
-Context discipline: bounded reads only (the named regions + the smoke file,
-~350 lines); grep with `| head -30`; no broad research.
+Context discipline: bounded reads only (the named regions + the smoke's
+restart-branch pin section); no broad research.

@@ -1,7 +1,30 @@
 # TODO — Free-Snap-Tap (per-project entries)
-IDs continue the global sequence — counter in the root `TODO.md` (used so far up to #118, new entries start at #119).
+IDs continue the global sequence — counter in the root `TODO.md` (used so far up to #131, new entries start at #132).
 Full texts of closed entries: `todo_records.md` (this folder). FST repo docs: `repo/` (this folder).
 Moved out of the root `TODO.md` on 2026-09-29 (#117 per-project split).
+
+## FST code & tests (open)
+
+## #129. (open, 2026-10-01, maintainer inbox `FST_bugs.md`) — Indicator context-menu crash: right-click on the status indicator raises AttributeError (`QContextMenuEvent` has no `globalPosition`)
+- **Problem / evidence:** right-clicking the status indicator (context menu) opens no menu and raises: `AttributeError: 'PySide6.QtGui.QContextMenuEvent' object has no attribute 'globalPosition'` at `fst_overlay.py:595` in `contextMenuEvent` → `self.context_menu.exec_(event.globalPosition().toPoint())`.
+- **Desired outcome:** right-click opens the indicator context menu without the error.
+- **Acceptance criteria:** the menu opens on right-click (maintainer live test); no AttributeError in the console; a pinning test where the repo's test harness can cover the overlay event path.
+- **Suggested scope:** `fst_overlay.py` `contextMenuEvent` (~L595) — replace `globalPosition()` with the correct PySide6 position accessor for a context-menu event (local `position()` vs global coordinates — the worker verifies against the installed PySide6 version + the menu's exec_ semantics).
+- **Status:** open — maintainer bug report (inbox 2026-10-01, FST_bugs.md).
+
+## #130. (open, 2026-10-01, maintainer inbox `FST_bugs.md`) — First toast of a session lags input ~2 s (mouse inclusive); retriggers are instant
+- **Problem / evidence:** the first trigger of a function that sends a toast (displayed under the status indicator) lags input extremely for ~2 s (mouse inclusive) until the toast is displayed; retriggering the same macro shows no such delay (toast appears immediately). Toast causation is the maintainer's current guess (the only observable change).
+- **Desired outcome:** no perceptible input lag on first-toast display; root cause identified (a first-time initialization on the toast path — e.g. font/layout/overlay lazy init — or another first-call cost).
+- **Acceptance criteria:** root cause identified + measured (timing evidence); first-toast trigger instant (maintainer live test); a pinning test where possible.
+- **Suggested scope:** the toast display path in the FST code (overlay/toast module — the worker maps it) + first-call initialization suspects (fonts, geometry, Qt lazy resources).
+- **Status:** open — maintainer bug report (inbox 2026-10-01, FST_bugs.md).
+
+## #131. (open, 2026-10-01, maintainer inbox `FST_logging.md`) — DEBUG→logging research: switch `CONSTANTS.DEBUG*` console output to structured logging with clear separation + level/file control
+- **Problem / evidence:** the maintainer used `CONSTANTS.DEBUG<X>` flags (4 distinct values) as live console debugging, accreted ad hoc over the years (some output is convenience-only or leftover from fixed bugs). He started integrating logging but is unsure whether/how it would be more helpful than the DEBUG constants. `CONSTANTS.DEBUG4` is the notable exception: the formatted key-flow print (pressed key → replaced key → macro keyactions, indented hierarchy, `<--`/`-->` control-flow markers).
+- **Desired outcome:** a research doc: how to instrument the whole repo so logging helps find lag causes, documents errors, and associates them to code areas — without overwhelming; control via start-argument log level and/or separate log files per area; what the DEBUG4 flow print should become (kept as a formatted log); which DEBUG outputs die.
+- **Acceptance criteria:** a research doc (`projects/Free-Snap-Tap/` or `agent/research/`) with a concrete logging design (levels, files, start-argument control) + a per-DEBUG-flag disposition list (keep/convert/kill) + a recommendation on whether logging beats the DEBUG constants for his use case.
+- **Suggested scope:** read-only over the FST code (grep `CONSTANTS.DEBUG`), the research doc; the build (if approved later) = an FST worker on `fst_work3`.
+- **Status:** open — maintainer research request (inbox 2026-10-01, FST_logging.md).
 
 ## FST behavior decisions (closed)
 

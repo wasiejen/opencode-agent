@@ -407,3 +407,67 @@ session); only the in-scope recovery path (planner-39) ever delivered.
 - **Keys:** compact_message, .consumed, relay=, queued message, zombie file,
   scope none, task_id resume, deliberate vs limit compaction, ctx.log
   COMPACT line.
+
+## sqlite3 CLI facts (verified 2026-09-30, from knowledge_inbox 2026-09-30_16-46, #126 worker)
+- **Do:** with the bundled `.opencode/plugin/tools/sqlite3.exe`: (1) force
+  `-separator '\t'` (argv, no shell) when fetching JSON data columns — the
+  CLI's DEFAULT separator is `|`, which can occur inside JSON values, while
+  a raw tab never does (JSON.stringify escapes all control bytes); (2) never
+  inline `PRAGMA busy_timeout = N;` in the call — it ECHOES the value to
+  stdout (matters for read-marker parsing; harmless where stdout is
+  ignored); (3) every write script must carry the COMMIT statement — an
+  uncommitted BEGIN..COMMIT batch that never reaches COMMIT is SILENTLY
+  rolled back at process exit with exit code 0 (a flush script that omits
+  COMMIT "succeeds" without persisting — this bit the #126 adapter once).
+- **Why (evidence):** #126 worker (ses_f0d49cb6), measured against the
+  bundled CLI (3.53.4, JSON1 verified).
+- **Ref:** `.opencode/tools/context_trim.ts` (runCli),
+  `.opencode/plugin/scripts/gauge.mjs` (readSpawnSqlite3).
+- **Keys:** sqlite3, separator, PRAGMA echo, silent rollback, COMMIT,
+  spawn-sqlite3.
+
+## Spawning CLIs on the Bun-compiled live host: three measured defects (verified 2026-10-01, from knowledge_inbox 2026-10-01_01-46 + feedback 2026-10-01_02-59 + the #126 live-debug)
+- **Do:** every spawn-based tool on the live host must (1) NEVER pass
+  whitespace-bearing argv (Bun's Windows command-line join collapses it →
+  the CLI's arg parsing shifts → interactive mode → deterministic 2500 ms
+  kill; use a non-whitespace control-char separator — `\x01` (SOH) never
+  appears in JSON.stringify output); (2) NEVER inline double-quote-bearing
+  strings (the SAME join family mangles double-quote argv — do in-string
+  edits INSIDE sqlite, e.g. `json_set`); (3) use the ASYNC execFile
+  (promisified, `res.stdout` — the gauge's `readSpawnSqlite3` pattern),
+  NEVER execFileSync — on the live Bun host execFileSync succeeds only ONCE
+  per process (compiled-Bun Windows stdio-handle issue; every later spawn
+  2500 ms-kills, while bash/node parents and async execFile keep working);
+  (4) set a spawn maxBuffer of ≥ 16 MB (a context_trim report pulls
+  1–1.3 MB of window part-JSON through the CLI; the 1 MB default →
+  ENOBUFS).
+- **Why (evidence):** #126 forked live test 2026-09-30/10-01 (three 2500 ms
+  kills + ENOBUFS; the identical calls 19–30 ms from bash); the gauge's ctx
+  lines never failed (it already uses the async pattern).
+- **Ref:** `.opencode/tools/context_trim.ts` (runCli — the async execFile +
+  `\x01` + 16 MB pattern), `.opencode/plugin/scripts/gauge.mjs`.
+- **Keys:** Bun, Windows, command-line join, argv, execFileSync once-per-
+  process, async execFile, SOH separator, ENOBUFS, 2500 ms kill.
+- **Review trigger:** the host leaves Bun, or Bun fixes its Windows argv
+  quoting.
+
+## Backend CUDA errors: suspect GPU clocks first; the backend is SELF-HEALING (maintainer-confirmed 2026-10-01, from knowledge_inbox 2026-10-01_03-12/03-15)
+- **Do:** when CUDA-style backend errors recur (mid-step kills, empty
+  assistant rows, "Cannot have 2 or more assistant messages" halts): suspect
+  OVER-AGGRESSIVE GPU CLOCK settings BEFORE suspecting session/compaction
+  infrastructure — gaming-stable-but-inference-unstable clocks caused the
+  2026-09-30/10-01 error window; the backend was stable again after the
+  maintainer's clock change. And do NOT manually interrupt a session that is
+  interrupting/auto-retrying: the backend is SELF-HEALING (it restarts and
+  takes the interrupted message back up exactly where it left — re-prefill,
+  seamless; observed mid-sentence) — a manual interruption colliding with
+  the auto-retry cycle is the suspected producer of the trailing assistant
+  rows that trigger the provider rejection (SUSPECTED — confirm only by an
+  un-interfered observation).
+- **Why (evidence):** maintainer-confirmed 2026-10-01 (the fork test
+  session ses_f0b92a96 window; DB tail + auto_resume.log + his backend
+  observation).
+- **Ref:** TODO #126 close note (todo_records.md), todo_inbox
+  2026-10-01_01-03 (the fork retry path, SUSPECTED).
+- **Keys:** CUDA, GPU clocks, backend restart, self-healing, manual
+  interrupt, retry path.

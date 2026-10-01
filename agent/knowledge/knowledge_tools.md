@@ -552,3 +552,21 @@ instructions/protocol — facts that save lookups. Format per the README:
   #123 close note.
 - **Keys:** node, execSync, execFileSync, cmd.exe, caret escape, git
   cat-file, win32, hash sweep.
+
+## AGENTS.md live-file protocol: always edit a COPY, never commit the live file (maintainer clarification 2026-09-27, from knowledge_inbox 2026-09-27_23-40)
+- **Do:** apply AGENTS.md changes by editing a copy staged at the repo root
+  (`AGENTS_pending_<date>.md`) — the maintainer checks the copy and applies
+  it himself. NEVER commit changes to the live AGENTS.md directly: opencode
+  WATCHES the file, and an update RELOADS the current session with it = a
+  COMPLETE context refill on each save (normally triggered by the git add +
+  commit that lands the change). Pending changes ride the copy + the NAP's
+  pending list until his paste.
+- **Why (evidence):** maintainer clarification 2026-09-27 (direct
+  ses_f1d198b41) — two reasons: (1) he wants to see exactly what each agent
+  receives as basic instruction; (2) the watch/refill behavior (the AGENTS.md
+  "Editing this file" line already says edit-a-copy — this entry adds the
+  WHY).
+- **Ref:** the AGENTS.md "Editing this file" section; the NAP Standing
+  (AGENTS.md protocol line).
+- **Keys:** AGENTS.md, copy protocol, watch, context refill,
+  AGENTS_pending.

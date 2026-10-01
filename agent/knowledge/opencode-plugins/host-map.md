@@ -467,6 +467,14 @@ fs/JSON stores (the `compact_budget.json` pattern).
    line itself is stale (§5).
 6. The 2026-09-12 "plugins-array-only registration" knowledge line is stale
    relative to the no-config-array live setup (§2).
+7. Fork-tree quirk (2026-10-01, from todo_inbox 2026-09-28_01-50, opencode-dev
+   1.18.32): `packages/core/src/v1/session.ts` line 1 is `export * as
+   SessionV1 from "./session"` — an apparent self-reference (a `v1/session/`
+   dir would need checking); the file also imports from
+   `@opencode-ai/schema/session-v1` and re-exports CompactionPart. The
+   canonical CompactionPart definition is `packages/schema/src/v1/session.ts`
+   L195. No behavior impact observed — an editor of the CompactionPart schema
+   should treat the schema path as canonical.
 
 ## 7. Model/agent switching (per-message semantics, 2026-09-30)
 

@@ -4,16 +4,15 @@ FIRST read AGENTS.md, repo_overview.md, TODO.md, this file.
 
 
 
-## Current session — autorun, 2026-10-04 (ses_f0777c6d0fferrQ5Skto9dmzn0, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window)
-- planner-10 (iter 10, looprun autorun-2026-10-01_03-27; counter mismatch: launch formula gave 9, the iter9 log line forced 10 — INFO line at close):
-  - ACT draft feedback LANDED (maintainer `--comment: feedback pls` on `maintainer/draft/Agentic_Trim_ACT.md`, his commit 3296339): 8-point grounded reply (ACT = the surface+policy layer for U2, not a new mechanism; the numbering question answered — the agent sees none of numbering/messageID/metadata in the raw window, the U1 report bridges it, an in-window numbering leg is feasible via `chat.messages.transform` with STABLE numbers; middle-fuzziness = ACT's real value, U4 nudge reword = one-line policy; the fallback auto-decision already exists = U3; the data-blob field makes the filter interruption-proof for free; the parallel-call granularity must be verified before pinning the self-trim rule; cross-trim yes — existing pattern; sequencing S1-S5 with S2-S4 buildable pre-fork against the agreed schema). `--comment` → `comment` per the idea-exchange convention.
-  - Live-acceptance triage (verified from files, TODO statuses updated): #109 CLOSED live-accepted (2 limit-stop= firings + -WARNING loop lines, 2026-10-01 13:38/18:43) / #120 Unit 2 LIVE-ACCEPTED (post-restart process tail-set= lines 20:50-20:54Z, 8 sessions) / #134 C-part LIVE-ACCEPTED (path-anomaly fired live, doubled= maintainer, proposals) + B' still pending / #128 AGENTS.md Budgets paste LANDED by the maintainer (3296339) / #135 nudge1-4 keys ENABLED by the maintainer (3296339: 0.80/0.90/0.925/0.95) + bun re-checked STILL broken (U2 stays queued, gate under node).
-  - Maintainer state since plan9: commit 3296339 (nudge1-4 in compact_budget.json + AGENTS.md Budgets paste + drafts → draft/archive + NEW draft `maintainer/draft/Agentic_Trim_ACT.md` with the --comment feedback request — ACTed). Approved proposals to build (his move into `proposals/approved/`): `2026-09-18_p3-state-snapshot-tool` (THIS SESSION's build — spec + worker launch) + `2026-10-01_fst-logging-build` + `2026-10-01_loop-iteration-counter` (both queued next — the counter fixes the exact numbering gap this session hit).
-  - OBSERVATION (unmarked, no action): intercept.log line 2089 — plan9-era content (command + 2026-10-01_19-35 stamp) carrying THIS session's id (ses_f0777c6d…), positioned between the old process's last line and the new process's first; my own first bash call left NO line. Suspected async flush/queued-line artifact across the restart (session-id fallback at flush?). Filed to todo_inbox at close.
-  - p3-state-snapshot-tool LANDED + planner-verified (worker_Q3S_slow ses_ef7344940ffe0UNjdAHseO8WUZ: tool 8d332d7 + no-match-grep fix 025e9c5, smoke 6130a70 20/20, probe S35 354-356 → 358/358 (2c3cbb3); spot re-run 20/20; proposal → implemented/ with verdict; the prompt §Initialization edit landed as a separate planner commit — live acceptance = the next planner init after the host restart, the tool is NOT in this session's toolset). U4 first live nudge fired this session (the `--triage: context at ratio=0.803` line — his 0.80 key, live-acceptance data point for #135).
-  - Queue for the next session (ordered, with status): (1) `2026-10-01_loop-iteration-counter` OPEN — approved (Part 1+2 incl. the optional Part 2 + docs; counter.json at spawn + max() cross-check + the ctx-line ITER suffix) — the next agent-repo build; (2) `2026-10-01_fst-logging-build` OPEN — approved in full (FST worker unit on fst_work3, Parts 1+2, Part 3 as follow-up; his follow-up ask: a usage guideline for `maintainer/feedback` after implementation); (3) the memory/knowledge-usage research inbox item (`maintainer/inbox_planner/2026-10-01_research_memory_knowledge_usage.md`) — NEEDS the design-exchange + delegation ruling (plan9 queue, still open; the mazemaker copy is at `copied_repos/mazemaker-main-v2`); (4) #135 U2 (QUEUED behind the bun repair — his domain) + #134 B'-part live acceptance (natural occurrence) + #133 live acceptance (natural occurrence) + #132 (natural occurrence) + #128 live cross-override dispatch (his domain) + #91 discriminating cycle (natural occurrence) + #98 live acceptance (natural occurrence) + #115/#99/#122/#130 (his domain); (5) the 3 Magic Context proposals at the proposals/ root PENDING his decision (`2026-10-01_explicit-keep-N-surface.md` / `2026-10-01_gauge-nudge-bands.md` / `2026-10-01_usage-adaptive-keep.md`).
-  - Baselines (measured/verified this session): probe 358/358 (+3 S35), state_snapshot 20/20 NEW, all 11 existing smokes at plan9 baseline (auto_resume 165, context_trim 40, compact_memory 110, the rest per plan9 Standing); gate runs under node v24.19.0 (bun broken).
+## Current session — autorun, 2026-10-05 (ses_ef7155f2dffedZ7mKtZW0EZqTh, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window)
+- planner-11 (iter 11, looprun autorun-2026-10-01_03-27 — the first session under the new machine-side counter; my own launch text was still the old log-derivation, the log grep verified 11):
+  - loop-iteration-counter LANDED + planner-verified (worker_Q3S_slow ses_ef70261b3ffewfIAhOa8hu603o: b97bf75 Part 1 / e9447c2 Part 2 / 9bd8798 seed+close; probe 360/360 (+2 S36), auto_resume 170/170 (+5), all smokes green under node v24.19.0; planner spot re-run auto_resume 170/170): Part 1 = `spawnCounterFor()` (the spawn-time `counter.json`, `max(candidate, logMax+1)`, the explicit-N restart text) + the n=11 bootstrap seed (the next spawn computes 12); Part 2 = `loopIterationSuffix()` (gauge.mjs + the setLoopRootForTest hook) → the injected ctx line carries ` ITER=<N> <folder>`; Part 3 docs LANDED (readme_loop.md §Iteration semantics + §Self-identification). Proposal → implemented/ with verdict.
+  - Spec-wording discrepancy (my authoring error): the spec's step 4 `max(candidate, logMax)` contradicted its own acceptance (b) — the worker built to the ACCEPTANCE (correct); the +1 wording fix landed in the proposal + the spec; the todo_inbox entry curated (doc-only, no TODO); the worker's friction entry is in agent_feedback.md.
+  - Maintainer inbox: `2026-10-01_research_memory_knowledge_usage.md` triaged → done/ (still NEEDS the design-exchange + delegation ruling — carried in the queue below).
+  - Queue for the next session (ordered, with status): (1) `2026-10-01_fst-logging-build` OPEN — approved in full (FST worker unit on fst_work3, Parts 1+2, Part 3 as follow-up; his follow-up ask: a usage guideline for `maintainer/feedback` after implementation); (2) the memory/knowledge-usage research item (file now in `maintainer/done/`) — NEEDS the design-exchange + delegation ruling (plan9 queue, still open; the mazemaker copy is at `copied_repos/mazemaker-main-v2`); (3) live-acceptance items: loop-iteration-counter (the next autorun spawn after the host restart — `ident=…planner-12` + counter n=12 + the explicit-N launch text + the ITER ctx suffix) + state_snapshot (the next planner init after the host restart — the live process still predates the build) + #135 U2 (QUEUED behind the bun repair — his domain) + #134 B'-part (natural occurrence) + #133 (natural) + #132 (natural) + #128 live cross-override dispatch (his domain) + #91 discriminating cycle (natural) + #98 (natural) + #115/#99/#122/#130 (his domain); (4) the 3 Magic Context proposals at the proposals/ root PENDING his decision (`2026-10-01_explicit-keep-N-surface.md` / `2026-10-01_gauge-nudge-bands.md` / `2026-10-01_usage-adaptive-keep.md`).
+  - Baselines (measured/verified this session): probe 360/360 (+2 S36), auto_resume 170/170 (+5), all smokes green (state_snapshot 20/20, context_trim 40/40, compact_memory 110/110, the rest per plan10 Standing); gate runs under node v24.19.0 (bun broken).
 
+  - 2026-10-04 autorun (ses_f0777c6d0fferrQ5Skto9dmzn0, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window) — plan10 (iter 10, the counter-mismatch resolved in-session via the INFO line): ACT-draft feedback LANDED (--comment acted) + live-acceptance triage (109 closed / 120-U2 live / 134-C live / 128 paste / 135 nudge keys + first U4 live nudge) + p3-state-snapshot-tool LANDED + planner-verified (probe 358/358, state_snapshot 20/20, prompt init edit) — details: loop folder plan10_summary.md + git 19c3536/24a674c
   - 2026-10-01 autorun (ses_f09b864f7ffeb2fFtb8ii58GWI, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window) — plan8 (iter 8, looprun autorun-2026-10-01_03-27): idle lane — 2 proposals FILED (keep-N-surface Magic Context candidate 2 + the #131 FST logging build as one FST worker unit, both PENDING his decision) + context_trim NEW-HIRE test LANDED (worker_Q3S_slow ses_f09aca202ffe7Dn08BNLLCObnQ — 6/6 PASS from the description alone, 4 description frictions → findings plan8_newhire_context_trim.md) + the friction fix LANDED planner-direct (report rejection surface → the plain `report= rejected:` line + the 4 description lines, smoke re-pinned, TODO #133) — details: loop folder plan8_summary.md + git 5f3c313/3cf5808/65c9d1b/9bba4b0/e7562dd
   - 2026-10-01 autorun (ses_f09cca546ffee8SOxAWdjFOtmC, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window) — plan7 (iter 7, looprun autorun-2026-10-01_03-27): idle lane — 14-day stale draft triage LANDED (p2 + prompt-rework-plan → implemented/ verdicts spot-verified; p6 BUILT → `agent/scripts/db/loop_stats.cjs` verified on 2 runs; p3 surfaced to the proposals/ root PENDING his decision) + inbox review clean — details: loop folder plan7_summary.md + git f4074ae/9f760af
   - 2026-10-01 autorun (ses_f09f48614ffeJs1nvJnOonTFxO, Qwen3.8-27B-Q3S-235K-slow-HQKV, 235k window) — plan6 (iter 6, looprun autorun-2026-10-01_03-27): #132 (the silent default-cap-1 readout marker) LANDED + verified (worker_Q3S_slow ses_f09e89374ffeFc47RHh5PKNCot — 748f7cd/bbd8705/e3ae1c1/85fbf7a; probe 355/355, gauge_core ALL PASS +2 pins) + Magic Context plugin research LANDED + verified (explorer_Q3S_slow — doc agent/research/2026-10-01_magic-context-plugin.md 6862348; 5-category memory DB + 3 reversible trim lanes + agent-informed control; adoption: 4 candidates + not-to-borrow list, candidate (2) keep-N surface = maintainer call; knowledge inbox +1) — details: loop folder plan6_summary.md + git 93a0ef9
@@ -158,25 +157,21 @@ Pre-carve hash note (2026-09-30, plan45, #123): the 2026-09-29 filter-repo carve
   each save (normally triggered by the git add + commit). Pending changes
   ride the copy + this NAP's pending list. (Full entry: knowledge_inbox.md
   2026-09-27_23-40.)
-- Baselines (re-verified 2026-09-30 post-#126, planner re-run): agent-repo
-    standard gate =
-    probe **352/352 PASS** (346 + S33's 6 context_trim checks post-plan39;
-    the 11 #113 env-fails 136-146 RESOLVED — the probe's `VENV_PY` is now
+- Baselines (re-verified 2026-10-05, plan11): agent-repo standard gate
+    = probe **360/360 PASS** (358 + S36's 2 loop-iteration-counter checks;
+    the 11 #113 env-fails RESOLVED — the probe's `VENV_PY` is
     agent-repo-venv-first / FST-workspace-venv-fallback, the 3.12.9 venv)
-+ smokes **all green** — context_recovery 17/17, compact_memory
-82/82 (post-#119 +2, post-plan42 zombie-guard/age-sweep pins +2),
-auto_resume 147/147 (post-plan42 age-sweep pin +1), intercept_observer
-78/78,
-    block_transfer 131/131 + 64/64, ctx_gauge 3/3 + gauge_core, loop_log
-      69/69, submit 31/31 (post-plan39 memory channel), context_trim
-      26/26 (post-#126 spawn-sqlite3 fallback + json_set/async-execFile fixes;
-      planner re-run 2026-10-01); the per-suite
-    counts are in each smoke's own readout — no total kept here. FST
-    standard gate (separate repo, venv rebuilt on 3.12.9 — #113 CLOSED)
-    = pytest **464 passed + 1 warning (the known #10 coroutine
-    warning)** + ruff **F=0** (2026-09-30, worker-40, post-#122 rebind-
-    repeat: 459 baseline + 5 new pinning tests; planner spot-re-ran the
-    5 tests: 5/5).
+    + smokes **all green** under node v24.19.0 (bun broken — the gate
+    runs under node): context_recovery 17/17, compact_memory 110/110,
+    auto_resume 170/170 (post-plan11 +5 counter pins), intercept_observer
+    85/85 (post-#134), block_transfer 131/131 + 64/64, ctx_gauge 3/3 +
+    gauge_core, loop_log 69/69, submit 31/31, context_trim 40/40
+    (post-U1), state_snapshot 20/20 (post-plan10); the per-suite counts
+    are in each smoke's own readout — no total kept here. FST standard
+    gate (separate repo, venv rebuilt on 3.12.9 — #113 CLOSED) = pytest
+    **466 passed + 1 warning (the known #10 coroutine warning)** + ruff
+    **F=0** (2026-10-01, worker-4, post-#130 pre-warm: 464 baseline + 2
+    pinning tests).
 - Cross-compaction (measured 2026-09-18 plan2; re-verified live 2026-09-22):
   `compact_memory` with a foreign sessionID — no model args in the tool
   schema; the summarizer model resolves per `agent.compaction.model` (set in

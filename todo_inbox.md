@@ -225,6 +225,13 @@ U1 (context budget package) build findings — (1) [env, maintainer call] the `b
 ## 2026-10-04_23-54 planner_Q3S_slow ses_f0777c6d0fferrQ5Skto9dmzn0
 intercept.log anomaly (plan10, ses_f0777c6d0): line 2089 carries plan9-era CONTENT (a bash command + the 2026-10-01_19-35 stamp) but THIS session's id (ses_f0777c6d0fferrQ5Skto9dmzn0), positioned between the old process's last line and the new process's first; the new session's own first bash call left NO log line. Suspected: an async/queued log line flushed by the new process across the restart, with the session-id field resolved at flush time (fallback to the newest-updated session?). Impact: cosmetic (one mislabeled line + one missing line). Diagnose when it recurs or on a dedicated pass — check the append/queue path in intercept_observer.ts (localStamp is per-call-correct, so the stamp+content+sid mix points at a deferred write).
 
-## 2026-10-05_00-55 worker_Q3S_slow ses_ef70261b3ffewfIAhOa8hu603o
-Loop iteration counter spec doc discrepancy (2026-10-05, worker plan11, ses_ef70261b3ffewfIAhOa8hu603o): the spec's Behavior (Part 1) step 4 says `n_final = max(candidate, logMax)`, but the spec's own acceptance (b) (counter n=4 + log max planner-6 → N=7) and pin audit are only satisfiable by `n_final = max(candidate, logMax + 1)` (candidate already = counter.n + 1). The approved proposal's design text carries the same loose phrasing ("N_final = max(candidate, largest planner-<N> in the loop log)"). Implementation + smoke/probe pins were built to the ACCEPTANCE (the machine-verifiable contract) — no behavior change needed; one-word fix wanted in the spec + proposal wording (add the +1). Evidence: agent/handover/handover_task.md §Behavior (Part 1) step 4 vs §Pin audit (b) + proposals/approved/2026-10-01_loop-iteration-counter.md §Design Part 1; smoke scenario (b) pin in .opencode/plugin/tests/auto_resume.smoke.mjs.
+## 2026-10-05 — planner curation (plan11)
+- Worker plan11 (2026-10-05_00-55, ses_ef70261b…) spec-doc discrepancy
+  (the counter formula `max(candidate, logMax)` in the spec's step 4 vs
+  its own acceptance (b) → `+ 1`): RESOLVED inline — the build followed
+  the acceptance (no behavior change); the +1 wording landed in the
+  proposal (→ `implemented/` with verdict, the note at §Design Part 1
+  step 2) + the spec (`agent/handover/specs/
+  2026-10-05_loop-iteration-counter.md` step 4). Doc-only, no TODO entry
+  needed. Friction entry already filed by the worker (agent_feedback.md).
 

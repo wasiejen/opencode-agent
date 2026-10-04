@@ -29,7 +29,9 @@ land planner-side — NOT your scope.
    — absent / unparseable / `looprun` ≠ folder → 1; else N + 1.
 3. Log max: largest match of `/planner-(\d+)/g` in `loop/<folder>/loop_log.md`
    (missing / unreadable → 0 — the old code returned null there; that changes).
-4. n_final = max(candidate, logMax).
+4. n_final = max(candidate, logMax + 1). (wording fix 2026-10-05
+   planner-side: the original `logMax` contradicted acceptance (b) — the
+   worker built to the acceptance; see the proposal's note.)
 5. Write the counter with n_final — best effort (a write failure must not
    break the spawn).
 Title = `<folder> planner-<n_final>`; the `ident=` bit and the `spawn=` line

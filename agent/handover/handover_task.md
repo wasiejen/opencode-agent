@@ -1,101 +1,112 @@
-# Spec — the `state_snapshot` planner init tool (approved `proposals/approved/2026-09-18_p3-state-snapshot-tool.md`)
+# Task Spec — loop iteration counter, Part 1 + Part 2 + seed
 
-Worker: `worker_Q3S_slow`. Repo: this one (opencode-agent), stay on the current checkout.
-One unit, one commit checkpoint per verified piece (code, then smoke, then probe —
-TODO + handover ride the FINAL commit; no commit carries its own hash).
+Approved proposal: `proposals/approved/2026-10-01_loop-iteration-counter.md`
+(read it first — the design + acceptance criteria live there). This spec covers
+Part 1 (the counter file written at spawn), Part 2 (the ctx-line `ITER`
+suffix), and the Part 3 seed file. The Part 3 DOC changes (readme_loop.md)
+land planner-side — NOT your scope.
 
-## Goal
-New host tool `.opencode/tools/state_snapshot.ts` — the planner's 6–8-call init
-sequence as ONE capped digest (no interpretation, deterministic). The tool is
-auto-detected by the host (`.opencode/tools/*.ts`, plan39 precedent — NO
-registration anywhere; the maintainer confirmed per-role config is not needed).
+## Scope
+- `.opencode/plugin/auto_resume.ts` — replace `spawnTitleFor()` with
+  `spawnCounterFor()` (counter read + log cross-check + write); the restart
+  branch passes the computed N into `restartText()` (new text below).
+- `loop/autorun-2026-10-01_03-27/counter.json` — the bootstrap seed (below).
+- `.opencode/plugin/scripts/gauge.mjs` — an exported helper
+  `loopIterationSuffix()` + a test hook (mirror the `setBudgetFileForTest` /
+  `getBudgetFile` pattern; default loop root resolved relative to THIS_DIR
+  like `DEFAULT_BUDGET_FILE`).
+- `.opencode/plugin/ctx_watchdog.ts` — in `onChatMessage`, append the suffix
+  to the posted part text (`ctx: ${line}${suffix}`) — the injected
+  chat.message ctx line ONLY. The peek.mjs / ctx_gauge tool readouts are
+  unchanged.
+- Pins: `.opencode/plugin/tests/auto_resume.smoke.mjs`,
+  `.opencode/plugin/probes/handover_probe.mjs` (new S36 section).
 
-## Design (the approved proposal's sections, verbatim semantics)
-Returns ONE Markdown digest, hard-capped, deterministic:
-- Repo root = `context.directory` (the custom-tool context carries it — verified
-  live this session), falling back to `process.cwd()`.
-- Soft role gate: if `context.agent` is a non-empty string NOT starting with
-  `planner` → return exactly `state_snapshot is the planner init digest — not for <agent>` (one line, no digest).
-- Sections, IN THIS ORDER, each `## <name>` header:
-  1. `## git` — `git log --oneline -20` (execFileSync, args array; on failure the line `(git log failed: <first error line, 80 chars>)`).
-  2. `## nap` — the FIRST 40 lines of `agent/handover/handover_planner.md`; if the file has > 40 lines, append the steer line `… (read agent/handover/handover_planner.md for the rest)`.
-  3. `## todo` — entry headers = lines matching `^## (?:#\d+|\d+)\.` in `TODO.md`; the count of ALL of them on the first line (`<N> open-entry headers`), then the LAST 15 headers, one line each: `#<id> — <header remainder truncated to 60 chars>` (file order).
-  4. `## maintainer` — for each `.md` file in `maintainer/inbox_planner/` (excluding README.md): `<filename>: <first line truncated to 80 chars>` (max 5 files, then `… (+<k> more)`); then `priority.md`: its first 10 lines.
-  5. `## proposals` — the `.md` FILENAMES at `proposals/` root (files only, no subfolders), one per line; none → `(none)`.
-  6. `## markers` — the ready-made marker sweep (run via bash, EXACTLY the command in the planner prompt §maintainer calls/decisions — the grep with `-e "--main\|--now\|--info\|--todo\|--defer\|--wip\|--comment"` over `.opencode/ agent/ maintainer/ loop/ proposals/ TODO.md README.md WIKI.md` + the `grep -v "_past_priorities\|/done/\|agent_feedback\|nap_direct\|archive/"` filter), capped at 20 lines (then `… (+<k> more)`).
-- Empty section content = `(none)` (the empty check is part of the job).
-- Total digest hard cap ~60 lines: if the assembled digest exceeds 60 lines, truncate the LAST section's lines first, preserving all six headers + their `… (+<k> more)` steers.
-- Tool form: the ctx_gauge.ts sibling shape (default `tool({ description, args, execute })` from `@opencode-ai/plugin`; NO `name` field — the host names by filename). `args: {}` (zero args). The description states: what each section is, the caps, the planner-only steer, and "fire at session start; follow up with full reads only where a section needs a decision".
+## Behavior (Part 1)
+`spawnCounterFor() → { folder, n } | null`:
+1. folder = `currentLoopFolder()`; null → null (un-named spawn, unchanged).
+2. Candidate: `loop/<folder>/counter.json` = `{"looprun": <folder>, "n": N}`
+   — absent / unparseable / `looprun` ≠ folder → 1; else N + 1.
+3. Log max: largest match of `/planner-(\d+)/g` in `loop/<folder>/loop_log.md`
+   (missing / unreadable → 0 — the old code returned null there; that changes).
+4. n_final = max(candidate, logMax).
+5. Write the counter with n_final — best effort (a write failure must not
+   break the spawn).
+Title = `<folder> planner-<n_final>`; the `ident=` bit and the `spawn=` line
+format are unchanged. The restart-text base line becomes:
+"Your iteration number is <N> (the authoritative loop counter — the
+loop-log grep stays the fallback verification only)." — the rest of
+`restartText` (incl. the exhausted variant) is unchanged.
 
-## Verified facts (measured at spec time, 2026-10-04)
-- The custom-tool `context` object carries `directory`, `worktree`, `agent`,
-  `sessionID`, `messageID`, `callID` (verified via dev_get_tool_context_contents
-  live this session).
-- Tool file shape: `.opencode/tools/ctx_gauge.ts` (36 lines — the default-export
-  tool() form, no registration).
-- Smoke harness: `.opencode/plugin/tests/_smoke_base.mjs` exports
-  `freshSandbox`, `loadRepo`, `makeChecker` (see
-  `.opencode/plugin/tests/context_trim.smoke.mjs` header for the usage).
-- Probe baseline: `handover_probe.mjs` 355/355 (self-annotated tally in its header).
-- Existing smokes at baseline (plan9 close, node v24.19.0): auto_resume 165,
-  context_trim 40, compact_memory 110, intercept_observer 85, block_transfer
-  131 + sandbox 64, context_recovery 17, loop_log 69, submit 31, ctx_gauge 3,
-  gauge_core, loop_stats n/a.
-- bun is BROKEN (bun.exe missing) — the whole gate runs under plain node.
-- `git` works from execFileSync (used live this session).
-- The marker-sweep command lives in the planner prompt §maintainer
-  calls/decisions — copy it verbatim into the tool (do NOT re-derive the
-  pattern list).
+## Behavior (Part 2)
+`loopIterationSuffix()` → `""` or `" ITER=<n> <folder>"`: resolve the current
+loop folder (exactly one `autorun-*` dir → it; several → most-recently-modified;
+none / unreadable → `""`), read the folder's `counter.json`, present +
+parseable → the suffix. Never throws.
 
-## DoD (measurable end states)
-1. `.opencode/tools/state_snapshot.ts` lands per the design (zero args, the
-   six sections, the caps, the soft role gate, the fail-closed section lines).
-2. NEW smoke `.opencode/plugin/tests/state_snapshot.smoke.mjs`: fixture repo
-   built in freshSandbox (git init + 1-2 committed bookkeeping files: a TODO.md
-   with 3 entry headers, an NAP file with 45 lines, a `maintainer/inbox_planner/`
-   with 2 .md files + README.md, `maintainer/priority.md`, a `proposals/` root
-   with 2 .md files + 1 subfolder, one `--now` marker line in a fixture .md)
-   driven through the tool's execute() with a context stub
-   (`{ directory: <fixture>, agent: "planner_Q3S" }`). Pins (>= 12 checks):
-   the six section headers present IN ORDER; the git section carries the
-   fixture commit subject; the nap section = first 40 lines + the steer line;
-   the todo count line + the 15-cap behavior; the maintainer section (the 2
-   inbox filenames + priority first lines); the proposals section (filenames
-   only — the subfolder excluded); the markers section carries the fixture
-   `--now` line and NOT the filtered allow-list paths; an EMPTY inbox fixture
-   case → `(none)`; the non-planner agent stub → the exact refusal line; a
-   file-missing case (no NAP) → its fail-closed line, no throw.
-   Count N reported in the handover; `node <smoke>` exit 0 ALL PASS.
-3. NEW probe section in `.opencode/plugin/probes/handover_probe.mjs`:
-   (a) the tool file exists + default export has `description` (string,
-   non-empty) + `execute` (function); (b) the registration-shape pin: the args
-   key list is EMPTY (the exact args keys — same pattern as the
-   compact_memory check-86 / context_trim check-346 pins); (c) the description
-   carries the planner-only steer (the phrase `planner`). Header tally
-   machine-updated 355 → 355+N (N reported).
-4. Standard gate GREEN under node: probe 355+N + ALL smokes (the 11 existing at
-   baseline + the new state_snapshot) + no ruff/pytest in this repo (the gate =
-   probe + smokes).
-5. NO behavior change to any existing tool/plugin/probe (the existing smokes
-   stay byte-green; if ANY existing pin broke, stop and report — do not
-   re-pin outside this spec's surfaces).
-6. Handover `agent/handover/handover_task_to_planner.md`: what landed, the
-   measured N counts (smoke + probe), the gate numbers (worker-measured), the
-   commit hashes of the code/smoke/probe checkpoints, TODO.md + any
-   discrepancies appended. TODO.md entry: the planner curates the close note
-   (no TODO.md edits by the worker beyond the handover — the planner owns the
-   status line).
+## Bootstrap seed (Part 3 file)
+`loop/autorun-2026-10-01_03-27/counter.json` =
+`{"looprun":"autorun-2026-10-01_03-27","n":11}` — the current iteration (see
+verified facts). WITHOUT the seed, the first post-build spawn computes
+max(1, 10) = 10 — a doubled naming with plan10; the seed makes it 12.
 
-## DO-NOT-TOUCH
-- `maintainer/**` (the tool READS inbox/priority only — never writes),
-  `agent/prompts/**` (the prompt §Initialization edit is the PLANNER's, a
-  separate commit after this lands — NOT this task), `AGENTS.md`,
-  `.opencode/plugin/**` (except the two NEW/extended test+probe files named
-  above), any existing tool under `.opencode/tools/`, the FST repo,
-  `opencode.jsonc` (no registration — the host auto-detects).
+## Pin audit (every pin surface the change touches — repurposing in-scope)
+- auto_resume.smoke.mjs, plan9 ident block (fixture folder `autorun-test_0-0`,
+  log max planner-7, no counter → N = max(1,7) = 8: title/ident UNCHANGED) +
+  NEW pin: the fixture `counter.json` written byte-exact with n=8.
+- auto_resume.smoke.mjs, "no planner-<N> line → no identifier" block —
+  REPURPOSED (behavior pin): no counter + no planner line → NOW N = 1 →
+  title `<folder> planner-1` (old: no title at all).
+- auto_resume.smoke.mjs, the restart-text byte-exact pin (search
+  `Your iteration number`) — re-pin to the new explicit-N text.
+- NEW pins, the proposal acceptance (a)–(d): (a) counter n=4 + log max 4 → 5;
+  (b) counter n=4 + log max 6 → 7; (c) counter n=5, log max 4 (a dead session
+  wrote no line) → 6, never 5; (d) counter of a DIFFERENT looprun → 1.
+- handover_probe.mjs — NEW S36 section pinning `loopIterationSuffix()` via the
+  test hook: (i) a loop root without a counter → `""`; (ii) fixture
+  `autorun-X/counter.json` n=7 → ` ITER=7 autorun-X`. The EXISTING byte-exact
+  ctx pins (CTX_OK / CTX_UNKNOWN / CTX_UNAVAILABLE) must stay byte-identical
+  (no counter in the live loop folder at probe time). Update the header
+  section-sum line + the total annotation (the annotation is the source).
 
-## Suggested scope (files)
-- `.opencode/tools/state_snapshot.ts` (new)
-- `.opencode/plugin/tests/state_snapshot.smoke.mjs` (new)
-- `.opencode/plugin/probes/handover_probe.mjs` (new section + tally)
-- `agent/handover/handover_task_to_planner.md` (final commit)
+## Verified facts (planner-verified at spec authoring, 2026-10-05)
+- The live loop folder = `autorun-2026-10-01_03-27` (exactly one under
+  `loop/`); NO counter.json yet; the log regex max is `planner-10`
+  (`grep -oE "planner-[0-9]+" loop/autorun-2026-10-01_03-27/loop_log.md |
+  sort -u -V | tail -1`); the current planner session = iteration 11, its
+  successor = 12.
+- auto_resume.ts: `currentLoopFolder()` and `spawnTitleFor()` are adjacent
+  (search `function spawnTitleFor`); `restartText(sid, exhausted)` carries
+  the old iteration line (search `Your iteration number`); the spawn call
+  uses the title for the create + the `ident=` bit.
+- The probe's current total = 358/358 (header self-annotated; the last
+  section S35 = checks 354-356) → S36 starts at check 357.
+- gauge.mjs convention: `join(THIS_DIR, "..", "..")` = the `.opencode/`
+  dir (see `DEFAULT_BUDGET_FILE`) → the loop root =
+  `join(THIS_DIR, "..", "..", "..", "loop")`.
+- Baseline gate: probe 358/358 + all smokes green under node v24.19.0
+  (bun is broken — run the gate under node).
+
+## DoD
+1. Counter scenarios (a)–(d) + the repurposed no-line case + the
+   counter-write pin green in auto_resume.smoke.
+2. The restart text carries the explicit N (re-pinned).
+3. Probe S36 green; header self-annotation accurate; the old ctx pins
+   byte-identical.
+4. The seed file committed with n=11.
+5. Standard gate green (probe + all smokes, node).
+6. Checkpoint commits per verified unit (Part 1 code+pins; Part 2 code+pins;
+   seed + TODO/handover in the final commit). No new TODO entry expected — a
+   doc/code discrepancy may legitimately surface one (file it per the TODO
+   contract then).
+
+## DO-NOT-touch
+`maintainer/**`, `opencode.jsonc`, `AGENTS.md`, `agent/prompts/**`,
+`agent/readme/**` (the Part 3 docs land planner-side), `intercept_observer*`,
+the FST repo, `archive/**`, other loop folders,
+`.opencode/temp/compact_budget.json`.
+
+## Close
+Status: LANDED (the commit hash recorded in the planner's follow-up
+bookkeeping commit — no self-reference); the handover to
+`agent/handover/handover_task_to_planner.md`.

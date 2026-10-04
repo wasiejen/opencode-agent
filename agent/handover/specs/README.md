@@ -1,5 +1,18 @@
 # specs/ — pre-written task spec queue
 
+## 2026-10-05 wave (plan11, autorun ses_ef7155f2…)
+- `2026-10-05_loop-iteration-counter.md` (approved proposal
+  `proposals/approved/2026-10-01_loop-iteration-counter.md`) — the
+  machine-side loop counter (Part 1 counter.json at spawn + Part 2 the
+  ctx-line `ITER` suffix + the n=11 seed). LAUNCHING plan11 (worker_Q3S_slow).
+
+## 2026-10-04 wave (plan10)
+- `2026-10-04_p3-state-snapshot-tool.md` (approved proposal
+  `proposals/approved/2026-09-18_p3-state-snapshot-tool`) — the planner
+  init digest tool. LANDED plan10 (worker_Q3S_slow; probe 358/358 +
+  state_snapshot 20/20); proposal → implemented/ with verdict; live
+  acceptance = the next planner init after the host restart.
+
 ## 2026-09-30 wave (direct session ses_f0e129deeffeqmM5rc8mpnTY2Q)
 - `2026-09-30_compact-message-unit4.md` (TODO #127) — restart-branch
   inheritance (compact-message-delivery item 4, maintainer "in favor").

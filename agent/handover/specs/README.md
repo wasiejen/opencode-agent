@@ -4,7 +4,14 @@
 - `2026-10-05_loop-iteration-counter.md` (approved proposal
   `proposals/approved/2026-10-01_loop-iteration-counter.md`) — the
   machine-side loop counter (Part 1 counter.json at spawn + Part 2 the
-  ctx-line `ITER` suffix + the n=11 seed). LAUNCHING plan11 (worker_Q3S_slow).
+  ctx-line `ITER` suffix + the n=11 seed). LANDED plan11 (worker_Q3S_slow
+  ses_ef70261b…; probe 360/360, auto_resume 170/170).
+- `2026-10-05_fst-logging-build.md` (approved proposal
+  `proposals/approved/2026-10-01_fst-logging-build.md`, TODO #131 build —
+  FST `projects/Free-Snap-Tap/TODO.md:22`) — one FST worker unit on
+  fst_work3: the DEBUG flags → structured logging (3 ordered units) +
+  the 4 audit bugs + the maintainer-requested usage guideline in
+  `maintainer/feedback/`. LAUNCHING plan11 unit 2 (worker_Q3S_slow).
 
 ## 2026-10-04 wave (plan10)
 - `2026-10-04_p3-state-snapshot-tool.md` (approved proposal

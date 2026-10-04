@@ -1,114 +1,111 @@
-# Task Spec — loop iteration counter, Part 1 + Part 2 + seed
+# Task spec — FST structured-logging build (TODO #131 build; approved
+# proposal `proposals/approved/2026-10-01_fst-logging-build.md`)
 
-Approved proposal: `proposals/approved/2026-10-01_loop-iteration-counter.md`
-(read it first — the design + acceptance criteria live there). This spec covers
-Part 1 (the counter file written at spawn), Part 2 (the ctx-line `ITER`
-suffix), and the Part 3 seed file. The Part 3 DOC changes (readme_loop.md)
-land planner-side — NOT your scope.
+Date: 2026-10-05 (planner-11, autorun ses_ef7155f2dffedZ7mKtZW0EZqTh,
+looprun autorun-2026-10-01_03-27). Worker: worker_Q3S_slow.
 
-## Scope
-- `.opencode/plugin/auto_resume.ts` — replace `spawnTitleFor()` with
-  `spawnCounterFor()` (counter read + log cross-check + write); the restart
-  branch passes the computed N into `restartText()` (new text below).
-- `loop/autorun-2026-10-01_03-27/counter.json` — the bootstrap seed (below).
-- `.opencode/plugin/scripts/gauge.mjs` — an exported helper
-  `loopIterationSuffix()` + a test hook (mirror the `setBudgetFileForTest` /
-  `getBudgetFile` pattern; default loop root resolved relative to THIS_DIR
-  like `DEFAULT_BUDGET_FILE`).
-- `.opencode/plugin/ctx_watchdog.ts` — in `onChatMessage`, append the suffix
-  to the posted part text (`ctx: ${line}${suffix}`) — the injected
-  chat.message ctx line ONLY. The peek.mjs / ctx_gauge tool readouts are
-  unchanged.
-- Pins: `.opencode/plugin/tests/auto_resume.smoke.mjs`,
-  `.opencode/plugin/probes/handover_probe.mjs` (new S36 section).
+## Goal
+One FST worker unit on `fst_work3`: replace the five `CONSTANTS.DEBUG*`
+console-debug flags with stdlib structured logging (area loggers,
+append-only files, `-log=LEVEL` / `-flow` start args, numpad/menu remap)
+and absorb the four audit bugs the research found. The design is SETTLED —
+`agent/research/2026-10-01_fst-logging-design.md` (agent repo) IS the
+design source: its §2 tables are the per-site disposition list, §3 the
+scheme, §4 the DEBUG4 successor, §5 the error fixes. Build on that doc;
+do not re-derive the design.
 
-## Behavior (Part 1)
-`spawnCounterFor() → { folder, n } | null`:
-1. folder = `currentLoopFolder()`; null → null (un-named spawn, unchanged).
-2. Candidate: `loop/<folder>/counter.json` = `{"looprun": <folder>, "n": N}`
-   — absent / unparseable / `looprun` ≠ folder → 1; else N + 1.
-3. Log max: largest match of `/planner-(\d+)/g` in `loop/<folder>/loop_log.md`
-   (missing / unreadable → 0 — the old code returned null there; that changes).
-4. n_final = max(candidate, logMax + 1). (wording fix 2026-10-05
-   planner-side: the original `logMax` contradicted acceptance (b) — the
-   worker built to the acceptance; see the proposal's note.)
-5. Write the counter with n_final — best effort (a write failure must not
-   break the spawn).
-Title = `<folder> planner-<n_final>`; the `ident=` bit and the `spawn=` line
-format are unchanged. The restart-text base line becomes:
-"Your iteration number is <N> (the authoritative loop counter — the
-loop-log grep stays the fallback verification only)." — the rest of
-`restartText` (incl. the exhausted variant) is unchanged.
+## Verified facts (planner-measured 2026-10-05, checkout fst_work3 @ b513bf2, clean tree)
+- FST gate baseline (planner re-run today): pytest **466 passed + 1 warning**
+  (the known #10 coroutine warning), ruff `--select F` **F=0**
+  (`./.venv/Scripts/python.exe -m pytest -q`; `./.venv/Scripts/ruff.exe check
+  --select F .`). venv = 3.12.9; never the bare `python` (3.14, no deps).
+- The research doc was written against THIS checkout (b513bf2) — its line
+  numbers are current: flag defs `fst_manager.py:29-33` (all False); the
+  SECOND flag channel = `Argument_Manager` snapshot `fst_manager.py:1287-1290`;
+  `logging.basicConfig(filename='fst.log', filemode='w', …)`
+  `free_snap_tap.py:21-26` (the per-run wipe, `filemode` at :23);
+  `check_result` `fst_keyboard.py:908-914` (`pass`, the `logger.error`
+  commented at :912); ~96 flag-guarded print sites per the doc's §2 tables.
+- Existing live `logger.*`/`logging.*` calls (~16) that stay and get
+  re-homed as needed: `free_snap_tap.py:151,164,178,212,216`;
+  `fst_keyboard.py:95,102,107,817,921,931,946,967` (+ commented :912);
+  `fst_manager.py:354,776`; `fst_tasks.py:29`.
+- Behaviour-pinning tests the change alters (repurposing is IN scope —
+  rewrite them to pin the new logger-level behaviour, or delete
+  deliberately with a one-line note): `tests/test_argument_manager.py:187`
+  (`am.DEBUG is True`), `:202` (`CONSTANTS.DEBUG_NUMPAD is True`);
+  `tests/test_cli_menu.py:48-53` (menu option 0 → `CONSTANTS.DEBUG4`);
+  `tests/test_control_actions.py:63-66` (control combo → `CONSTANTS.DEBUG`);
+  `tests/test_filter_simulated.py:115` (`CONSTANTS.DEBUG2 = True`);
+  `tests/conftest.py:83` (FakeFST attrs list includes the five flags).
+- The FST repo has NO `TODO.md` (verified) — bookkeeping rides the agent
+  repo: `projects/Free-Snap-Tap/TODO.md:22` (#131, planner's lane).
+- `FSTconfig_test.txt` is the maintainer's live config;
+  `tests/test_config_parse.py::test_real_config_parses` is its regression
+  guard — it must stay green untouched.
 
-## Behavior (Part 2)
-`loopIterationSuffix()` → `""` or `" ITER=<n> <folder>"`: resolve the current
-loop folder (exactly one `autorun-*` dir → it; several → most-recently-modified;
-none / unreadable → `""`), read the folder's `counter.json`, present +
-parseable → the suffix. Never throws.
-
-## Bootstrap seed (Part 3 file)
-`loop/autorun-2026-10-01_03-27/counter.json` =
-`{"looprun":"autorun-2026-10-01_03-27","n":11}` — the current iteration (see
-verified facts). WITHOUT the seed, the first post-build spawn computes
-max(1, 10) = 10 — a doubled naming with plan10; the seed makes it 12.
-
-## Pin audit (every pin surface the change touches — repurposing in-scope)
-- auto_resume.smoke.mjs, plan9 ident block (fixture folder `autorun-test_0-0`,
-  log max planner-7, no counter → N = max(1,7) = 8: title/ident UNCHANGED) +
-  NEW pin: the fixture `counter.json` written byte-exact with n=8.
-- auto_resume.smoke.mjs, "no planner-<N> line → no identifier" block —
-  REPURPOSED (behavior pin): no counter + no planner line → NOW N = 1 →
-  title `<folder> planner-1` (old: no title at all).
-- auto_resume.smoke.mjs, the restart-text byte-exact pin (search
-  `Your iteration number`) — re-pin to the new explicit-N text.
-- NEW pins, the proposal acceptance (a)–(d): (a) counter n=4 + log max 4 → 5;
-  (b) counter n=4 + log max 6 → 7; (c) counter n=5, log max 4 (a dead session
-  wrote no line) → 6, never 5; (d) counter of a DIFFERENT looprun → 1.
-- handover_probe.mjs — NEW S36 section pinning `loopIterationSuffix()` via the
-  test hook: (i) a loop root without a counter → `""`; (ii) fixture
-  `autorun-X/counter.json` n=7 → ` ITER=7 autorun-X`. The EXISTING byte-exact
-  ctx pins (CTX_OK / CTX_UNKNOWN / CTX_UNAVAILABLE) must stay byte-identical
-  (no counter in the live loop folder at probe time). Update the header
-  section-sum line + the total annotation (the annotation is the source).
-
-## Verified facts (planner-verified at spec authoring, 2026-10-05)
-- The live loop folder = `autorun-2026-10-01_03-27` (exactly one under
-  `loop/`); NO counter.json yet; the log regex max is `planner-10`
-  (`grep -oE "planner-[0-9]+" loop/autorun-2026-10-01_03-27/loop_log.md |
-  sort -u -V | tail -1`); the current planner session = iteration 11, its
-  successor = 12.
-- auto_resume.ts: `currentLoopFolder()` and `spawnTitleFor()` are adjacent
-  (search `function spawnTitleFor`); `restartText(sid, exhausted)` carries
-  the old iteration line (search `Your iteration number`); the spawn call
-  uses the title for the create + the `ident=` bit.
-- The probe's current total = 358/358 (header self-annotated; the last
-  section S35 = checks 354-356) → S36 starts at check 357.
-- gauge.mjs convention: `join(THIS_DIR, "..", "..")` = the `.opencode/`
-  dir (see `DEFAULT_BUDGET_FILE`) → the loop root =
-  `join(THIS_DIR, "..", "..", "..", "loop")`.
-- Baseline gate: probe 358/358 + all smokes green under node v24.19.0
-  (bun is broken — run the gate under node).
-
-## DoD
-1. Counter scenarios (a)–(d) + the repurposed no-line case + the
-   counter-write pin green in auto_resume.smoke.
-2. The restart text carries the explicit N (re-pinned).
-3. Probe S36 green; header self-annotation accurate; the old ctx pins
-   byte-identical.
-4. The seed file committed with n=11.
-5. Standard gate green (probe + all smokes, node).
-6. Checkpoint commits per verified unit (Part 1 code+pins; Part 2 code+pins;
-   seed + TODO/handover in the final commit). No new TODO entry expected — a
-   doc/code discrepancy may legitimately surface one (file it per the TODO
-   contract then).
+## Scope (3 ordered units; checkpoint commit per verified unit; gate green after each)
+1. **Logger setup** (doc §3 + §3.4): `fst.log` append-only (`filemode='a'`);
+   the area-logger tree `fst / fst.flow / fst.eval / fst.state /
+   fst.macro / fst.config`; `fst.flow` own `fst_flow.log` + the
+   propagate handling per doc §3.2 (worker's call between the two
+   documented variants); console at WARNING; `-log=LEVEL`
+   (debug/info/warning/error, default info) + `-flow` start args in
+   `apply_start_arguments` (replacing `-debug`; `-debug_numpad` unchanged;
+   unknown arg → WARNING); the numpad remap (`alt+num1` root debug level,
+   `num2/3` collapse onto it, `alt+num4` flow toggle) + menu option 0 →
+   flow toggle + the CLI keep-open gate (`fst_manager.py:1856`: any area
+   logger at DEBUG → don't `cls`).
+2. **Per-flag dispositions** (doc §2 tables — convert every listed site):
+   kill `DEBUG/DEBUG2/DEBUG3`; error-class sites → always-on WARNING
+   (`fst_keyboard.py:706-708, 1090-1092`; `fst_manager.py:310-311, 348-349,
+   363-364, 684-685`); D4 → `fst.flow` records keeping the arrow
+   vocabulary + the IN/OUT latency pairs (doc §4); `DEBUG_NUMPAD` kept as
+   the safety gate; the two parallel flag channels collapse to one (the
+   `Argument_Manager` flag snapshot dies — reads go to loggers / the
+   single gate).
+3. **Error-documentation fixes** (doc §5): restore `check_result` logging
+   (`fst_keyboard.py:908-914`); `fst_manager.py:116,658` →
+   `logger.warning`/`logger.error`; the stale "suppressed" print
+   (`fst_keyboard.py:869-873`) fixed or deleted; config-load `ERROR:`
+   prints → `logger.error`; delete the dead nested
+   `clear_all_variables` (`fst_manager.py:454-459`).
 
 ## DO-NOT-touch
-`maintainer/**`, `opencode.jsonc`, `AGENTS.md`, `agent/prompts/**`,
-`agent/readme/**` (the Part 3 docs land planner-side), `intercept_observer*`,
-the FST repo, `archive/**`, other loop folders,
-`.opencode/temp/compact_budget.json`.
+- `FSTconfig_test.txt` (live config), `FSTconfig.txt`, `playground/`
+  (maintainer's live probes), `requirements*.txt`, the packaging scripts.
+- Agent repo: anything under `maintainer/` EXCEPT the one requested new
+  file (DoD below); `TODO.md` + `projects/Free-Snap-Tap/TODO.md` + the
+  handover files (planner's lane — you write ONLY the handover summary +
+  the guideline file).
+- No live listener runs, no real keyboard, no FST live testing (maintainer
+  domain; the live console/file confirmation of the build is his too).
 
-## Close
-Status: LANDED (the commit hash recorded in the planner's follow-up
-bookkeeping commit — no self-reference); the handover to
-`agent/handover/handover_task_to_planner.md`.
+## Definition of done
+- FST gate green: pytest all passing (the 466 baseline + the
+  new/repurposed tests) + ruff F=0 — measured counts in the handover.
+- The flag surface is gone per doc §6: `grep -rn "CONSTANTS.DEBUG" ` +
+  the `self.DEBUG`/`self._arg_manager.DEBUG*` snapshot forms outside the
+  kept `DEBUG_NUMPAD` gate = zero hits (report the greps in the handover).
+- The start args are pinned by tests (`-log=LEVEL`, `-flow`, unknown arg
+  → WARNING) and the repurposed pin tests pin the new logger behaviour.
+- Handover at `agent/handover/handover_task_to_planner.md` (agent repo):
+  executive summary, measured gate, the FST-repo commits, the per-flag
+  disposition list (what died / what converted / what was promoted),
+  what was deliberately not done.
+- Usage guideline (the maintainer's approved ask — "put it in
+  maintainer/feedback"): ONE new file
+  `maintainer/feedback/2026-10-05_fst-logging-usage.md` in the AGENT repo —
+  short and practical (which `-log` level for which purpose, when `-flow`,
+  how to read `fst_flow.log` for lag, the runtime toggles), written from
+  the implementation.
+- Checkpoint commits per verified unit in the FST repo (code + tests;
+  commit routine applies to each); no TODO edits by you (no FST TODO.md —
+  the #131 status update is the planner's); the agent-repo files you write
+  stay uncommitted (the planner commits them).
+- No new TODO entry expected — if the build surfaces a doc/code
+  discrepancy, file it in the agent repo's `todo_inbox.md` instead.
+
+## Branch
+Stay on `fst_work3` (verified checked out at b513bf2, clean tree, at spec
+time) — re-verify `git branch -v` before your first edit.

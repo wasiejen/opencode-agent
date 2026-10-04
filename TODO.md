@@ -825,11 +825,17 @@ All those IDs stay reserved — see the numbering rule in the header.
   78/78, context_recovery 17/17, submit 23/23); probe 346 = 335 pass +
   11 ENVIRONMENTAL #113 failures 136-146 (`No Python at python312` — the
   venv NOT fixed, per spec: MAINTAINER CALL); ruff F=0; the pytest half
-  of the standard gate is BLOCKED by #113 (exit 103, reported in the
-  handover, not fixed). LIVE acceptance PENDING the maintainer's host
-  restart (one worker dying at the wall → the `-WARNING` line lands in
-  `loop_log.md` within ~65 s — doc §5 DoD). (Commit hashes recorded in
+  of   the standard gate is BLOCKED by #113 (exit 103, reported in the
+  handover, not fixed). (Commit hashes recorded in
   the planner's follow-up bookkeeping commit — no self-reference.)
+  **LIVE-ACCEPTED (plan10, 2026-10-04, verified from files):** two live
+  firings in the post-build process — `limit-stop= sid=ses_f0999d65…
+  total=230144` (auto_resume.log 2026-10-01T11:38:17Z) + `limit-stop=
+  sid=ses_f07be53e2… total=170240` (16:43:52Z), each followed by its
+  `-WARNING auto_resume … silent limit-stop: finish=length … no-COMPACT`
+  line in `loop/autorun-2026-10-01_03-27/loop_log.md` (13:38 / 18:43 local)
+  — the detector + the loop-log visibility channel both fired as
+  designed. Entry complete.
 
 ## 110. (closed 2026-09-28, plan35 maintenance pass — LANDED 2026-09-28 plan32 unit 1, worker-32, 3a5de39; full text in todo_records.md) — per-plugin / per-tool README files for `.opencode/plugin/` + `.opencode/tools/` (9 READMEs, each ≤ ~60 lines, pointer-only, hook names spot-checked against the code) + the two folder-README index lines
 
@@ -1056,7 +1062,13 @@ All those IDs stay reserved — see the numbering rule in the header.
   `tail-set=` line in auto_resume.log (the tail rewritten to the
   agent-requested keep boundary — natural occurrence; the host process
   must postdate the build for the leg to run — the maintainer's
-  restart).
+  restart). **LIVE-ACCEPTED (plan10, 2026-10-04, verified from files):**
+  the post-restart process (2026-10-04) processed the existing ctx.log
+  COMPACT lines at init and fired the tail-set leg for 8 sessions —
+  auto_resume.log 2026-10-04T20:50:22Z–20:54:07Z `tail-set= sid=… msg_…
+  -> msg_… keep=<N>` lines (incl. keep=18 for ses_f0a4c9ad…, keep=12 for
+  ses_f0999d65…; one session twice, keep=12 then keep=8 — the two
+  COMPACT lines for it). The leg runs live; the entry is COMPLETE.
 
 
 ## #126. (closed 2026-10-01, plan1 maintenance pass — #120 U1 context_trim FULLY LIVE-ACCEPTED: the spawn-sqlite3 fallback + the json_set tail fix + the async-execFile fix (execFileSync once-per-process) all live-verified post-restart (report ×2 + floor-6 refusal in one process); the live-debug saga (TAB-arg collapse → \x01, 1 MB → 16 MB, double-quote argv mangling → json_set) in full text in todo_records.md) context_trim's in-process-only sqlite backend fails in the live host process
@@ -1145,11 +1157,13 @@ All those IDs stay reserved — see the numbering rule in the header.
    re-pinned — incl. the CPU plain-call pins → SELF shape); probe
   352/352 (S13 92/93/95/222/223/225/226 + S32 340 re-pinned). PENDING
   PLANNER-SIDE (done 2026-10-01, plan2 bookkeeping): the AGENTS.md
-  Compaction Guidelines "Budgets" block (staged copy at repo root
-  `AGENTS_pending_2026-10-01.md`) + the planner-prompt budget line
-  (`agent/prompts/agent_planner.md` — the CROSS-dispatch bullet).
-  Live acceptance = the next real cross-override dispatch (maintainer
-  domain).
+   Compaction Guidelines "Budgets" block (staged copy at repo root
+   `AGENTS_pending_2026-10-01.md`) + the planner-prompt budget line
+   (`agent/prompts/agent_planner.md` — the CROSS-dispatch bullet).
+   **AGENTS.md Budgets paste LANDED by the maintainer (commit 3296339,
+   2026-10-04 — the cross-override bullet now in the live AGENTS.md
+   Budgets block).** Live acceptance = the next real cross-override
+   dispatch (maintainer domain) — still PENDING.
 
 ## #133. (LANDED 2026-10-01, plan8 planner-direct — the 4 new-hire-test frictions of the context_trim description; pre-approved class — agent-usage friction) context_trim new-hire test: 4 description frictions found + fixed (the report rejection surface + 3 missing description lines)
 - **Problem / evidence:** the plan8 new-hire test (worker_Q3S_slow
@@ -1188,7 +1202,7 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Desired outcome:** the package units LANDED in order U0→U1→U2→U3→U4, each leaving the repo green; U2 live after the maintainer's bat run.
 - **Acceptance criteria:** per-unit DoD in the spec wave `agent/handover/specs/2026-10-01_context-package-README.md` (each spec names its measured end states + the standard gate).
 - **Suggested scope:** per the specs — `.opencode/tools/context_trim.ts` (U0/U1/U2 surface), the fork `C:\Users\Wasiejen\Repos\opencode` (U2), `.opencode/tools/compact_memory.ts` (U3), `.opencode/plugin/auto_resume.ts` (U4), `agent/prompts/**` (U4 planner edit).
-- **Status:** OPEN — spec wave COMPLETE (2c1b053); **U0 LANDED** (worker_Q3S 0538aa4 — smoke 34/34, gate green, planner-verified under node); **U1 LANDED** (worker_Q3S 9f1f668 — smoke 40/40, gate green under node; surface report = cut-down form by default, full form via core export; probe-346 arg-list constraint → todo_inbox flag); **U3 LANDED** (worker_Q3S 5c1e286/40e008f — compact_memory 110/110, gate green under node; worker limit-death after final commit — handover reconstructed from files by the planner, probe 86 re-pinned by the planner); **U4 LANDED** (worker_Q3S 4e2b901 — auto_resume 165/165, gate green under node) + the U4 prompt-ladder reduction done by the planner (planner/worker prompts + AGENTS_pending_2026-10-01.md note; the `nudge1-4` keys NOT enabled in the live config — absent = off, enabling is the maintainer's call); **U2 QUEUED BEHIND the bun repair** (its fork test/build gate needs bun — currently broken, maintainer domain; todo_inbox flag raised); worker preference per the maintainer's inbox ruling (2026-10-01, done/): prefer worker_Q3S_slow (no model-switch reprefill above ~150k planner context + the 245k window for lookup-heavy tasks); U2 live gate = the maintainer's `build_fork.bat` run.
+- **Status:** OPEN — spec wave COMPLETE (2c1b053); **U0 LANDED** (worker_Q3S 0538aa4 — smoke 34/34, gate green, planner-verified under node); **U1 LANDED** (worker_Q3S 9f1f668 — smoke 40/40, gate green under node; surface report = cut-down form by default, full form via core export; probe-346 arg-list constraint → todo_inbox flag); **U3 LANDED** (worker_Q3S 5c1e286/40e008f — compact_memory 110/110, gate green under node; worker limit-death after final commit — handover reconstructed from files by the planner, probe 86 re-pinned by the planner); **U4 LANDED** (worker_Q3S 4e2b901 — auto_resume 165/165, gate green under node) + the U4 prompt-ladder reduction done by the planner (planner/worker prompts + AGENTS_pending_2026-10-01.md note; the `nudge1-4` keys ENABLED in the live config by the maintainer (commit 3296339, 2026-10-04: nudge1_triage 0.80 / nudge2_stop 0.90 / nudge3_emergency 0.925 / nudge4_maintainer 0.95 — the U4 live acceptance is now reachable on this process); **U2 QUEUED BEHIND the bun repair** (re-checked 2026-10-04, plan10: bun still broken — `bun.exe` missing from the npm install, gate runs under node v24.19.0) (its fork test/build gate needs bun — currently broken, maintainer domain; todo_inbox flag raised); worker preference per the maintainer's inbox ruling (2026-10-01, done/): prefer worker_Q3S_slow (no model-switch reprefill above ~150k planner context + the 245k window for lookup-heavy tasks); U2 live gate = the maintainer's `build_fork.bat` run.
 
 ## #134. (open, 2026-10-01, planner-9 ses_f0999d65dffeFxiJylRzecRbhu — direct maintainer engagement in the autorun session: "write access with users/users should have been blocked via intercept plugin"; maintainer call — a behavior change) the out-of-sandbox guard for host write/edit is note-only: an unmappable path passes through the intercept layer AND (observed) the host permission gate, and only the host filesystem stopped it by chance
 - **Problem / evidence:** plan9 (this session): a typo'd write to `C:\Users\Users\Wasiejen\Repos\opencode-agent\loop\...` (doubled `Users`). Verified chain: (1) the intercept plugin's `tool.execute.before` hook FIRED and logged the call — `.opencode/temp/intercept.log` 09:48 line, verdict `out-of-sandbox`, `path=C:\Users\Users\... root=C:\Users\Wasiejen\...`; (2) the R8 typed-path redirect covers the host write/edit/read `filePath` fields (intercept_observer.ts `REDIRECT_PATH_FIELDS` L574-578) but is fail-closed PASS-THROUGH on unmappable forms (`runRedirect` L584-587: `resolveRedirect → null → continue` — the field is not mutated, no block); (3) the call then reached the host's `write` tool: fork `tool/write.ts` flow = `assertExternalDirectoryEffect` (L44) → `ctx.ask({permission: "edit"})` (L54) → `fs.writeWithDirs` (L64); `assertExternalDirectoryEffect` (external-directory.ts L35) asks the `external_directory` permission, which resolves to the default `action: "ask"` for an unlisted path (fork `permission/index.ts` L28-38 `findLast(...) ?? {action: "ask"}`) — the session should have STOPPED and asked; (4) OBSERVED: it did not stop — the call proceeded to `fs.writeWithDirs` and died with `Unknown: FileSystem.makeDirectory (C:\Users\Users\Repos\opencode-agent\loop\...)` — Windows refused to create `C:\Users\Users` (no admin rights on the C:\ root). Nothing was written to disk; the save was ACCIDENTAL (the typo pointed at a non-existent root).
@@ -1203,4 +1217,4 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Maintainer follow-up proposal (2026-10-01, direct):** add an existence check in the before hook — if the PATH (the containing directory, NOT the specific file) does not exist, block the request; only the path, to catch the invalid-path cases. Design options to rule: (A) literal — block on missing parent directory: catches in-root dir typos (e.g. `agent/handver/file.md` — today the write tool's `writeWithDirs` silently CREATES `handver/`) but kills legitimate new-subdirectory writes (the write tool creates intermediate dirs by design); (B) hard-stop upgrade of the EXISTING out-of-sandbox note on the mutating tools' typed path fields (write/edit): the check (`underRoot`) already exists (core note + block_transfer `sandboxCheck`); catches the doubled-root / escaped-root typo class (the full target path is not under any allowed root), preserves in-root new-dir creation, no new detection logic — implemented as a throwing before hook per finding B. (C) the detector blind-spot fix (run `DOUBLED_RE` on the unescaped field, or normalize `\`→`/` first) — note-only, complements A/B.
 - **Maintainer ruling (2026-10-01, direct):** build B' + C, NOT A. B' semantics per his clarification: trigger = OUTSIDE THE SANDBOX (absorbs "(doubled AND outside) OR outside") — a folder doubling in itself is NEVER wrong (it may sit in an allowed root → stays a log signal via C); "path exists" = the CONTAINING DIRECTORY (never the file); "outside the sandbox" = not under any allowed root = the R8 set (workspace + scratchpad + the `external_directory` allows in opencode.jsonc).
 - **LANDED (2026-10-01, same session, direct):** B' hard-stop in the before hook (`intercept_observer.ts`): for the EFFECTIVE (post-redirect) write/edit `filePath` — outside every allowed root AND containing directory missing → the hook throws a `HardStopError` (the hook's catch distinguishes the deliberate throw: logs ONE `intercept-error` line, then RE-THROWS — a throwing before hook fails the tool call, the agent sees the error); existing external paths pass to the host permission gate; in-root new-dir writes pass to writeWithDirs; read is out of scope (read-only). C fix (`intercept_observer_core.ts` `observePathAnomaly`): collapse the JSON-escaped `\\` pairs back to one separator before `DOUBLED_RE` — doubled segments in typed Windows paths now log `path-anomaly` (the 14-verdict vocabulary is unchanged — the block is a throw, not a verdict).
-- **Status:** LANDED 2026-10-01 (planner-9 direct — hook block + C fix; standard gate green: probe 355/355 + all 11 smokes; intercept_observer.smoke 85/85 incl. 7 new (4b)/C pins; 7 probe pins updated — they encoded the pre-C detector blindness (2 new path-anomaly lines / 1 line where ZERO was expected). Live acceptance = natural occurrence after the host restart (the next out-of-sandbox write to a missing path shows the block error; the next doubled typed path logs `path-anomaly`).)
+- **Status:** LANDED 2026-10-01 (planner-9 direct — hook block + C fix; standard gate green: probe 355/355 + all 11 smokes; intercept_observer.smoke 85/85 incl. 7 new (4b)/C pins; 7 probe pins updated — they encoded the pre-C detector blindness (2 new path-anomaly lines / 1 line where ZERO was expected). Live acceptance = natural occurrence after the host restart (the next out-of-sandbox write to a missing path shows the block error; the next doubled typed path logs `path-anomaly`). **C-part LIVE-ACCEPTED (plan10, 2026-10-04, verified from files):** the post-restart process logged `path-anomaly` for a live typed-path call carrying adjacent doubled segments (`doubled= maintainer, proposals`, intercept.log 2026-10-04_22-54 — the JSON-escaped `\\` collapse now lets DOUBLED_RE fire on typed Windows/POSIX paths). **B'-part** (the hard-stop throw) still PENDING a natural occurrence (no out-of-sandbox write to a missing path since the restart).)

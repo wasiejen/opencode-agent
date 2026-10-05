@@ -362,6 +362,13 @@ Net: 5 flags → 2 controls (`-log=LEVEL` + `-flow`) + the numpad safety gate;
 7. Found: stale "suppressed" print where suppression is disabled
    (`fst_keyboard.py:869-873`).
 8. Cosmetic: `print("D1: > playing makro:", …)` typo `fst_keyboard.py:777`.
+9. CORRECTED 2026-10-05 (plan11 build, worker-11): §5.5's "dead nested
+   `clear_all_variables` … delete" is WRONG — the nested function is the live
+   eval-scope shim behind bare `clear_all_variables()` config calls (used in
+   `FSTconfig_test.txt:850,1596`; pinned by
+   `tests/test_output_manager.py::test_clear_all_variables_constraint_empties_store`).
+   Deleting it would silently no-op the live config. The build KEPT it (only
+   the commented dead lines inside it were removed).
 
 ---
 

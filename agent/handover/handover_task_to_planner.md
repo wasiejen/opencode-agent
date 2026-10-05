@@ -1,118 +1,115 @@
-# loop iteration counter handover — Part 1 + Part 2 + bootstrap seed
+# Worker summary — #131 FST structured-logging build (worker-11, ses_ef6b793f2ffek8H7AISRzFV4gX, 2026-10-05)
 
-Worker: worker_Q3S_slow (session ses_ef70261b3ffewfIAhOa8hu603o).
-Task spec: `agent/handover/handover_task.md`; approved proposal
-`proposals/approved/2026-10-01_loop-iteration-counter.md`.
+Status: DONE — all 3 units built, gate green after each, FST repo branch `fst_work3`.
+Commits (FST repo, in order): `ea2aac3` (U1 logger setup), `cac6704` (U2 per-flag
+dispositions), `cd0f3a2` (U3 error-documentation fixes). Baseline at start: b513bf2,
+466 passed + 1 warning / ruff F=0 (re-measured, matched the spec).
 
-## What landed (3 commits, all green)
+## Measured gate (final, U3)
+- `./.venv/Scripts/python.exe -m pytest -q` → **474 passed, 1 warning** (the known
+  #10 coroutine warning at `fst_keyboard.py` mouse-rebind dispatch, unchanged)
+- `./.venv/Scripts/ruff.exe check --select F .` → **F=0** (All checks passed)
+- Per-unit gates: U1 471 passed, U2 471 passed, U3 474 passed (each + ruff F=0)
+- `test_real_config_parses` (the live-config regression guard) stayed green untouched
+  through all three units; `FSTconfig_test.txt` / `FSTconfig.txt` / `playground/` /
+  requirements / packaging untouched. No live listener runs, no real keyboard.
 
-**Commit 1 — `b97bf75` Part 1 code + pins**
-- `.opencode/plugin/auto_resume.ts`:
-  - `spawnTitleFor()` REPLACED by `spawnCounterFor() → {folder, n} | null`
-    — reads `loop/<folder>/counter.json` (candidate = n+1; absent /
-    unparseable / `looprun` ≠ folder → 1), cross-checks the log max
-    (missing/unreadable → 0), `n_final = max(candidate, logMax + 1)`,
-    writes the counter best-effort (a write failure never breaks the
-    spawn). The old "no planner line → null (un-named)" behavior is
-    GONE: a title now always resolves when a loop folder exists.
-  - `spawnPlanner(startPrompt, sourceMsgs?, precomputed?)` — the counter
-    is computed EXACTLY ONCE per spawn; the file-trigger path computes
-    it inside, the restart branch passes its precomputed counter.
-  - `restartText(sid, exhausted, n?)` — the iteration line becomes
-    `Your iteration number is <N> (the authoritative loop counter — the
-    loop-log grep stays the fallback verification only).`; `n == null`
-    (no loop folder — degenerate sandbox / pre-loop case) → the OLD
-    derivation text (kept as the fallback; the `loop_log.md` pin at the
-    first UNIT-4 restart stays green on it). Exhausted variant unchanged.
-  - The restart branch computes the counter once and passes the same N
-    into the text and the title (no double write, no drift).
-- `.opencode/plugin/tests/auto_resume.smoke.mjs` (165 → 170):
-  - plan9 ident block: title/ident UNCHANGED (planner-7 → planner-8) +
-    NEW pin: the fixture `counter.json` written byte-exact `{"looprun":"autorun-test_0-0","n":8}`.
-  - "no planner-<N> line" block REPURPOSED (behavior pin): no counter +
-    no planner line → NOW N = 1 → title `autorun-test_0-0 planner-1` +
-    counter written n=1.
-  - NEW block (10): acceptance scenarios (a) counter 4 + log 4 → 5;
-    (b) counter 4 + log 6 → 7; (c) counter 5 + log 4 (dead session) → 6,
-    never 5; (d) foreign-looprun counter + no planner line → 1 (the
-    write normalizes the looprun) — each pinning title + written
-    counter.json bytes.
-  - ITEM 2/11/4 section: a deterministic loop fixture (counter n=4, log
-    max planner-4) makes the restart N machine-computable; the
-    byte-exact restart-text pin re-pinned to the explicit-N text via a
-    parameterized `baseRestartText(n)` (emg 6 / i4 7 / unread 8 — the
-    counter advances per restart); the fixture is removed after the
-    item-4 section (the #109 section creates its own loop folder).
+## What changed per unit
+**U1 — logger setup (doc §3/§3.4):**
+- Area-logger tree `fst / fst.flow / fst.eval / fst.state / fst.macro / fst.config`
+  (loggers defined in `fst_manager.py`, imported where used). `fst.log` now
+  `filemode='a'` (per-run wipe fixed), console handler WARNING, formats per doc §3.3/§4.
+  `setup_fst_logging()` called from `free_snap_tap.py` main (idempotent).
+- `fst.flow` variant chosen: own `fst_flow.log` (`filemode='a'`) + **propagate=False
+  while enabled** (the doc's clean variant); disabled = WARNING + propagate on.
+- Start args: `-log=LEVEL` (debug/info/warning/error; invalid → WARNING), `-flow`
+  (idempotent re-apply on focus changes), `-debug` removed (now an unknown-arg
+  WARNING), `-debug_numpad` unchanged. Start-arg echo + `-file=` echo → `fst.config`.
+- Numpad remap: `alt+num1/2/3` → shared root-debug toggle (DEBUG↔INFO over
+  `fst` + the four non-flow areas), `alt+num4` → flow toggle, `alt+num5` unchanged
+  (console repr dump), `alt+num7/8` → `fst.state` DEBUG records. Menu option 0 →
+  flow toggle. CLI keep-open gate (`clear_cli`) = any area logger at DEBUG → no `cls`.
+- free_snap_tap: source-edit flag block deleted, startup group dump → INFO,
+  existing `logging.info` calls re-homed to the `fst` logger.
 
-**Commit 2 — `e9447c2` Part 2 code + pins**
-- `.opencode/plugin/scripts/gauge.mjs`: exported `loopIterationSuffix()`
-  (→ `""` or ` ITER=<n> <folder>`; folder resolution mirrors
-  auto_resume's currentLoopFolder; present + parseable counter → suffix;
-  never throws) + test hook `setLoopRootForTest` / `getLoopRoot`
-  (the setBudgetFileForTest pattern) + `DEFAULT_LOOP_ROOT =
-  join(THIS_DIR, "..", "..", "..", "loop")` (= `<repo>/loop`).
-- `.opencode/plugin/ctx_watchdog.ts`: the INJECTED chat.message ctx line
-  only — `text: ctx: ${line}${iterSuffix}`. The peek.mjs / ctx_gauge
-  readouts are UNCHANGED (they format via formatGauge, untouched).
-- `.opencode/plugin/probes/handover_probe.mjs`:
-  - `setLoopRootForTest(path.join(SANDBOX, "loop"))` at probe start
-    (never-created sandbox root) — the EXISTING byte-exact ctx pins
-    (CTX_OK / CTX_UNKNOWN / CTX_UNAVAILABLE) stay byte-identical
-    (no loop folder/counter → `""` suffix).
-  - NEW S36 section (checks 357-358): (i) steered loop root without a
-    counter → `""`; (ii) fixture `autorun-X/counter.json` n=7 →
-    ` ITER=7 autorun-X` byte-exact.
-  - Header self-annotation: `S35=3 S36=2 hygiene=6 → "PROBE handover:
-    360/360 PASS"` (was 358/358); the EXTENDED 2026-10-05 note added.
+**U2 — per-flag dispositions (doc §2 tables):**
+- `CONSTANTS.DEBUG/DEBUG2/DEBUG3/DEBUG4` deleted; `DEBUG_NUMPAD` kept (safety gate).
+  The `Argument_Manager` snapshot channel fully dies (class attrs + snapshot lines
+  + commented reset lines); single channel = the loggers.
+- ~80 flag-guarded print sites converted: per-key/pipeline → `fst.flow` DEBUG
+  (incl. the D4 successor with the arrow vocabulary: `--> IN/OUT (t_rel_ms)
+  real|sim <ke>`, `-- rebind/toggle/toggle-suppress`, `-- XX SUPPRESSED`, `-- |`
+  sim marker kept); state/timing → `fst.state` DEBUG (incl. first-call KeyErrors);
+  eval lines → `fst.eval` DEBUG; macro/repeat → `fst.macro` DEBUG; config-load
+  constraint parse + group counts → `fst.config` DEBUG; backup/restore → INFO.
+- 6 error-class sites → **always-on WARNING**: rebind-not-found
+  (`fst_keyboard.py`, dict dump demoted to DEBUG), no-macro-sequence reset (merged
+  with the always-on print), repeat-alias not found ×3, constraint NameError ignored.
+- Kills: commented mouse-event debug, commented old `release_all_*` block
+  (the `###XXX 241014-1926 changed` marker kept), commented `inc()` block, the stale
+  lying D2 "suppressed" print (suppression is commented out — pin comment kept),
+  `makro` typo fixed in the log message.
 
-**Commit 3 — seed + close (this commit)**
-- `loop/autorun-2026-10-01_03-27/counter.json` =
-  `{"looprun":"autorun-2026-10-01_03-27","n":11}` (45 bytes, no trailing
-  newline — byte-verified). The live log max is NOW planner-11 (the
-  current session's START line landed after spec authoring) — the next
-  spawn computes max(11+1, 11+1) = **12** as the spec intends.
-- `todo_inbox.md` entry + `agent/agent_feedback.md` friction entry
-  (the spec doc discrepancy — below).
-- This handover + the loop_log.md DONE line.
+**U3 — error-documentation fixes (doc §5):**
+- `check_result` restored: `fut.result()` in try/except — crash →
+  `fst.macro` ERROR; `asyncio.CancelledError` → DEBUG (intentional cancels stay
+  silent; it's a BaseException, so it must be caught separately or it leaks to GC
+  "Exception ignored").
+- Invalid constraint result → `logger_eval.warning`; unexpected eval exception →
+  `logger_eval.error` (the "stays console-only" comment corrected); config-load
+  `ERROR:` prints (all 4 extraction pairs) → `fst.config` ERROR.
+- Nested `clear_all_variables` **KEPT, not deleted** — see "deliberately not done".
 
-## Measured gate evidence (all under node v24.19.0)
+## DoD greps (flag surface, measured at close)
+- `grep -rn "CONSTANTS.DEBUG" --include="*.py"` (code): only
+  `fst_keyboard.py:676` (the kept `DEBUG_NUMPAD` gate read) and
+  `fst_manager.py:1408` (`-debug_numpad` sets it) + the test pin
+  `tests/test_argument_manager.py:242`. Zero other hits.
+- `grep -rn "self.DEBUG\|_arg_manager.DEBUG\|Argument_Manager.DEBUG"`: **zero hits**.
 
-- Baseline (pre-change): probe 358/358 + 12/12 smokes green
-  (auto_resume 165/165).
-- Post-Part-1: auto_resume.smoke **170/170** green.
-- Post-Part-2: probe **360/360 PASS** (checks 357/358 = the new S36; the
-  S4 byte-exact ctx pins re-verified green in-run) + 12/12 smokes green
-  (auto_resume 170/170, the other 11 byte-unchanged).
-- One transient failure during development: the re-pinned restart-text
-  checks first failed because `baseRestartText` put `${n}` in a
-  double-quoted string (no interpolation) — fixed by concatenation;
-  final run all green.
+## Tests added/repurposed (8 new, 6 repurposed)
+New: `-log=` level set (default-not-debug, debug/info/warning/error, invalid →
+WARNING, `-debug` now unknown, `-flow` opens the flow file exactly once) in
+`test_argument_manager.py`; `alt+num1` toggle-on/off in `test_control_actions.py`;
+`check_result` crash-logged / cancel-silent in `test_macro_playback_kbd.py`;
+config-load error → `fst.config` ERROR in `test_config_error.py`.
+Repurposed: menu option 0 → flow toggle (+ pins the new keep-open gate: second
+loop pass does NOT clear the console); numpad actions → logger-level toggles;
+D2 contradiction diagnostics → flow DEBUG records (caplog); the mouse-rebind
+dispatch-error pin re-pointed to logger `fst.flow`; the invalid-constraint pin →
+`fst.eval` WARNING record. `tests/conftest.py`: `restore_fst_loggers` autouse
+fixture (levels/propagate/handlers per test); `restore_constants` attrs list
+shrunk to the surviving attributes.
 
-## Spec discrepancy found (filed to todo_inbox.md, NOT fixed — spec is planner-owned)
+## Deliberately not done
+1. **Nested `clear_all_variables` kept** — the research doc (§5.5) calls it dead/
+   self-recursive, but it is the eval-scope shim for bare `clear_all_variables()`
+   config calls: used live in `FSTconfig_test.txt:850,1596` and pinned by
+   `test_clear_all_variables_constraint_empties_store`. Deleting it would silently
+   no-op the maintainer's live config. Kept with an explanatory comment; the dead
+   commented lines inside it were removed. **Filed in `todo_inbox.md`** for planner
+   curation (doc discrepancy; the doc's §5.5 line should be corrected).
+2. **Out-of-range start-arg notices kept as `print`** (invalid delay, delay/probability
+   out of range, invalid crosshair, no valid tap/alias/macro delay). Doc §3.1's
+   WARNING row says "unknown start argument / out-of-range values (`:1461` etc.)"
+   but the §2 per-site list only itemizes the unknown-arg site, and the DoD pins
+   only "unknown arg → WARNING". Those prints are console UX and not flag-guarded;
+   converting them (and their ~8 capsys tests) is a small follow-up if the maintainer
+   wants it.
+3. **`-logdir=` start arg** — explicitly deferred by the doc §3.3 ("cheap future
+   extension, not needed for the first build").
+4. No live-console/file confirmation (maintainer's domain per spec); the flow
+   toggle's runtime behavior is pinned by tests, not by a live run.
 
-The spec's Behavior (Part 1) step 4 says `n_final = max(candidate,
-logMax)`, but the spec's own acceptance (b) (counter n=4 + log max
-planner-6 → **N=7**) is only satisfiable by `max(candidate, logMax + 1)`
-(candidate already = counter.n + 1). The approved proposal's design text
-carries the same loose phrasing. I implemented to the ACCEPTANCE
-(the machine-verifiable contract) — the pins prove (a)→5, (b)→7, (c)→6,
-(d)→1. The one-word fix (`logMax + 1`) belongs in the spec + proposal
-wording before the Part 3 docs (readme_loop.md) are written planner-side,
-so the docs state the correct formula.
+## Friction / lessons
+Friction entries filed via submit (see `agent/agent_feedback.md`): the edit-tool
+"hint rejected" advisory that actually corrupted a line mid-build (`fst_manager.py:201`,
+caught by the gate) — worth a look; and the spec's affected-tests list missing
+`test_extraction_filter_edges.py:176` + `test_output_manager.py:607` (both
+logger-name/print pins this change alters).
 
-## Deliberately NOT done (out of scope / per spec)
-
-- **Part 3 docs (readme_loop.md §Self-identification / §Iteration
-  semantics)** — planner-side per the spec's DO-NOT-touch list
-  (`agent/readme/**` untouched).
-- The live loop folder's `loop_log.md` START/DONE lines — loop tooling,
-  committed with the close-down.
-- `loop/autorun-2026-10-01_03-27/plan11_ho_task.md` (untracked, the
-  planner's bookkeeping file) — not mine to commit.
-- No `TODO.md` edit (worker role); the discrepancy went to
-  `todo_inbox.md` via submit (the planner curates + assigns the ID).
-
-## Branch
-
-`opencode_test` (verified via `git branch -v` at session start; all
-commits on it). Status: **LANDED**.
+Lessons: when converting `print`→`logger` in a suite with pytest's root
+LogCaptureHandler, capsys tests break (records go to the root handler, not
+stdout/stderr) — plan caplog/caplog.at_level pins for every converted site, and
+grep the suite for `logger='` pins before starting (caught one via failure,
+the rest via the gate).

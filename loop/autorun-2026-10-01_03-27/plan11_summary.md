@@ -54,12 +54,28 @@ inbox entry curated (doc-only, no TODO).
   `--maintainer` idle-policy block in priority.md is the known
   standing instruction).
 
+## Unit 2 — FST logging build (queue item 1) LANDED + planner-verified
+- worker-11 (worker_Q3S_slow ses_ef6b793f2ffek8H7AISRzFV4gX): FST repo
+  `fst_work3` commits ea2aac3 (U1 logger setup) / cac6704 (U2 per-flag
+  dispositions) / cd0f3a2 (U3 error-documentation fixes); planner re-ran
+  the FST gate: 474 passed + 1 known warning, ruff F=0; flag-surface
+  greps clean (only the kept `DEBUG_NUMPAD` gate remains); the live-config
+  regression guard stayed green; diff scope = code + tests only.
+- Deviation (evidence-backed): the nested `clear_all_variables` KEPT, not
+  deleted — research doc §5.5 misclassified it dead; it is the live
+  eval-scope shim behind bare config calls (`FSTconfig_test.txt:850,1596`
+  + a pin test). Corrected in the doc's §7 item 9 + the proposal verdict.
+- The usage guideline (the approved maintainer ask) landed at
+  `maintainer/feedback/2026-10-05_fst-logging-usage.md`; proposal →
+  `implemented/` with verdict; FST TODO #131 status LANDED.
+- Live console/file confirmation = maintainer domain (post-build).
+
 ## Close state
 - NAP current (plan10 section compressed to the archive list; plan11
   section + the Standing baselines updated in place).
-- Queue for the next session: (1) `2026-10-01_fst-logging-build` OPEN
-  (approved in full — the next agent-repo/FST build); (2) the
-  memory/knowledge-usage research item (design-exchange pending);
-  (3) live acceptances (loop-counter + state_snapshot after the host
-  restart; the natural-occurrence + his-domain items per the NAP);
-  (4) the 3 Magic Context proposals PENDING his decision.
+- Queue for the next session: (1) the memory/knowledge-usage research
+  item (design-exchange + delegation ruling pending); (2) live
+  acceptances (loop-counter + state_snapshot after the host restart; FST
+  logging live confirmation = maintainer domain; the natural-occurrence +
+  his-domain items per the NAP); (3) the 3 Magic Context proposals
+  PENDING his decision.

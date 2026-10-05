@@ -235,3 +235,11 @@ intercept.log anomaly (plan10, ses_f0777c6d0): line 2089 carries plan9-era CONTE
   2026-10-05_loop-iteration-counter.md` step 4). Doc-only, no TODO entry
   needed. Friction entry already filed by the worker (agent_feedback.md).
 
+
+## 2026-10-05 — planner curation (plan11, unit 2)
+- worker-11 (2026-10-05_01-55, ses_ef6b793f…) research-doc §5.5 discrepancy
+  (the nested `clear_all_variables` is NOT dead): RESOLVED inline — the build
+  KEPT the shim (correct: deleting it would break the live config
+  `FSTconfig_test.txt:850,1596`); the dated correction landed in the research
+  doc's §7 (item 9) and the proposal verdict notes the deviation. Doc-only,
+  no TODO entry needed.

@@ -11,7 +11,8 @@
   FST `projects/Free-Snap-Tap/TODO.md:22`) — one FST worker unit on
   fst_work3: the DEBUG flags → structured logging (3 ordered units) +
   the 4 audit bugs + the maintainer-requested usage guideline in
-  `maintainer/feedback/`. LAUNCHING plan11 unit 2 (worker_Q3S_slow).
+  `maintainer/feedback/`. LANDED plan11 unit 2 (worker-11
+  ses_ef6b793f…; FST ea2aac3/cac6704/cd0f3a2; gate 474+1w, ruff F=0).
 
 ## 2026-10-04 wave (plan10)
 - `2026-10-04_p3-state-snapshot-tool.md` (approved proposal

@@ -1,7 +1,7 @@
 {
   "autoCompact": true,
-  "nudge1_triage": 0.80,
-  "nudge2_stop": 0.90,
+  "nudge1_triage": 0.8,
+  "nudge2_stop": 0.9,
   "nudge3_emergency": 0.925,
   "nudge4_maintainer": 0.95,
   "saturationThreshold": 0.85,
@@ -59,6 +59,11 @@
     "ses_f0999d65dffeFxiJylRzecRbhu": {
       "count": 1,
       "updated": "2026-10-01T15:14:12.476Z",
+      "model": "Qwen3.8-27B-Q3S-235K-slow-HQKV"
+    },
+    "ses_ef7155f2dffedZ7mKtZW0EZqTh": {
+      "count": 1,
+      "updated": "2026-10-04T23:24:10.996Z",
       "model": "Qwen3.8-27B-Q3S-235K-slow-HQKV"
     }
   },

@@ -1,111 +1,96 @@
-# Task spec — FST structured-logging build (TODO #131 build; approved
-# proposal `proposals/approved/2026-10-01_fst-logging-build.md`)
-
-Date: 2026-10-05 (planner-11, autorun ses_ef7155f2dffedZ7mKtZW0EZqTh,
-looprun autorun-2026-10-01_03-27). Worker: worker_Q3S_slow.
+# Task Spec — OpenCode v2 impact research (TODO #136)
 
 ## Goal
-One FST worker unit on `fst_work3`: replace the five `CONSTANTS.DEBUG*`
-console-debug flags with stdlib structured logging (area loggers,
-append-only files, `-log=LEVEL` / `-flow` start args, numpad/menu remap)
-and absorb the four audit bugs the research found. The design is SETTLED —
-`agent/research/2026-10-01_fst-logging-design.md` (agent repo) IS the
-design source: its §2 tables are the per-site disposition list, §3 the
-scheme, §4 the DEBUG4 successor, §5 the error fixes. Build on that doc;
-do not re-derive the design.
+One research document that maps what OpenCode 2.0 changed and what it means for this
+repo's stack: the shared-service architecture, the v1→v2 DB, the new compaction/
+assembly, the new plugin API, a per-feature overlap audit of our 6 plugins + 8 tools,
+the config carry-over for our actual files, and the upgrade path — to drive (a) the
+plugin porting order, (b) the U2 per-message filter design ON v2, (c) the live-host
+upgrade decision.
 
-## Verified facts (planner-measured 2026-10-05, checkout fst_work3 @ b513bf2, clean tree)
-- FST gate baseline (planner re-run today): pytest **466 passed + 1 warning**
-  (the known #10 coroutine warning), ruff `--select F` **F=0**
-  (`./.venv/Scripts/python.exe -m pytest -q`; `./.venv/Scripts/ruff.exe check
-  --select F .`). venv = 3.12.9; never the bare `python` (3.14, no deps).
-- The research doc was written against THIS checkout (b513bf2) — its line
-  numbers are current: flag defs `fst_manager.py:29-33` (all False); the
-  SECOND flag channel = `Argument_Manager` snapshot `fst_manager.py:1287-1290`;
-  `logging.basicConfig(filename='fst.log', filemode='w', …)`
-  `free_snap_tap.py:21-26` (the per-run wipe, `filemode` at :23);
-  `check_result` `fst_keyboard.py:908-914` (`pass`, the `logger.error`
-  commented at :912); ~96 flag-guarded print sites per the doc's §2 tables.
-- Existing live `logger.*`/`logging.*` calls (~16) that stay and get
-  re-homed as needed: `free_snap_tap.py:151,164,178,212,216`;
-  `fst_keyboard.py:95,102,107,817,921,931,946,967` (+ commented :912);
-  `fst_manager.py:354,776`; `fst_tasks.py:29`.
-- Behaviour-pinning tests the change alters (repurposing is IN scope —
-  rewrite them to pin the new logger-level behaviour, or delete
-  deliberately with a one-line note): `tests/test_argument_manager.py:187`
-  (`am.DEBUG is True`), `:202` (`CONSTANTS.DEBUG_NUMPAD is True`);
-  `tests/test_cli_menu.py:48-53` (menu option 0 → `CONSTANTS.DEBUG4`);
-  `tests/test_control_actions.py:63-66` (control combo → `CONSTANTS.DEBUG`);
-  `tests/test_filter_simulated.py:115` (`CONSTANTS.DEBUG2 = True`);
-  `tests/conftest.py:83` (FakeFST attrs list includes the five flags).
-- The FST repo has NO `TODO.md` (verified) — bookkeeping rides the agent
-  repo: `projects/Free-Snap-Tap/TODO.md:22` (#131, planner's lane).
-- `FSTconfig_test.txt` is the maintainer's live config;
-  `tests/test_config_parse.py::test_real_config_parses` is its regression
-  guard — it must stay green untouched.
+## Sources (all read-only)
+- Fork `C:\Users\Wasiejen\Repos\opencode` — checked out on `production`
+  (654b79b27e, the v2.0.29 generation; `bun install` done, `exact=true` mode).
+  Work against THIS checkout; no fetches needed (`dev` = 2.0 line slightly ahead,
+  local, useful for a diff if a symbol moved).
+- Official v2 docs — `https://opencode.ai/v2/docs/` (migrate-v1, the dedicated
+  plugin-migration guide, compaction, permissions). Webfetch what you need.
+- The migration guide copy: `maintainer/done/2026-10-15_migration_from_v1.md`.
+- Our repo: `.opencode/plugin/*.ts`, `.opencode/tools/*.ts`, `opencode.jsonc`,
+  `agent/research/fuzzy-numword/` (decision-record.md — the intercept design),
+  `agent/research/2026-10-01_magic-context-plugin.md`, TODO #135.
+- The v2 clone `C:\Users\Wasiejen\Repos\opencode-agent-v2` (branch `migration`,
+  standalone `opencode.exe` v2.0.29 in its root) — READ-ONLY reference only.
 
-## Scope (3 ordered units; checkpoint commit per verified unit; gate green after each)
-1. **Logger setup** (doc §3 + §3.4): `fst.log` append-only (`filemode='a'`);
-   the area-logger tree `fst / fst.flow / fst.eval / fst.state /
-   fst.macro / fst.config`; `fst.flow` own `fst_flow.log` + the
-   propagate handling per doc §3.2 (worker's call between the two
-   documented variants); console at WARNING; `-log=LEVEL`
-   (debug/info/warning/error, default info) + `-flow` start args in
-   `apply_start_arguments` (replacing `-debug`; `-debug_numpad` unchanged;
-   unknown arg → WARNING); the numpad remap (`alt+num1` root debug level,
-   `num2/3` collapse onto it, `alt+num4` flow toggle) + menu option 0 →
-   flow toggle + the CLI keep-open gate (`fst_manager.py:1856`: any area
-   logger at DEBUG → don't `cls`).
-2. **Per-flag dispositions** (doc §2 tables — convert every listed site):
-   kill `DEBUG/DEBUG2/DEBUG3`; error-class sites → always-on WARNING
-   (`fst_keyboard.py:706-708, 1090-1092`; `fst_manager.py:310-311, 348-349,
-   363-364, 684-685`); D4 → `fst.flow` records keeping the arrow
-   vocabulary + the IN/OUT latency pairs (doc §4); `DEBUG_NUMPAD` kept as
-   the safety gate; the two parallel flag channels collapse to one (the
-   `Argument_Manager` flag snapshot dies — reads go to loggers / the
-   single gate).
-3. **Error-documentation fixes** (doc §5): restore `check_result` logging
-   (`fst_keyboard.py:908-914`); `fst_manager.py:116,658` →
-   `logger.warning`/`logger.error`; the stale "suppressed" print
-   (`fst_keyboard.py:869-873`) fixed or deleted; config-load `ERROR:`
-   prints → `logger.error`; delete the dead nested
-   `clear_all_variables` (`fst_manager.py:454-459`).
+## Sections (the document's outline)
+0. **Intercept-plugin port analysis (PRIORITY — the maintainer's first port target).**
+   The intercept observer (`.opencode/plugin/intercept_observer.ts`, 1555 lines)
+   survives on: fuzzy path resolution (read-scoped d≤2; write-scoped d≤1 for
+   edit/block_transfer, `write` excluded per M1) + the observation log
+   (`intercept.log`). SCOPE CUT (maintainer ruling 2026-10-15): the `[left:right]`
+   PAIR-RESOLUTION channels are DROPPED entirely, incl. the numword anomaly class
+   and the pair-based git-refs-in-bash channel (3c) — flagged here as an
+   assumption: confirm against the header, correct the doc if the git-refs
+   channel was meant to stay. Answer: (a) does the v2 plugin API expose a
+   `tool.execute.before`-equivalent that can MUTATE tool args before execution
+   (read `packages/plugin/src` — `define()`, effect/promise surfaces, hook
+   registration)? (b) the v2 tool pipeline — `packages/core/src/tool/plugin/*.ts`
+   (edit.ts verified: exact match, Location-relative resolution, external-path
+   approval, typographic match normalization) — where does fuzzy resolution plug
+   in: plugin hook vs fork change in the core tool pipeline? Recommend one.
+1. **Architecture:** the shared background-service model; package layout
+   (core/server/plugin/tui/cli/session-ui/llm/codemode); what runs where; the
+   process model — how v2 calls providers (the llama-swap single-slot setup must
+   survive; flag any new subprocess that would hit the backend).
+2. **DB v1→v2:** v1 format (session/message/part rows, `data` blobs,
+   `tail_start_id`) vs the v2 schema (`packages/core/src/database/schema.gen.ts`,
+   drizzle) — what `v1-migration.bun.ts` maps; do message-level `data` blobs
+   survive (the U2 filter-store candidate); the DB file path
+   (`database/path.ts`) — same location as v1?; is the migration one-way/destructive;
+   what happens when v2 opens our live v1 `opencode.db`.
+3. **Compaction & assembly:** `SessionCompaction` (checkpoint-based compaction),
+   the request runner / `SessionModelRequest`, the `compaction.transform` hook
+   (verified settings-level: auto/buffer/keep). Where are model-call messages
+   assembled, and what are the candidate insertion points for the U2
+   per-message filter ON v2 (plugin vs fork)?
+4. **Overlap audit + port map:** for each of our features, find the v2 native
+   equivalent (file pointer) and verdict it native / partial / absent, with a
+   port effort S/M/L and order: auto-resume, ctx gauge + injected ctx line,
+   nudge ladder (our `compact_budget.json` nudge1-4), compact_memory (budgeted
+   self/cross compaction + queue relay), context_trim (report/tail/keepMessages),
+   U3 marker compaction, intercept observer (see §0), ctx watchdog, loop_log,
+   block_transfer, state_snapshot, submit, session_info,
+   dev_get_tool_context_contents.
+5. **Config carry-over:** field-by-field delta for OUR actual config files
+   (root `opencode.jsonc` + `~/.config/opencode/`): permissions array
+   (bash→shell, task→subagent), agents, providers (the llama-swap provider),
+   plugin→plugins, compaction keep/buffer, `autoupdate`→`update`, and anything
+   under `experimental/` that our plugins depend on.
+6. **Upgrade path + risks:** the current side-by-side (npm v1.19.0 global +
+   standalone v2 exe in the clone), `opencode upgrade --major`, no auto-updates
+   in v2, the llama-swap serial-session discipline across two workspaces, live-DB
+   migration timing, AGENTS.md/agents carry-over, the ordered-permissions model.
+7. **Recommendations:** port order (intercept first), the U2-on-v2 design choice
+   (plugin vs fork, insertion point), the upgrade timing recommendation, and what
+   we retire from v1.
+
+## DoD (measured end states)
+- One document: `agent/research/2026-10-15_opencode-v2-impact.md`, committed on
+  the current checkout of THIS repo (`opencode_test`).
+- Every non-obvious claim carries a file pointer (path + line) into the fork or a
+  doc URL; measured facts are labelled as such.
+- §0 answers the arg-mutation hook question explicitly (yes/no + the API shape).
+- §4 is a table: feature → v2 equivalent pointer → verdict → effort → order.
+- Worker summary to `agent/handover/handover_task_to_planner.md` (change summary,
+  key findings per section, the one recommendation block, working-tree status,
+  commit hash).
 
 ## DO-NOT-touch
-- `FSTconfig_test.txt` (live config), `FSTconfig.txt`, `playground/`
-  (maintainer's live probes), `requirements*.txt`, the packaging scripts.
-- Agent repo: anything under `maintainer/` EXCEPT the one requested new
-  file (DoD below); `TODO.md` + `projects/Free-Snap-Tap/TODO.md` + the
-  handover files (planner's lane — you write ONLY the handover summary +
-  the guideline file).
-- No live listener runs, no real keyboard, no FST live testing (maintainer
-  domain; the live console/file confirmation of the build is his too).
+- The fork repo, the v2 clone, the live `opencode.db`, the installed exes,
+  `maintainer/`, `opencode.jsonc` — all READ-ONLY.
+- NO live v2 run (never start `opencode.exe` a session), NO requests at the
+  llama-swap backend (agent rule — sessions only), NO installs, NO pushes.
+- TODO entries: expectation only, never a promise.
 
-## Definition of done
-- FST gate green: pytest all passing (the 466 baseline + the
-  new/repurposed tests) + ruff F=0 — measured counts in the handover.
-- The flag surface is gone per doc §6: `grep -rn "CONSTANTS.DEBUG" ` +
-  the `self.DEBUG`/`self._arg_manager.DEBUG*` snapshot forms outside the
-  kept `DEBUG_NUMPAD` gate = zero hits (report the greps in the handover).
-- The start args are pinned by tests (`-log=LEVEL`, `-flow`, unknown arg
-  → WARNING) and the repurposed pin tests pin the new logger behaviour.
-- Handover at `agent/handover/handover_task_to_planner.md` (agent repo):
-  executive summary, measured gate, the FST-repo commits, the per-flag
-  disposition list (what died / what converted / what was promoted),
-  what was deliberately not done.
-- Usage guideline (the maintainer's approved ask — "put it in
-  maintainer/feedback"): ONE new file
-  `maintainer/feedback/2026-10-05_fst-logging-usage.md` in the AGENT repo —
-  short and practical (which `-log` level for which purpose, when `-flow`,
-  how to read `fst_flow.log` for lag, the runtime toggles), written from
-  the implementation.
-- Checkpoint commits per verified unit in the FST repo (code + tests;
-  commit routine applies to each); no TODO edits by you (no FST TODO.md —
-  the #131 status update is the planner's); the agent-repo files you write
-  stay uncommitted (the planner commits them).
-- No new TODO entry expected — if the build surfaces a doc/code
-  discrepancy, file it in the agent repo's `todo_inbox.md` instead.
-
-## Branch
-Stay on `fst_work3` (verified checked out at b513bf2, clean tree, at spec
-time) — re-verify `git branch -v` before your first edit.
+## Assigned worker
+explorer_Q3S_slow (effort L — large tree, doc-heavy; 245k window for lookups).

@@ -1454,5 +1454,16 @@ section into the Compressed archive (details beyond what git + TODO hold):
   auto-register); live submit fired post-restart landed at the NEW path
   agent/agent_feedback.md; gauge line normal (restored budget file live — 4 left
   after my 1 use); .opencode/ back to exactly the 7 native entries. This
-  session's injected prompt still carried pre-reorg paths (context built
-  pre-restart) — fresh sessions load the new layout.
+   session's injected prompt still carried pre-reorg paths (context built
+   pre-restart) — fresh sessions load the new layout.
+
+## 2026-10-15 direct (ses_ec048b57affeZzCMG1NTRZFluG, Qwen3.8-27B-Q3S-170K) — prompt-adaptation session (moved from the NAP's current-session section)
+
+- prompt-adaptation session (the maintainer inbox item prompt_work.md — Perplexity feedback on the AGENTS/planner/worker rework — handled, moved to done/):
+  - verdicts on all 10 feedback points + my independent audit (cross-role dangling pointers, the rework's own stale AGENTS paths, explorer skipped by the rework, planner/worker duplication); maintainer rulings: batches A–D GO, no AGENTS marker minimum (the worker keeps its own `--wip` section), sweep option (b) for now.
+  - Batch A (6f8fe8c): `AGENTS_draft_2026-10-15.md` — authority+recovery section, shared canon (access restrictions, command output, nudge rungs, friction skeleton), stale-path fixes (gauge + concrete paths → repo_commands.md, compaction guide → archive/), Channels fact rows + no-cross-repair rule, worker-summary verification fields (exact command, PASS/FAIL, working-tree status).
+  - Batch B (267f6c5): planner+worker prompts deduped against the new AGENTS canon + handover verification fields + mechanical planner verification check (`git show --stat` / `git status`) + the worker's dangling planner-prompt marker pointer cut.
+  - Batch C (c64124d): explorer prompt full rework (Writing-and-Output style, unreachable cross-role pointers retargeted to AGENTS, stale issue numbers/dates removed, dangling agent-level repo_testgate ref fixed).
+  - Batch D (f428cc9): AGENTS/prompt snapshots → `maintainer/draft/`; the ready-made marker sweep documented in `repo_commands.md` (verbatim from `state_snapshot.ts` MARKER_SWEEP); 3 memory-inbox entries cured (MEM-0101 addendum, MEM-0111 hint-line, MEM-0112 stale-ref sweeps); 6 uncured inbox entries remain for the next maintenance pass.
+  - Thresholds stay 80/90/95 + REM ≤ 15k (his ruling — floor-independent; the planner post-compaction floor is measured 22.9k).
+  - Queue for the next session (ordered, with status): (1) the AGENTS.md swap = MAINTAINER — replace `AGENTS.md` with `AGENTS_draft_2026-10-15.md` (live only after the swap + host restart; check the new sections against this session's discussion before pasting); (2) the 6 uncured `memory_inbox.md` entries → the next maintenance pass; (3) the marker-sweep option (a) (a state_snapshot markers-only mode) — only if the documented command is used often; (4) inherited from planner-11: the memory/knowledge-usage research item (NEEDS the design-exchange + delegation ruling), the live-acceptance items (loop-iteration-counter spawn, state_snapshot init, FST logging live confirmation, #135 U2, #134 B'-part, #133, #132, #128, #91, #98, #115/#99/#122/#130), the 3 Magic Context proposals PENDING his decision.

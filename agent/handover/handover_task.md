@@ -76,7 +76,9 @@ upgrade decision.
 
 ## DoD (measured end states)
 - One document: `agent/research/2026-10-15_opencode-v2-impact.md`, committed on
-  the current checkout of THIS repo (`opencode_test`).
+  the current checkout of THIS repo (verified at spec authoring: `main` — the
+  maintainer rebranched 2026-10-15 and dropped the old local branches; verify
+  with `git branch -v` before committing, never assume the name).
 - Every non-obvious claim carries a file pointer (path + line) into the fork or a
   doc URL; measured facts are labelled as such.
 - §0 answers the arg-mutation hook question explicitly (yes/no + the API shape).

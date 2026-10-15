@@ -48,6 +48,18 @@ knowledge / NAP) is re-stated.
 - Review when: the observer ever logs pre-mutation evidence INTO the
   session DB (perception gap closed), or acceptance moves to a harness
   (the P6 loop_stats draft).
+- 2026-09-30 addendum (plan39/40/44 cluster; cures the 2026-09-30_04-49
+  inbox entry): a feedback claim that "a hint-rejected line was delivered
+  AND the edit was applied" must be verified against intercept.log before
+  being treated as a tool bug — in both 2026-09-29/30 cases (intercept.log
+  lines 265/421) the rejected edit call had actually FAILED; the applied
+  state came from (a) a later successful edit call (plan39) or (b) an
+  external unlogged edit (plan40 — commit 9444248 carries both
+  repo_commands.md changes with zero logged edit calls; the maintainer's
+  own editor is the likeliest source).
+- Review addendum: if the cluster recurs AFTER the #106 build (7a9e291) is
+  confirmed live, re-examine the note-delivery path (stale-note hypothesis)
+  instead of closing as misattribution again.
 
 ### MEM-0102: A tool/plugin unit closes with a MAINTAINER-DOMAIN HANDOFF — the planner re-verifies from files at the next session
 
@@ -357,3 +369,37 @@ knowledge / NAP) is re-stated.
   "can be its own section in it" note; the destill carries it under its own
   section (destilled_mem.md "Planner behavioral guidelines"); the NAP line
   now points here instead of restating.
+
+## MEM-0111 — The edit tool's hint line is NOT the authority on apply-vs-reject; read the file back
+
+- Observation (2026-09-30, plan45 ses_f0fc7d5daffeVv6fOuHGVh6Nt2): a
+  "hint rejected line=N d=0 gap=inf" line was delivered on an edit that WAS
+  applied (verified by file read-back matching the newString). The d=0 /
+  gap=inf signature joins the plan44 misattribution cluster (no-anchor-line
+  / d-too-high).
+- Rule: ALWAYS read the file back after any hint line before concluding
+  rejection. The hint line is a delivery-side annotation, not an apply
+  verdict.
+- Evidence: the plan45 NAP Standing edit + read-back.
+- Related: MEM-0101 (the misattribution-cluster addendum); the TODO #124
+  class (tool-side apply-vs-reject reporting).
+- Review when: a resolved tool-side apply-vs-reject reporting fix lands
+  (the TODO #124-class work), or a maintainer ruling on the hint channel.
+
+## MEM-0112 — Stale-reference sweeps verify against the ACTUAL directory listing, not the rename mapping
+
+- Lesson (2026-09-30, plan46/plan47): plan46's agent_readme_* fix re-pointed
+  renamed files but missed index entries for files that do not exist in the
+  agent repo at all (repo_map/repo_testgate/repo_gotchas — per-project
+  only); plan47 (f7f4100) caught it via the explorer audit's observation.
+- Rule: after a tree reorg or rename batch, `ls` the target folder and diff
+  EVERY index line against it — including files the sweep pattern does not
+  match. A pattern-only sweep is incomplete by construction.
+- Recurrence (2026-10-15, direct session): the prompt rework shipped 3 stale
+  paths of its own (the AGENTS.md gauge path, the compaction-guide path, the
+  concrete-paths pointer — re-pointed in AGENTS_draft_2026-10-15.md),
+  caught by exactly this check.
+- Evidence: commits f7f4100 + 5c8d612, plan47 handover observation 2; the
+  2026-10-15 audit.
+- Related: MEM-0103 (placement rulings — index lines are placement).
+- Review when: the next tree reorg or index rework.

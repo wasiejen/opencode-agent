@@ -242,4 +242,8 @@ intercept.log anomaly (plan10, ses_f0777c6d0): line 2089 carries plan9-era CONTE
   KEPT the shim (correct: deleting it would break the live config
   `FSTconfig_test.txt:850,1596`); the dated correction landed in the research
   doc's §7 (item 9) and the proposal verdict notes the deviation. Doc-only,
-  no TODO entry needed.
+   no TODO entry needed.
+
+## 2026-10-16_01-02 worker_Q3S_slow ses_ebea1bd3cffe3ktwt4MRmehe6a
+v2 `plugins` config entries pointing at a FILE are dropped with a warning ("configured plugin path must be directory" — fork packages/core/src/config/plugin/source.ts:151-153), so the spec'd "minimal v2 plugins entry" in the clone opencode.jsonc (`./plugins/intercept_observer.ts`) is documentary only — the v2 intercept plugin loads via DIRECTORY auto-discovery of `.opencode/plugins/`. Decide: keep the entry as documentation or drop it. Evidence: clone opencode.jsonc comment (Unit A, TODO #137) + the worker handover.
+

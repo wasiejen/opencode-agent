@@ -303,6 +303,20 @@ SHADOW it:
   research limit). The exact host-side enforcement algorithm (pattern
   matching, ask flow, TUI prompt behavior) is **unverified — live behavior
   only**.
+- **Guard chain of an out-of-sandbox WRITE (measured 2026-10-01, plan9,
+  TODO #134 OPEN — cured from the knowledge_inbox residue of that date):**
+  (1) the intercept plugin's `tool.execute.before` hook covers host
+  write/edit/read filePath fields via the R8 typed-path redirect
+  (intercept_observer.ts REDIRECT_PATH_FIELDS L574-578) but is FAIL-CLOSED
+  PASS-THROUGH on unmappable forms (runRedirect: resolveRedirect → null →
+  continue) — it logs the `out-of-sandbox` note, NEVER blocks; the only
+  hard rejection is block_transfer's own core sandboxCheck; (2) the host
+  write flow (fork tool/write.ts): assertExternalDirectoryEffect (L44, the
+  external_directory ask) → ctx.ask permission "edit" (L54) → fs.writeWithDirs
+  (L64); unlisted external paths resolve to the DEFAULT `action: "ask"`
+  (fork permission/index.ts L28-38) — which in a plugin-spawned session did
+  NOT stop the call (observed: it proceeded to fs and died at makeDirectory
+  only because the typo'd root doesn't exist).
 
 ## 5. Compaction / summarize path
 

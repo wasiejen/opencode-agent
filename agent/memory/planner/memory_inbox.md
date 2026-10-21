@@ -23,3 +23,6 @@ delivery+apply claims) → MEM-0101 addendum (extended); 2026-09-30_05-40
 (stale-reference sweep vs actual listing) → MEM-0112 (new). Destill lines
 updated in the same commit. The six remaining uncured entries stay for the
 next maintenance pass.
+### 2026-10-21_21-06 planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ
+Direct-mode rule re-confirmed (2026-10-21, new-model session): maintainer said "you may start workers if needed" — explicit OK overrides the no-delegation-without-prior-OK guideline (MEM-0110 trigger); still verify a --comment review draft against current code line-ranges BEFORE believing it (2 of its claims were stale — MOVE dst-guards already existed at block_transfer.ts 636-646; 1 confirmed real — targetMarker resolution after src write, lines 706-710) and hold the fixes for his ruling.
+

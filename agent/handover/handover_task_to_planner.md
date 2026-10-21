@@ -1,117 +1,88 @@
-# Worker summary — #136 OpenCode v2 impact research (explorer, ses_ebf38ec2cffeXAREzUwnlEjXpo, 2026-10-15)
+# Worker summary — block_transfer hardening (merged fix unit, maintainer GO 2026-10-21)
 
-Status: DONE — research doc complete, all 8 sections, §0 priority answered.
+Status: COMPLETE
+Assigned: worker_FlashNext · session ses_ea0120bd5ffeM6ggDl5IPr5o49
+Commit: the green commit containing this file (hash reported in the closing message; `git log -1` shows it).
 
-## Deliverable
-`agent/research/2026-10-15_opencode-v2-impact.md` (committed on `main`, this repo).
-Read-only everywhere else: fork `C:\Users\Wasiejen\Repos\opencode` (`production`,
-654b79b27e), v2 clone, live DB, `maintainer/`, `opencode.jsonc` untouched. No live v2
-run, no backend requests, no installs, no pushes.
+## Task and scope
+All 10 items of `agent/handover/handover_task.md` implemented in `.opencode/tools/block_transfer.ts`,
+plus the two named knowledge-doc wording fixes. DO-NOT-touch list respected; no plugin-core edits
+(`intercept_observer_core.ts` untouched — the S31 drift guard still passes unchanged).
 
-## Key findings per section
-- **§0 (priority) — arg-mutation hook: YES.** v2 plugin API
-  `ctx.tool.hook("execute.before", cb)` receives a MUTABLE `event.input`
-  (promise API `packages/plugin/src/promise/tool.ts:38-46`; the core executes with the
-  post-hook `event.input`, `core/src/tool.ts:271-280`; shipped proof plugin
-  `core/src/plugin/tool-input-repair.ts:21-36` reassigns `event.input`). The hook can
-  also throw `Tool.Error` to reject the call (the (4b) hard-stop surface) and can
-  rename/redirect via mutable `event.tool`. Fuzzy resolution plugs in as a **pure
-  plugin, no fork change** — `execute.before` (recommended) or `ctx.tool.transform`
-  `update` (wrap the executor). v2 read/write/edit take `path`, not v1 `filePath`.
-  Scope cut confirmed against the plugin header: (3c) git-refs-in-bash IS a
-  pair-based channel (header lines 60-71), so dropping it with the pair channels is
-  consistent — the spec's assumption holds.
-- **§1 — architecture.** Shared background-service model: CLI modes
-  default/service/stdio (`cli/src/server-process.ts:19-23`), incumbent detection
-  (86-91), service owns DB + sessions + provider traffic; TUI is a thin client.
-  Providers called in-process via `packages/ai` protocol drivers (openai-compatible =
-  our llama-swap path); no provider subprocesses. `packages/llm` is empty in this
-  checkout (measured). New single-slot risks: auxiliary model calls (title,
-  compaction summarize, generate) + opt-in `warming` keep-alive requests
-  (`core/src/plugin/warming.ts:6-57`) — keep `warming` off, sessions serial.
-- **§2 — DB.** v2 schema: `session_v2`, `session_message` (JSON `data` blob —
-  message-level blobs SURVIVE, re-encoded from v1 message+part), `kv`, `event`,
-  `session_inbox`, `session_pending`; no `part` table, no `tail_start_id` in v2.
-  Migration (`core/src/database/v1-migration.bun.ts`) reads v1 `session`/`message`/
-  `part` and writes v2 tables **in the SAME FILE**; auto-runs at v2 service startup
-  (`server/src/routes.ts:189`); resumable via `kv` key `migration.v1-v2`; one-way;
-  clears the v2 `event` table first; imports a previous `opencode-next.db` if present.
-  DB path: v2 opens `opencode.db` in `~/.local/share/opencode` — MEASURED: exactly
-  our live v1 DB location. First v2 service start = in-place rewrite of the live DB.
-- **§3 — compaction & assembly.** `SessionCompaction` settings `auto/buffer/keep.tokens`
-  (defaults auto=true, keep=15k; `config/plugin/compaction.ts:15-24`); compaction
-  result = durable `compaction` checkpoint message rendered as
-  `<conversation-checkpoint>` (`runner/to-llm-message.ts:306-325`). Assembly:
-  history → `toLLMMessages` → `baseTranscript` → `prepare` fires
-  `hooks.trigger("session", "context"|...)` with a MUTABLE draft
-  (`session/model-request.ts:422-431`) before `LLM.request` (279-302); wire-level
-  `model.request`/`http.request`/`http.response` hooks downstream. **U2 insertion
-  point ON v2: plugin hook `ctx.session.hook("context", ...)` mutating
-  `event.messages` — no fork needed** (official v2 destination of v1
-  `experimental.chat.messages.transform`). U3 maps to the checkpoint message +
-  `session.hook("compaction")` `result` override (skip the model call).
-- **§4 — overlap audit.** Table in the doc (feature → pointer → verdict → effort →
-  order). Native: session_info. Partial: intercept (native hook surface), auto-resume
-  (CLI `--session`/`--continue` + `session.idle` event), ctx gauge (native context
-  endpoint `GET /api/session/:id/context`), compact_memory (manual-compaction inbox +
-  `ctx.session.compact`), context_trim (revert stage/commit + context endpoint), U3.
-  Absent: nudge ladder, ctx watchdog, loop_log, block_transfer, state_snapshot,
-  submit, dev_get_tool_context_contents (port as v2 tools via
-  `ctx.tool.transform`). Structural: `.opencode/tools/*.ts` is NOT a v2 discovery
-  path (v2 loads `.opencode/plugin(s)/` only) — all 8 tools move into plugins.
-- **§5 — config carry-over.** Field-by-field delta table in the doc. Main deltas:
-  `autoupdate: false`→`update: "disable"`; TUI fields (scroll/cursor/mouse/attention/
-  diff_style) → global `~/.config/opencode/cli.json` (auto-migrated);
-  `permission` object → ordered `permissions` array (last match wins);
-  `agent`→`agents` (`prompt`→`system`, `temperature`→`request.body`);
-  `provider`→`providers` (`npm`→`package: "aisdk:@ai-sdk/openai-compatible"`,
-  `options.baseURL`→`settings.baseURL`); `subagent_depth`→`experimental.subagent_depth`;
-  `compaction.keep` → tokens-only (`keep.system`/`keep.messages` gone);
-  `references`/`watcher`/`snapshots`/`shell`/`default_agent` unchanged. Open item:
-  verify `{file:}` agent prompt templates under the `prompt`→`system` rename.
-- **§6 — upgrade path.** Side-by-side today (npm v1 + standalone v2 exe in the
-  clone); docs say remove package-managed v1 before installing v2. `opencode upgrade`
-  exists in v2; nuance: `update` policy IS in code (`disable|notify|auto`, default
-  `notify`) — no auto-INSTALL by default; our `"disable"` keeps it manual.
-  Migration timing = first v2 service start on the live data dir; mitigations: dry-run
-  on a DB copy (`OPENCODE_DB=<copy>.db`), back up, deliberate first start. Serial-
-  session discipline must extend to v2's auxiliary model calls.
-- **§7 — recommendations.** Port order: intercept → auto-resume → context family →
-  compact_memory/context_trim/U3 → small tools. U2 on v2 = plugin `context` hook
-  (no fork). Upgrade timing: validate on a copied data dir + full autorun cycle, then
-  retire v1. Retire: npm v1 install, v1 plugin implementations, tui.json fields,
-  `subagent_depth`/`keep.system`/`keep.messages`, `tail_start_id` tooling.
+## Files changed
+- `.opencode/tools/block_transfer.ts` — the fix set (723 → 913 lines).
+- `.opencode/plugin/tests/block_transfer.smoke.mjs` — 9 feedback pins re-pinned; 16 new pins (items 1-8).
+- `.opencode/plugin/probes/handover_probe.mjs` — 8 byte-exact pins re-pinned IN PLACE in S15 (110/111/117/262/263-
+  region) and S30 (305/307/313); NO probe check added or removed (section counts + the 360 annotation unchanged).
+- `agent/knowledge/plugin_tools/2026-09-26_block_transfer-v2-s3-write-peek-feedback.md` — item 9 doc-drift fix
+  (the WRITE-creation half-sentence removed; the WRITE Keys line now says "no file creation").
+- `agent/handover/handover_task_to_planner.md` — this summary.
+- `loop/<run>/loop_log.md` — the DONE line (committed with the unit).
 
-## Recommendation block (the one)
-1. Port the intercept FIRST as a v2 plugin on `ctx.tool.hook("execute.before")`
-   (arg mutation confirmed yes; scope cut incl. 3c confirmed against the header).
-2. Design the U2 per-message filter as a v2 plugin hook on `session.context`
-   (`model-request.ts:422-431`, before `LLM.request`) — no fork change.
-3. Upgrade timing: dry-run the v1→v2 in-place migration on a copied `opencode.db`,
-   port intercept + auto-resume, run a green autorun cycle on v2, then remove the
-   npm v1 install; keep `update: "disable"`, `warming` off, sessions serial.
+## Behavior changed (measured, item by item)
+1. MOVE atomicity: the targetMarker now resolves BEFORE the source is cut; a bad target leaves BOTH files
+   byte-identical (smoke pin added). The block is stashed in buffer `last_move_source` before the cut
+   (PEEK-pinned; documented in the BUFFERS description note).
+2. Same-file MOVE (`srcFile`/`dstFile` resolve equal, case-insensitive): move-with-shift — span + target
+   resolve against the pre-call state, the insert index adjusts for the removed block (target below ⇒
+   `target.line - spanLen`), a target INSIDE the span returns the teaching shift error; the return names the
+   FINAL insertion line (3 smoke pins added: down-shift, up-move, inside-target).
+3. EOF insertion via `countLines()` (`eofIndex()`): `"a\n"` + block ⇒ `"a\nBLK one\nBLK two\n"` (no spurious
+   blank line); a created file gets no leading blank line (2 pins).
+4. EOL preservation: `detectEol()` once per file; `joinLines()` re-attaches `\r` to every line except the LAST
+   element (so both `"a\r\nb"` and `"a\r\n"` round-trip — the first attempt double-CR'd, fixed and pinned).
+   Source writes (CUT/DELETE/MOVE cut) keep the SOURCE's own EOL.
+5. PEEK `from`/`count`: schema widened to the ref-style string|int union; digit-strings coerce
+   (`from: "5", count: "3"` = the numeric call); non-numeric → the teaching error quoting the value as given.
+6. Validation: `refPresent()` at every form-detection site (the `!== undefined` check replaced); EMPTY `refs`
+   and EMPTY `regions` lists rejected with teaching errors; a bare COPY teaches the THREE input forms
+   (the APPEND string stays byte-identical); an empty-string marker counts as absent.
+7. Return lines: MOVE/PASTE append ` (inserted after line K in '<dstFile>')` / ` (at EOF)`; REPLACE/WRITE
+   replace the `(lines R` group with `old A..B -> new C..D, file now K line(s)` (WRITE's NEW span in the
+   post-op numbering — lower regions shift higher ones; EMPTY text ⇒ `new (empty)`). The RETURN LINES
+   description paragraph updated to match. The WRITE multi-region summary line is UNCHANGED.
+8. MAP: each echoed line capped at 200 chars + `…` (byte-exact pin); the MODES description sentence
+   ("VERBATIM ... (no cap)") replaced. The knowledge doc has NO MAP/no-cap wording → nothing to fix there.
+9. Doc drift: the "the file is created if absent" clause removed from the WRITE description, the mode-enum
+   describe, and the dstFile describe; the knowledge doc's contradictory half-sentence removed. The two
+   pinned absent-file checks (smoke ~L213/L215) were NOT touched.
+10. `sandboxCheck` temp root: `os.tmpdir()` added, with `TEMP`/`TMP` as the override ahead of it and the root
+    list de-duplicated by exact string equality — so the byte-exact 2-root error form is UNCHANGED on Windows
+    (verified: sandbox smoke 64/64 with zero edits to that file).
 
-## Verification
-- No build/test gate applies (research task, no code changes).
-- Working-tree status at commit: `dirty` (only the two new/changed files staged;
-  pre-existing untracked `maintainer/inbox_planner/migration_hints_from_perplexity_ai.md`
-  left uncommitted, not mine).
-- Commit: see hash below (this file was committed with the research doc).
+## Measured verification (exact commands, this checkout, post-change)
+- `node .opencode/plugin/tests/block_transfer.smoke.mjs` → `BLOCK_TRANSFER_SMOKE: ALL PASS (147/147)` PASS
+  (pre-change baseline measured 131/131 → +16 new pins, 0 removed).
+- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → `BT-SANDBOX-SMOKE: ALL PASS (64/64)` PASS
+  (unchanged; that file needed no re-pin).
+- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS` PASS (unchanged total).
+- `node .opencode/tools/_tscheck.ts` → zero `error TS` lines for block_transfer.ts.
+- `grep -c "^FAIL"` over the three captured outputs → 0 / 0 / 0.
+- Baseline note: the spec quoted 120 / 46 / 360; the pre-change measured counts were 131 / 64 / 360
+  (submitted to `todo_inbox.md` — the spec's 120/46 are stale, never resolved alone).
 
-## TODO / inbox entries
-- None appended (no discrepancies requiring curation; the spec's "no auto-updates in
-  v2" claim is nuanced in §6 but is a maintainer-stated fact, not a repo discrepancy).
+## Working tree
+Clean for the committed paths. NOT committed (pre-existing, not mine): `opencode.jsonc`, `agent/memory/planner/memory_inbox.md`,
+untracked `maintainer/draft/block_transfer_feedback2.md` — all on the DO-NOT-touch list; left untouched.
 
-## Deliberately omitted work
-- No live v2 run (per spec) — v2 runtime behavior (e.g. whether `warming`/title
-  calls actually fire in a TUI session, exact `cli.json` migration contents) is
-  code-read only.
-- `dev` branch diff not performed (symbols found where expected on `production`).
-- `{file:}` prompt-template support on v2 `system` not verified (no live run allowed) —
-  flagged as open item in §5.
+## Deliberately omitted / deviations
+- Declared-out-of-scope list respected (no create-file sentinel, no session-keyed buffers, no LIST mode,
+  no description shortening, no anchor trailing-space trim, no `line:42` grammar change, no atomic-write helper,
+  no PEEK/MAP merge; the `args.mode || "MOVE"` default left as-is).
+- Deviation from the spec's expectation: the sandbox smoke pin set did NOT need repurposing (measured).
+- Deviation from "one commit" mechanics: the tool file was edited in verified sub-steps, but the EOL fix
+  needed one extra round-trip (item 4's first write joined with `eol` after re-attaching `\r` → double CR);
+  caught by the new pin, fixed, gates re-run green before committing.
+- The knowledge doc's historical Part F feedback bullet (`Wrote 2 lines ... (lines 2..3, ...)`) is left as the
+  dated record; the new shapes went to `knowledge_inbox.md` instead.
 
-## Lessons
-- v2's hook system is uniformly "one mutable event object in, same object out"
-  (`core/src/plugin/hooks.ts:88-95`) — every v1 `(input, output)` hook ports to a
-  single-event v2 hook; the built-in `tool-input-repair` plugin is the reference
-  example for arg-mutation plugins.
+## Inbox / TODO entries submitted
+- todo: the stale gate baselines (120/46 vs measured 131/64) + the stale "smokes 112/112 + 61/61" line.
+- knowledge: the hardened block_transfer surface (return shapes, `last_move_source`, same-file shift, EOF/EOL rules).
+- memory (worker): the ~2 KB tool-payload JSON-parse limit hit twice this session; batch payloads ≤ ~1.8 KB
+  and re-pin byte-exact pins with a fail-loud replacement script.
+
+## Lesson
+Byte-exact feedback pins are the real spec: a behavior change is only landed when the pins are re-pinned
+IN PLACE and the whole suite goes green — a plausible-looking implementation passed every other check while
+the CRLF write silently doubled the CR.

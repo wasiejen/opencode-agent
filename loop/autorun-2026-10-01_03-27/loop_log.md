@@ -64,3 +64,4 @@
 2026-10-21_21-59 DONE<--- worker_FlashNext ses_ea0120bd5ffeM6ggDl5IPr5o49 worker_FlashNext CTX=178821 | 3 compactions left — block_transfer hardening unit green: smoke 147/147, sandbox 64/64, probe 360/360, tscheck 0 errors
 2026-10-21_22-00 DONE<--- worker_FlashNext ses_ea0120bd5ffeM6ggDl5IPr5o49 worker_FlashNext CTX=183794 | 3 compactions left — block_transfer hardening unit CLOSED, commits ca3c710 (unit) + 1a92388 (inbox submits)
 2026-10-21_22-03 DONE<--- planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ planner_FlashNext merged bt unit landed: worker ca3c710 (147/147+64/64+360/360 planner re-run green) + planner close-out 645d0e9; close direct session
+2026-10-21_22-18 DONE<--- planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ planner_FlashNext micro-fix LANDED a137b07: mode strictly required + 3 pins (bt smoke 150/150, sandbox 64/64, probe 360/360); live acceptance pending his restart (current process pre-fix)

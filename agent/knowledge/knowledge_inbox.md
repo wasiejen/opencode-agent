@@ -22,3 +22,6 @@ _Curation log (planner):_
 
 
 
+## 2026-10-22_00-08 worker_FlashNext ses_e9fa32e59ffemX2wEPTSI2WMYJ
+Cross-repo file access (measured 2026-10-21, worker session ses_e9fa32e59ffemX2wEPTSI2WMYJ): in the opencode-agent host, `edit`/`write` reach the sibling clone `C:/Users/Wasiejen/Repos/opencode-agent-v2`, but `block_transfer` hard-refuses any path outside the launching CWD repo + Windows temp dir — for clone-repo work, plan on `edit` (exact-string) / `write` (whole-file) from the start; a truncated path typo (`C:\Users\Wasi`) escalated to maintainer approval instead of a plain sandbox error, so verify path completeness before a write call.
+

@@ -61,5 +61,10 @@ worker). REMAINING: the worker-prompt parts (task g primer bullet + task h
 Context-budget section + 1 stale pre-spec-2+11 line) — deferred, awaiting
 his prompt_agent_task.md commit; f2-cleanup = his 4 looprunner lines in
 AGENTS.md (wave spec lists them).
-What does NOT go here: launched specs' worker summaries (handover folder root),
+## Wave 2026-10-22 — the cross-repo access unit (TODO #140; maintainer GO 2026-10-22, config-driven roots + the path-field truncation fix)
+- `2026-10-22_cross-repo-roots-A.md` — `block_transfer` sandbox roots become CONFIG-DRIVEN (main repo + clone twin). Launch channel: copied into `agent/handover/handover_task.md` (2026-10-22).
+- `2026-10-22_path-field-truncation-B.md` — the intercept log NEVER cuts inside a single-path field (main repo + clone twin).
+- Order: A then B (independent changes; both fix TODO #140; #141 = the clone gate red baseline the clone numbers must be diffed against).
+
+## What does NOT go here
 NAP, non-compaction specs.

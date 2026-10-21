@@ -21,3 +21,6 @@ _Curation log (planner):_
 
 
 
+## 2026-10-21_21-59 worker_FlashNext ses_ea0120bd5ffeM6ggDl5IPr5o49
+block_transfer (`.opencode/tools/block_transfer.ts`, 2026-10-21 hardening unit): the Part F return lines changed shape — MOVE/PASTE now append ` (inserted after line K in '<dstFile>')` or ` (at EOF)`; REPLACE/WRITE replace the `(lines R` group with `old A..B -> new C..D, file now K line(s)` (WRITE's NEW span is in the file's POST-op numbering: a lower region shifts every higher one by its length delta; an EMPTY-text WRITE prints `new (empty)`). A successful MOVE stashes the block in buffer `last_move_source` before the cut. A MOVE whose srcFile/dstFile resolve to the same file is a move-with-shift (target inside the span = teaching error). EOF insertion uses `countLines()` (a trailing-newline file never gains a blank line). EOL: `detectEol()` once per file + `joinLines()` re-attaches `\r` to every line EXCEPT the last element (preserves both "a\r\nb" and "a\r\n"); WRITE never creates a file; PEEK `from`/`count` accept digit-strings; empty `refs`/`regions` lists are rejected; COPY/APPEND bare calls teach the same three input forms; MAP caps each echoed line at 200 chars + `…`.
+

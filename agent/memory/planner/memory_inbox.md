@@ -26,3 +26,6 @@ next maintenance pass.
 ### 2026-10-21_21-06 planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ
 Direct-mode rule re-confirmed (2026-10-21, new-model session): maintainer said "you may start workers if needed" — explicit OK overrides the no-delegation-without-prior-OK guideline (MEM-0110 trigger); still verify a --comment review draft against current code line-ranges BEFORE believing it (2 of its claims were stale — MOVE dst-guards already existed at block_transfer.ts 636-646; 1 confirmed real — targetMarker resolution after src write, lines 706-710) and hold the fixes for his ruling.
 
+### 2026-10-21_21-17 planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ
+Model-output testing (observed 2026-10-21, direct ses_ea02d3559ffe…): a self-review our model produced of its OWN tool code mixed REAL catches (PEEK from/count bypass the plan25 digit-string coercion — Number.isInteger 377/380; MAP uncapped verbatim echo; COPY empty-refs form error; TMP/TMPDIR root gap) with CONFIDENT P0 HALLUCINATIONS about the deployed file (a syntax error that does not exist; an unknown-mode lie blocked by the schema enum) — because the review ran on a PASTED/older variant. Rule: when testing models on pasted code, diff paste-vs-deployed and check load/smoke proof BEFORE believing any P0; a review's confidence is not evidence.
+

@@ -255,3 +255,6 @@ intercept.log anomaly (plan10, ses_f0777c6d0): line 2089 carries plan9-era CONTE
   `agent/knowledge/plugin_tools/2026-09-26_block_transfer-v2-s3-write-peek-feedback.md`
   Why line (marked HISTORICAL) + the knowledge_tools.md hardening entry;
   the spec file's stale parentheticals stay history (never rewritten).
+## 2026-10-22_01-34 worker_FlashNext ses_e9f4b2fceffeutBMvp16FEv4Pr
+Clone-tree sandbox smoke re-pin (env-robust): unit-A port made .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs 76 pins in the clone, but 3 byte-exact sandbox-roots-list pins (REPLACE reject, fixture REJECT, item-3 single-root) FAIL when the gate shell lacks TEMP/TMP env (measured: 73/76 with env-less bash; 76/76 with env; planner-13 re-run 76/76). Desired: pins derive the expected roots from the tool's own live message shape (or a fixture env they set themselves), never the ambient shell env. Acceptance: clone + main sandbox smoke green under a clean-env `env -u TEMP -u TMP node …` run.
+

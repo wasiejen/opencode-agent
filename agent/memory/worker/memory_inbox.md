@@ -10,3 +10,6 @@ When converting print() -> logger.* in a suite run under pytest: capsys cannot s
 ### 2026-10-21_21-59 worker_FlashNext ses_ea0120bd5ffeM6ggDl5IPr5o49
 Worker tooling, observed: on this host the tool-call JSON payload fails to parse above ~2 KB (two hits: a ~4 KB `write` and a ~3 KB bash heredoc, both "JSON Parse error: Unterminated string"); every call under ~1.8 KB succeeded, so keep multi-file/multi-edit content payloads under ~1.8 KB and split them into batches (heredoc appends + one splice script), as repo_commands #74 advises. Also: re-pin byte-exact feedback pins with a fail-loud replacement script (one `MISS(n)` report per pair) instead of many sequential edits — cheaper and harder to half-apply. Review trigger: if short payloads start failing again, the caveat's "length is not a predictor" note needs re-testing.
 
+### 2026-10-22_01-34 worker_FlashNext ses_e9f4b2fceffeutBMvp16FEv4Pr
+Cross-tree diff pitfalls (observed this session, both nearly corrupted a port): (1) `git show HEAD~1:path` runs against the CURRENT tree's HEAD — for another repo use `git -C <other-repo> show <ref>:path` into a temp file; (2) `cmp -s file <(cmd)` process-substitution in git-bash on Windows yields unreliable results (false DIFFERS) — compare real files after writing both to disk. Review trigger: any clone/second-tree port task.
+

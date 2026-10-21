@@ -1,4 +1,4 @@
---comment: model Next-coder
+comment: model Next-coder
 
 ## Overall verdict
 
@@ -1224,7 +1224,7 @@ You can keep backwards compatibility:
 - all digit string
 
 
---comment: model Next-coder2
+comment: model Next-coder2
 
 I'll check whether the pasted source matches what's actually deployed before flagging the top item as a real defect.
 ## Verdict

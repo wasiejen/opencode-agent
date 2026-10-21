@@ -35,3 +35,13 @@
   - e.g. think about how to improve the set of prompts we have. are their ways to better organize them. to make them more succinct and clear. are there redundant instructions or badly worded (only examples)
 - you are intelligent - you will find something to do
   - go through my ideas for new research on functions. create a folder in research for each if you find something worthwhile
+
+1. cross-repo use of block-transfer (seems to not function properly. the access attempts are escalated to me for approval.
+- permissions in opencode.jsonc should allow this per se. 
+      "C:/Users/Wasiejen/Repos/opencode-agent-v2": "allow",
+      "C:/Users/Wasiejen/Repos/opencode-agent-v2/**": "allow",
+- but i get always requests for C:\Users\* and the agents believe they mistakingly tried to access C:\Users\Wasi - which is unlikely and more likely a result of an error in the intercept plugin (hypothesis of me), because it happened exactly 2 times with the exact same result
+- needs to be corrected in v1 and v2 alike likely.
+
+2. migration+adaptation of all the tools/plugins to v2
+- migration based on current state of the plugins/tools in v1 repo

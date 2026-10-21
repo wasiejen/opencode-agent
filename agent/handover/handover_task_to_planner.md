@@ -1,88 +1,56 @@
-# Worker summary — block_transfer hardening (merged fix unit, maintainer GO 2026-10-21)
+# Worker handover — Spec A unit A: block_transfer sandbox roots become CONFIG-DRIVEN (TODO #140 unit A)
 
-Status: COMPLETE
-Assigned: worker_FlashNext · session ses_ea0120bd5ffeM6ggDl5IPr5o49
-Commit: the green commit containing this file (hash reported in the closing message; `git log -1` shows it).
+Status: LANDED (task complete; two items deferred to planner-13 by maintainer instruction — named below).
 
 ## Task and scope
-All 10 items of `agent/handover/handover_task.md` implemented in `.opencode/tools/block_transfer.ts`,
-plus the two named knowledge-doc wording fixes. DO-NOT-touch list respected; no plugin-core edits
-(`intercept_observer_core.ts` untouched — the S31 drift guard still passes unchanged).
+Unit A of the spec in `agent/handover/handover_task.md`: `block_transfer` must accept file paths under any root the host config lists as an allowed external directory (`opencode.jsonc` `permission.external_directory` entries valued `allow`), instead of only the launching CWD repo + Windows temp. Main repo first, clone twin `C:/Users/Wasiejen/Repos/opencode-agent-v2` as a separate commit.
 
 ## Files changed
-- `.opencode/tools/block_transfer.ts` — the fix set (723 → 913 lines).
-- `.opencode/plugin/tests/block_transfer.smoke.mjs` — 9 feedback pins re-pinned; 16 new pins (items 1-8).
-- `.opencode/plugin/probes/handover_probe.mjs` — 8 byte-exact pins re-pinned IN PLACE in S15 (110/111/117/262/263-
-  region) and S30 (305/307/313); NO probe check added or removed (section counts + the 360 annotation unchanged).
-- `agent/knowledge/plugin_tools/2026-09-26_block_transfer-v2-s3-write-peek-feedback.md` — item 9 doc-drift fix
-  (the WRITE-creation half-sentence removed; the WRITE Keys line now says "no file creation").
-- `agent/handover/handover_task_to_planner.md` — this summary.
-- `loop/<run>/loop_log.md` — the DONE line (committed with the unit).
+Main repo — commit `5ce85b3` (verified unit):
+- `.opencode/tools/block_transfer.ts` — config block added: string-state `stripJsoncComments` + `stripTrailingCommas` + `loadConfigRoots()` (allow keys, trailing `/**` stripped, plain-dir twin dedupe by resolved-lowercase, fail-open to EMPTY set on unreadable/malformed) + `CONFIG_ROOTS` read ONCE at tool load from the tool's OWN repo root (`import.meta.url` -> dirname + `../..`). `sandboxCheck` roots = `[cwd, ...CONFIG_ROOTS, TEMP ?? TMP, os.tmpdir()]` exact-string-deduped; message form unchanged. Description SANDBOX paragraph now names the config roots (no backticks — inside a template literal).
+- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — byte-exact REPLACE-error pin re-pinned for the new roots list (test-side mirror loader); 12 new pins: fixture-config module copies under the scratchpad sandbox (never the live config), TEMP/TMP override isolation, per-mode ALLOW pins (COPY/MOVE/PASTE/REPLACE/WRITE), item-4 twin-dedupe + deny-exclusion pins, item-3 malformed-config fail-open pins, live-root isolation pin. 64 -> 76 pins.
+- `.opencode/plugin/probes/handover_probe.mjs` — check 113's expected roots re-pinned in place (self-contained mirror loader incl. trailing-comma pass); verdict unchanged; no new probe checks (planner-13 added the 2 S15 additions itself later).
 
-## Behavior changed (measured, item by item)
-1. MOVE atomicity: the targetMarker now resolves BEFORE the source is cut; a bad target leaves BOTH files
-   byte-identical (smoke pin added). The block is stashed in buffer `last_move_source` before the cut
-   (PEEK-pinned; documented in the BUFFERS description note).
-2. Same-file MOVE (`srcFile`/`dstFile` resolve equal, case-insensitive): move-with-shift — span + target
-   resolve against the pre-call state, the insert index adjusts for the removed block (target below ⇒
-   `target.line - spanLen`), a target INSIDE the span returns the teaching shift error; the return names the
-   FINAL insertion line (3 smoke pins added: down-shift, up-move, inside-target).
-3. EOF insertion via `countLines()` (`eofIndex()`): `"a\n"` + block ⇒ `"a\nBLK one\nBLK two\n"` (no spurious
-   blank line); a created file gets no leading blank line (2 pins).
-4. EOL preservation: `detectEol()` once per file; `joinLines()` re-attaches `\r` to every line except the LAST
-   element (so both `"a\r\nb"` and `"a\r\n"` round-trip — the first attempt double-CR'd, fixed and pinned).
-   Source writes (CUT/DELETE/MOVE cut) keep the SOURCE's own EOL.
-5. PEEK `from`/`count`: schema widened to the ref-style string|int union; digit-strings coerce
-   (`from: "5", count: "3"` = the numeric call); non-numeric → the teaching error quoting the value as given.
-6. Validation: `refPresent()` at every form-detection site (the `!== undefined` check replaced); EMPTY `refs`
-   and EMPTY `regions` lists rejected with teaching errors; a bare COPY teaches the THREE input forms
-   (the APPEND string stays byte-identical); an empty-string marker counts as absent.
-7. Return lines: MOVE/PASTE append ` (inserted after line K in '<dstFile>')` / ` (at EOF)`; REPLACE/WRITE
-   replace the `(lines R` group with `old A..B -> new C..D, file now K line(s)` (WRITE's NEW span in the
-   post-op numbering — lower regions shift higher ones; EMPTY text ⇒ `new (empty)`). The RETURN LINES
-   description paragraph updated to match. The WRITE multi-region summary line is UNCHANGED.
-8. MAP: each echoed line capped at 200 chars + `…` (byte-exact pin); the MODES description sentence
-   ("VERBATIM ... (no cap)") replaced. The knowledge doc has NO MAP/no-cap wording → nothing to fix there.
-9. Doc drift: the "the file is created if absent" clause removed from the WRITE description, the mode-enum
-   describe, and the dstFile describe; the knowledge doc's contradictory half-sentence removed. The two
-   pinned absent-file checks (smoke ~L213/L215) were NOT touched.
-10. `sandboxCheck` temp root: `os.tmpdir()` added, with `TEMP`/`TMP` as the override ahead of it and the root
-    list de-duplicated by exact string equality — so the byte-exact 2-root error form is UNCHANGED on Windows
-    (verified: sandbox smoke 64/64 with zero edits to that file).
+Clone tree — port complete in the WORKING TREE, deliberately NOT committed (maintainer instruction arrived mid-session: planner-13's clone commit `c45b31c` re-ports ahead of mine; do not force-push over it):
+- `.opencode/tools/block_transfer.ts` — same change transplanted onto the clone's PRE-HARDENING tool (roots keep the clone's temp form `[cwd, ...CONFIG_ROOTS, process.env.TEMP ?? process.env.TMP]` — no `os.tmpdir()` addition; the clone predates hardening item 10).
+- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — updated version copied (clone's was byte-identical to main pre-change).
+- `.opencode/plugin/probes/handover_probe.mjs` — check-113 mirror transplanted (roots mirror matches the clone tool's list form).
+- (git-ignored, not in any commit:) `.opencode/node_modules` copied from main — required for the clone gates to import `@opencode-ai/plugin`.
 
-## Measured verification (exact commands, this checkout, post-change)
-- `node .opencode/plugin/tests/block_transfer.smoke.mjs` → `BLOCK_TRANSFER_SMOKE: ALL PASS (147/147)` PASS
-  (pre-change baseline measured 131/131 → +16 new pins, 0 removed).
-- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → `BT-SANDBOX-SMOKE: ALL PASS (64/64)` PASS
-  (unchanged; that file needed no re-pin).
-- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS` PASS (unchanged total).
-- `node .opencode/tools/_tscheck.ts` → zero `error TS` lines for block_transfer.ts.
-- `grep -c "^FAIL"` over the three captured outputs → 0 / 0 / 0.
-- Baseline note: the spec quoted 120 / 46 / 360; the pre-change measured counts were 131 / 64 / 360
-  (submitted to `todo_inbox.md` — the spec's 120/46 are stale, never resolved alone).
+## Behavior changed
+- COPY/MOVE/PASTE/REPLACE/WRITE on paths under an allow-listed root SUCCEED cross-repo (measured live: a path under the clone root yields the not-found error, not a sandbox refusal).
+- Paths outside every allowed root still yield the byte-identical teaching error (all existing REJECT verdicts held).
+- Config unreadable/malformed -> fail-open to the smaller set ([cwd + temp] only), never fail-closed to "everything allowed" (fixture pins).
+- `X` + `X/**` config keys dedupe to ONE root; `deny`-valued keys excluded.
 
-## Working tree
-Clean for the committed paths. NOT committed (pre-existing, not mine): `opencode.jsonc`, `agent/memory/planner/memory_inbox.md`,
-untracked `maintainer/draft/block_transfer_feedback2.md` — all on the DO-NOT-touch list; left untouched.
+## Verification (exact commands, measured)
+Main repo (at commit 5ce85b3, clean tree):
+- `node .opencode/plugin/tests/block_transfer.smoke.mjs` -> `BLOCK_TRANSFER_SMOKE: ALL PASS (150/150)` PASS
+- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` -> `BT-SANDBOX-SMOKE: ALL PASS (76/76)` PASS (baseline 64/64)
+- `node .opencode/plugin/probes/handover_probe.mjs` -> `PROBE handover: 360/360 PASS` PASS (baseline 360/360)
 
-## Deliberately omitted / deviations
-- Declared-out-of-scope list respected (no create-file sentinel, no session-keyed buffers, no LIST mode,
-  no description shortening, no anchor trailing-space trim, no `line:42` grammar change, no atomic-write helper,
-  no PEEK/MAP merge; the `args.mode || "MOVE"` default left as-is).
-- Deviation from the spec's expectation: the sandbox smoke pin set did NOT need repurposing (measured).
-- Deviation from "one commit" mechanics: the tool file was edited in verified sub-steps, but the EOL fix
-  needed one extra round-trip (item 4's first write joined with `eol` after re-attaching `\r` → double CR);
-  caught by the new pin, fixed, gates re-run green before committing.
-- The knowledge doc's historical Part F feedback bullet (`Wrote 2 lines ... (lines 2..3, ...)`) is left as the
-  dated record; the new shapes went to `knowledge_inbox.md` instead.
+Clone tree — gate numbers as a DIFF vs its known red baseline (NEVER "green"):
+- bt smoke: baseline 131/131 (the clone's PRE-HARDENING 131-pin variant; main's is 150) -> after port 131/131 — NO REGRESSION.
+- sandbox smoke: baseline 64/64 -> after port 73/76 with env-less bash (FAILURES: the 3 byte-exact roots-list pins; cause: my bash process lacked `TEMP`/`TMP` env, so the clone tool's list = `[cwd, ...cfg]` while the mirror expected the temp entry; with env exported 76/76 passes; planner-13 later recorded 76/76 PASS). All 10 fixture pins PASS in both conditions. Re-pin requirement -> `todo_inbox.md` (2026-10-22_01-34).
+- probe: `node .opencode/plugin/probes/handover_probe.mjs` -> output byte-identical to baseline (`Cannot find module ...ctx_watchdog.ts`, 0 checks run) — the TODO #141 red baseline UNCHANGED, not claimed green.
+- planner-13's post-restart re-verification (maintainer, not me): clone sandbox smoke 76/76 + clone probe 360/360 PASS with their 360-pin probe + 2 new S15 checks (342/360 was my pre-sync 64-pin run — expected supersession).
 
-## Inbox / TODO entries submitted
-- todo: the stale gate baselines (120/46 vs measured 131/64) + the stale "smokes 112/112 + 61/61" line.
-- knowledge: the hardened block_transfer surface (return shapes, `last_move_source`, same-file shift, EOF/EOL rules).
-- memory (worker): the ~2 KB tool-payload JSON-parse limit hit twice this session; batch payloads ≤ ~1.8 KB
-  and re-pin byte-exact pins with a fail-loud replacement script.
+## Working-tree status
+- Main repo at the 5ce85b3 commit point: CLEAN. Final bookkeeping commit (this handover + `TODO.md` #140 status line + `loop/<run>/loop_log.md`) follows this file; hash not in this handover (self-reference rule) — reported by the planner's next `git log`.
+- Clone tree: DIRTY BY DESIGN — 3 modified files uncommitted (planner-13's c45b31c supersedes; re-fork ahead of it, do not force-push over).
+- Live acceptance (3-tool cross-repo probe after host restart): PENDING — the maintainer's to run; agents never run the clone host or backend.
 
-## Lesson
-Byte-exact feedback pins are the real spec: a behavior change is only landed when the pins are re-pinned
-IN PLACE and the whole suite goes green — a plausible-looking implementation passed every other check while
-the CRLF write silently doubled the CR.
+## Deliberately omitted / deferred
+- Clone commit (superseded per maintainer instruction above).
+- TODO.md #140 status line + this handover: ride the FINAL main-repo commit (per spec).
+- Spec B (path-field truncation) — not this unit.
+- TODO #141 (clone ctx_watchdog.ts missing) — untouched, not unit A.
+
+## Friction / lessons submitted
+- `todo_inbox.md`: env-robust re-pin of the 3 byte-exact roots-list pins (acceptance: green under `env -u TEMP -u TMP node …`).
+- `knowledge_inbox.md`: import.meta config resolution + JSONC trailing-comma requirement + os.tmpdir() env-follow facts.
+- `agent/agent_feedback.md`: clone preflight near-misses (wrong-tree HEAD~1, cmp process-substitution, undeclared node_modules provisioning).
+- `agent/memory/worker/memory_inbox.md`: cross-tree comparison pitfalls.
+
+## Reusable lesson
+Ports between trees at different commit epochs: diff named refs dumped to real files first (`git -C <other> show <ref>:path`), never HEAD~1 from the wrong tree nor cmp with process substitution; transplant deltas, not file copies, when the trees diverge (clone tool = pre-hardening shape).

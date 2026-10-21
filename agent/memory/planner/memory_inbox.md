@@ -13,3 +13,6 @@ new "Spec authoring + host-fact triggers" section: 2026-09-30_16-57 → MEM-0117
 2026-09-30_16-58 → MEM-0118; 2026-10-01_05-02 → MEM-0113; 2026-10-01_05-26 →
 MEM-0114; 2026-10-01_06-22 → MEM-0115; 2026-10-04_23-54 → MEM-0116; 2026-10-21_21-06
 → MEM-0119; 2026-10-21_21-17 → MEM-0120. Inbox EMPTIED.
+### 2026-10-22_00-36 planner_FlashNext ses_e9fb4e611ffeQmrH3PkDK6r4Ct
+Lesson (planner, observed 2026-10-22, high confidence): the v2 CLONE has NO green probe gate at baseline (`node .opencode/plugin/probes/handover_probe.mjs` exit 1, ERR_MODULE_NOT_FOUND `.opencode/plugin/ctx_watchdog.ts`; the 11 node smokes report 0 PASS each), so a clone worker can NEVER claim "gate green" — read its numbers as a DIFF against a red/zero baseline, and expect the diff-identical claim to be the real evidence. Evidence: my spot re-run 2026-10-22 + the worker report for clone commits 4c0e607/1b7a202/5516a53-era; TODO #141 tracks the repair. Review trigger: the clone gate being fixed (#141) — then clone DoDs should require a green probe.
+

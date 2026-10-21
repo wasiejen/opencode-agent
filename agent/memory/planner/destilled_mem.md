@@ -13,6 +13,16 @@ read it only when you need the full text). Write/review policy: `README.md`
 - MEM-0111: the edit tool's hint line (`hint rejected … d=0 gap=inf`) is NOT the authority on apply-vs-reject — ALWAYS read the file back after any hint line before concluding rejection (2026-09-30 plan44/45 misattribution cluster).
 - MEM-0112: a stale-reference sweep must diff EVERY index line against the actual `ls` of the target folder after a reorg — a pattern-only sweep misses files that do not exist in the target folder at all (plan46/47; the 2026-10-15 prompt rework shipped 3 stale paths of its own, caught by exactly this check).
 
+## Spec authoring + host-fact triggers
+- MEM-0113: a spec naming a SMOKE block as the pin site for a gate change needs an explicit PROBE-section pin audit too — name probe check ids in the spec (#128, plan2).
+- MEM-0114: verify installed-library API signatures with one inspect call at spec-authoring time before citing them (plan3 #129 PySide6 ctor).
+- MEM-0115: count Python logging call sites with BOTH greps — `logging.` AND `logger.` (plan4 #131: 4 vs ~14).
+- MEM-0116: a `.opencode/tools/*.ts` landed mid-session is NOT live until the next host start — verify from files + spot smoke; live acceptance rides the NEXT session (plan10; today's bt mode micro-fix followed the path).
+- MEM-0117: after a model/config swap the injected ctx budget suffix can transiently read cap 1 — trust the ctx_gauge self-read for budget decisions (compaction_core resolveCap L205-211).
+- MEM-0118: the live host has NO in-process sqlite (bun:/node:sqlite both fail live) — every DB tool must ship the #126 spawn-sqlite3 last-resort adapter; fixture smokes cannot detect the gap.
+- MEM-0119: an explicit maintainer worker-OK overrides the MEM-0110 no-delegation guideline; still verify --comment review drafts against current line ranges before believing them.
+- MEM-0120: a model self-review of PASTED code mixes real catches with confident P0 hallucinations — diff paste-vs-deployed + check load/smoke proof before believing any P0 (2026-10-21 bt review).
+
 ## Planner behavioral guidelines (direct sessions — CANONICAL HOME per the maintainer's 2026-09-28 move instruction; the NAP's scattered lines are superseded)
 - MEM-0110: direct sessions = NO delegation without prior explicit maintainer OK (ruling 2026-09-27) — interact/answer first (verify shortly if needed), stop guessing and ask, push back without sugarcoating, question his assumptions; trigger = his post-compaction-reliability complaint about the fork planner that implemented the keepTokens metric rework before his review (the #99 "updated prematurely" remark).
 - TODO refs in dialogs carry a SHORT TITLE (ruling 2026-09-30, direct session): e.g. "#126 context_trim spawn fallback" — he has no overview of the bare numbers; the title makes dialog self-contained without a TODO lookup.

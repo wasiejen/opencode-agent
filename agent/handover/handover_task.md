@@ -1,94 +1,83 @@
-# Task spec — block_transfer hardening (merged fix unit, maintainer GO 2026-10-21)
+# Task spec — v2 model-reader port, unit 1 (session_v2 model + limits read)
+
+Assigned worker: `worker_FlashNext` (same model as the launching planner —
+`strata/qwen3.8-flash-next-coder-iq1_m`; the cache rule).
 
 ## Goal
-Fix the verified defect cluster in `.opencode/tools/block_transfer.ts` (the two
-`--comment` review drafts in `maintainer/draft/block_transfer_feedback2.md`
-are the inspiration only — several of their claims do NOT apply to the
-deployed file; this spec carries the verified set). Behavior stays
-deterministic and teaching; the tool description stays the single agent-facing
-surface.
+In the v2 clone repo `C:\Users\Wasiejen\Repos\opencode-agent-v2` (branch
+`migration`), make the shared session-DB reader resolve the session MODEL +
+LIMITS from the v2 tables, so the context family (gauge/`ctx_gauge`/
+`context_trim`) and the intercept plugin's `model` log field work on v2
+sessions instead of returning nothing / `unknown`.
 
-## Definition of done
-- All 9 items below implemented in the tool file.
-- Green gate, exact commands:
-  - `node .opencode/plugin/tests/block_transfer.smoke.mjs` → ALL PASS (baseline 120 chk; re-pins + new pins allowed — state the new count)
-  - `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → ALL PASS (baseline 46)
-  - `node .opencode/plugin/probes/handover_probe.mjs` → PROBE handover: 360/360 PASS baseline (re-pins + new pins allowed — state the new count)
-- One green commit; write `agent/handover/handover_task_to_planner.md` (change summary, measured gate results with exact counts, working-tree status, commit hash, omitted work).
-- Any legitimately surfaced discrepancy → append via `submit` (todo channel), never resolve alone.
+## Definition of done (measurable)
+1. `.opencode/plugin/scripts/gauge.mjs` (clone): a v2-shaped read returns
+   `id` + `model` + `limit` for a session whose row lives in `session_v2`
+   (fixture DB in the existing smoke harness). The v1-shaped read stays green
+   on a `session`-shaped fixture (the DB carries BOTH tables — coexistence
+   measured 2026-10-21, see the knowledge file).
+2. Clone smoke pins: one pin per read form (v1 table / v2 table / an id
+   present in neither → the existing not-found outcome). Names carry the
+   `v2` marker. The suite count goes up by the pin count, recorded in the
+   handover.
+3. `.opencode/plugins/intercept_observer.ts` (clone): the `model` field of
+   the 8-field log line resolves through the new reader when resolvable;
+   otherwise the literal `unknown` (byte-compat of the line shape is
+   PRESERVED — one field, pipe-separated, unchanged order; the 2026-10-21
+   ruling: byte-compat kept until this port lands, then the real id).
+4. Clone gate green: probe + all smokes measured FRESH at spec-relative
+   baseline (the worker records the pre-change counts FIRST).
+5. Handover `agent/handover/handover_task_to_planner.md` (in the clone's
+   tree if that is where its harness lives — the worker follows the clone's
+   existing handover convention; state the path used).
 
-## Items (WHAT; HOW is worker's call)
-1. MOVE atomicity: resolve dst sandbox + `dstFile` presence + `targetMarker`
-   ALL before touching src. Current violation: src written at ~L682, target
-   resolved at ~L706-710 — a bad target leaves the source cut. ALSO stash the
-   extracted block in buffer `last_move_source` before the cut (recovery
-   buffer for destructive MOVE; document in the description BUFFERS note).
-2. Same-file MOVE (`srcFile` and `dstFile` resolve to the same file): implement
-   move-with-shift — pre-call line numbers for source span + target, adjust
-   insert for the removed block, reject a target INSIDE the source span with a
-   teaching error. (Review Option A; rejection-only is NOT acceptable.)
-3. EOF insertion: use the existing `countLines()` (L169) for the EOF index in
-   PASTE + MOVE + new-file paths — no spurious blank line appending to a
-   trailing-newline file (measured: `"a\n"` → `"a\n\nb"`), no leading blank
-   line on file creation.
-4. EOL preservation: detect destination/file EOL once; write with it; re-attach
-   `\r` to buffer lines pasted into a CRLF file. No whole-file CRLF→LF churn.
-5. PEEK digit-string coercion: `from`/`count` accept the same string-union +
-   `/^\d+$/` treatment as refs (plan25: the live channel stringifies schema
-   integers). Current violation: `Number.isInteger` guards at ~L377/380 reject
-   `"5"`. Widen the two schema fields like the ref fields' union.
-6. Validation consistency: `refPresent()` at every form-detection site (replace
-   the `!== undefined` check at ~L219); reject EMPTY `regions` / `refs` lists
-   with a teaching error; COPY bare-input error names all THREE forms (mirror
-   the APPEND message at ~L250).
-7. Return lines: MOVE/PASTE name the insertion point (e.g. `(inserted after line
-   12 in dst)` / `(at EOF)`); REPLACE/WRITE report old→new spans and the file's
-   new line count (e.g. `old 12..15 -> new 12..19, file now 143 lines`) —
-   line-number refs go stale after a length-changing op; the feedback must say
-   so. Keep one line per op; update the RETURN LINES description paragraph to
-   match byte-exactly.
-8. MAP line-width cap: echo each line capped at ~200 chars + `…` (line COUNT
-   already bounded by design); update the MODES description sentence
-   (currently "VERBATIM ... (no cap)") + the knowledge doc
-   `agent/knowledge/plugin_tools/2026-09-26_block_transfer-v2-s3-write-peek-
-   feedback.md` MAP/PEEK section if it repeats the no-cap wording.
-9. Doc drift (NO behavior change here): DELETE the "the file is created if
-   absent" clause from the WRITE description — the pinned behavior is
-   absent-file WRITE = teaching not-found/out-of-range errors, NO creation
-   (behavior pins: block_transfer.smoke.mjs ~L213/L215 — do NOT touch these
-   two checks). Remove the matching self-contradictory half-sentence in
-   `agent/knowledge/plugin_tools/2026-09-26_block_transfer-v2-s3-write-peek-
-   feedback.md` ("...and a successful write creates the file...").
-10. sandboxCheck temp root: use `os.tmpdir()` (keep `TEMP`/`TMP` as an
-    override ahead of it). Windows-impact nil; POSIX correctness.
+## Verified facts (measured at spec-authoring time, 2026-10-21)
+- v2 content layout: `session_message(id,session_id,type,seq,data)` +
+  `part(message_id,…)`; assistant content INLINE in `message.data`; a v1-style
+  `part.session_id` filter returns ZERO rows for v2 sessions (trap).
+- `session_v2` columns = `session` PLUS fork_session_id, fork_boundary,
+  time_suspended, resume_attempts, time_idle, time_viewed, idle_outcome
+  (host-map §3, `agent/knowledge/opencode-plugins/host-map.md` L194) —
+  so the `model` column name is unchanged; the TABLE name differs.
+- The clone's gauge reader today still queries v1 tables:
+  `.opencode/plugin/scripts/gauge.mjs` lines 519 / 525 / 534-536 / 543 /
+  557 (`SELECT id, model FROM session …`).
+- The clone's plugin header states the port is OUT of the Unit A range
+  (clone `.opencode/plugins/intercept_observer.ts` lines ~60-62) and that
+  the model slot carries `unknown` per the unavailable→literal house rule.
+- v2 CLI runs need an explicit `--model` (the config agent model is NOT
+  applied) — knowledge file
+  `agent/knowledge/plugin_tools/2026-10-16_v2-plugin-harness-and-config.md`.
+- The token-mass leg is NOT in this unit (ordered as unit 2; the reader
+  signature must not pre-shape it).
 
-## Verified facts (planner-measured, do not re-derive)
-- Deployed file is 723 lines; guards for dst-sandbox + missing dst ALREADY
-  EXIST (~L636-646) — do not re-add.
-- The reviews' claims: syntax error, unknown-mode fallthrough ("Operation
-  completed." lie), and the WRITE-creation CAPABILITY claim do NOT apply
-  (schema enum at L326 blocks unknown modes; creation is doc drift, see item 9).
-- Pin sets that WILL change and must be repurposed in-scope: block_transfer.smoke.mjs
-  feedback-line byte-exact pins (Part F shapes), sandbox smoke, probe S15
-  (~L657 area), S30 (checks 305-315, feedback shapes), S31 drift-guard
-  equivalence section (anchor logic must stay equivalent with
-  intercept_observer_core.ts `matchAnchorPrefixLines` — do NOT touch the
-  plugin core).
-- `countLines()` exists and models `"a\nb\n"` = 2; `textToLines()` exists (~L197).
-- WRITE summary line at ~L598 is balanced and correct (the review's P0 #1 was
-  paste-only).
+## Suggested scope (non-exhaustive)
+- clone `.opencode/plugin/scripts/gauge.mjs` (the read + the table choice)
+- clone `.opencode/plugin/tests/` (or `plugin/tests/`, wherever the gauge
+  smokes live — locate by the existing gauge smoke file)
+- clone `.opencode/plugins/intercept_observer.ts` (the model-field call site)
+- the clone's `agent/knowledge/` copy if the clone keeps one; otherwise
+  no main-repo docs in this unit.
 
-## DO-NOT-touch
-- `opencode.jsonc`, anything under `maintainer/`, `AGENTS.md`, `agent/prompts/`
-- `.opencode/plugin/intercept_observer_core.ts` (drift-guard equivalence must
-  hold WITHOUT editing it)
-- `agent/handover/handover_planner.md`, `TODO.md`
-- `agent/knowledge/plugin_tools/2026-10-16_v2-plugin-harness-and-config.md`
-- Declared OUT of scope (maintainer ruled these away or deferred): create-file
-  sentinel for WRITE, removing the `args.mode || "MOVE"` default beyond
-  harmless, session-keyed buffers, LIST mode, undo buffers beyond
-  `last_move_source`, description shortening (2-tier proposal pending), anchor
-  trailing-space trim, `line:42` grammar, atomic-write helpers, PEEK/MAP merge.
+## DO NOT touch
+- the main repo (`C:\Users\Wasiejen\Repos\opencode-agent`) code, gate files,
+  `TODO.md`, `agent/prompts/**`, `agent/handover/handover_planner.md`
+- the live GLOBAL DB (`~/.local/share/opencode/opencode.db`) — fixture DBs
+  only, NEVER the live DB
+- the clone root `opencode.jsonc` (maintainer domain) and anything under
+  `maintainer/**` in either tree
+- the token-mass / context-mass SQL legs (unit 2), the v2 tools estate (later
+  unit), pair/numword channels, the log line shape (byte-compat)
 
-## Assigned worker
-worker_FlashNext (same model as the launching planner — cache rule).
+## Commit + checkpoints
+- One green checkpoint commit per verified unit step in the clone on
+  `migration` (a named-path commit; NEVER `git add -A`); the clone's own
+  handover/discrepancy notes ride the FINAL commit.
+- Status wording: `LANDED` — the hash lands in the planner's follow-up
+  bookkeeping commit in the MAIN repo (never in the same commit).
+
+## Live acceptance (pending, name it in the handover)
+- The clone `agent/scripts/v2_intercept_acceptance.sh` re-run is the
+  MAINTAINER's (agents never run the clone host against the backend slot).
+  Expect: intercept lines whose model slot carries the real model id
+  (`qwen3.8-flash-next-coder-iq1_m`) instead of `unknown`.

@@ -606,4 +606,31 @@ instructions/protocol — facts that save lookups. Format per the README:
 - **Ref:** `.opencode/tools/context_trim.ts` (execute + the keepMessages
   arg); `.opencode/plugin/tests/context_trim.smoke.mjs` section 10.
 - **Keys:** context_trim, keepMessages, tailSetKeep, tail-set, keep-N,
-  retained tail, post-compaction shrink, setDbPath.
+   retained tail, post-compaction shrink, setDbPath.
+
+## block_transfer 2026-10-21 hardening: the changed surface (worker_FlashNext, knowledge_inbox 2026-10-21_21-59)
+- **Do:** expect the hardened shapes in `.opencode/tools/block_transfer.ts`:
+  MOVE/PASTE return lines append ` (inserted after line K in '<dstFile>')`
+  or ` (at EOF)`; REPLACE/WRITE replace the group with `old A..B -> new
+  C..D, file now K line(s)` (WRITE's NEW span is in POST-op numbering;
+  an EMPTY-text WRITE prints `new (empty)`); a successful MOVE stashes
+  the block in buffer `last_move_source` BEFORE the cut; a same-file
+  MOVE (srcFile/dstFile resolve equal) is a move-with-shift (a target
+  inside the span = teaching error); EOF insertion uses `countLines()`
+  (a trailing-newline file never gains a blank line); `detectEol()` runs
+  once per file and `joinLines()` re-attaches `\r` to every line EXCEPT
+  the last element; WRITE never creates a file; PEEK `from`/`count`
+  accept digit-strings; empty `refs`/`regions` lists are rejected;
+  COPY/APPEND bare calls teach the three input forms; MAP caps each
+  echoed line at 200 chars + `…`. `mode` is STRICTLY REQUIRED (no MOVE
+  default; unknown mode = loud error, lower-case modes still work).
+- **Why (evidence):** the 2026-10-21 hardening unit (commit ca3c710) +
+  the micro-fix (a137b07); mode guard FULLY LIVE-ACCEPTED after the
+  maintainer restart. Suite counts as of 2026-10-21, post-change: block_transfer
+  smoke 150/150, sandbox smoke 64/64, probe 360/360, SUBMIT_SMOKE 32/32
+  — the 112/112 + 61/61 in the 2026-09-26 v2/S3 note are HISTORICAL
+  landing counts, superseded.
+- **Ref:** `.opencode/tools/block_transfer.ts`; `.opencode/plugin/tests/block_transfer.smoke.mjs`
+  + `block_transfer.sandbox.smoke.mjs`; commits ca3c710 / a137b07.
+- **Keys:** block_transfer, return lines, inserted after line, last_move_source,
+  same-file MOVE, detectEol, joinLines, PEEK digit-string, mode required.

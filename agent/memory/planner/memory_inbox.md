@@ -1,20 +1,4 @@
-### 2026-10-01_05-02 planner_Q3S_slow ses_f0ad5d279ffe5cso7Q0CL60RD2
-When a task spec names the SMOKE region as the pin site for a gate/behavior change, the PROBE section pinning the same observable behavior also needs its own pin audit — name the probe check ids in the spec explicitly. #128 evidence (2026-10-01, plan2, worker handover): the probe's S13 checks 92/93/95/222-226 + S32 340 were cross-shape gate pins OUTSIDE the spec-named Gate-M smoke block; their re-pins were not derivable from the named region and the probe run caught them on the first red. Type: learned/observed; confidence high; scope: spec authoring for behavior changes with probe coverage; review trigger: the next spec that names a smoke block as the pin site for a gate change.
 
-### 2026-10-01_05-26 planner_Q3S_slow ses_f0a9543a0ffeOmHASvp72Lj7JI
-Task-spec API-signature claims (ctor/method shapes) should be verified at authoring time with one import/inspect call — an unverified QContextMenuEvent(QPoint) ctor claim in the #129 spec (spec commit 6d1b3f5) cost the worker a discovery step (the real PySide6 6.11.2 ctor is (Reason, pos[, globalPos]), 2-arg deprecated; see worker handover plan3_ho_task_to_planner.md). Type: observed lesson. Confidence: medium (single occurrence). Scope: task-spec authoring citing installed-library API shapes. Review trigger: recurrence of the same friction class (worker adapting to a wrong spec API claim).
-
-### 2026-10-01_06-22 planner_Q3S_slow ses_f0a800624ffe8CVXBLVwWX7y4N
-Verified (2026-10-01, plan4, #131): when counting "logging call sites" in a codebase for spec verified-facts, grep BOTH forms — `logging\.` AND `logger\.` (module-level `logger = logging.getLogger(__name__)` call sites): my `logging\.`-only grep returned 4 in the FST repo, the explorer measured ~14 (the rest were `logger.` calls). Type: learned, confidence high, scope: spec verified-fact authoring over Python logging code, evidence: #131 spec claim vs explorer-4 handover finding 6 (agent/research/2026-10-01_fst-logging-design.md §7.1), review trigger: n/a (stable grep lesson).
-
-### 2026-10-04_23-54 planner_Q3S_slow ses_f0777c6d0fferrQ5Skto9dmzn0
-A custom tool landed mid-session (`.opencode/tools/*.ts`) is NOT in the current session's toolset — the host auto-detects at process start only (plan10 state_snapshot: committed 23:35 local, absent from this session's tool list). Planner procedure: verify such builds from files (git + handover numbers) + a targeted spot re-run of the new smoke in-session; live acceptance (the tool firing in a real session) rides the NEXT planner session after the maintainer's restart — record that in the TODO/NAP status line instead of treating the in-session absence as a failure. Type: observed. Confidence: high. Scope: every build that lands a new tool/plugin file in an autorun session. Evidence: plan10 (loop folder plan10_summary.md, commits 8d332d7/2c3cbb3). Review trigger: if the host ever hot-reloads tools mid-process, this memory is stale.
-
-### 2026-09-30_16-57 planner_Q3S_slow ses_f0e129deeffeqmM5rc8mpnTY2Q
-Verified (observed, high confidence): after a mid-session model swap + a model_budget key swap in compact_budget.json, the injected ctx budget suffix can TRANSIENTLY read the default cap 1 — the nudge resolves the session ROW model (stale until the first new-process prompt updates it); unlisted model + no "default" key → cap 1 (compaction_core.ts resolveCap L205-211). Until the row updates, trust the self-gauge (ctx_gauge tool) for budget decisions, not the injected suffix. Evidence: 2026-09-30 direct session ses_f0e129deeffeqmM5rc8mpnTY2Q (injected "1" at 15:54 vs ctx_gauge "5" at 15:57; DB row model 210K→235K verified via node:sqlite query). Scope: interpreting budget readouts after model/config changes. Review trigger: a budget-file "default" key lands, or the nudge model resolution changes.
-
-### 2026-09-30_16-58 planner_Q3S_slow ses_f0e129deeffeqmM5rc8mpnTY2Q
-Verified (learned, high confidence): the live opencode host process has NO in-process sqlite backend — both bun:sqlite and node:sqlite dynamic imports fail in it (measured 2026-09-30: context_trim live report call returned "db-error: no in-process writable sqlite backend"). The only proven live DB backend is spawn-sqlite3 via .opencode/plugin/tools/sqlite3.exe (the gauge.mjs cascade — all live gauge reads use it). Fixture smokes run on a node v24+ host (node:sqlite available) and CANNOT catch this — a live tool call is the only detector. Any future DB-writing tool must include the spawn-sqlite3 last-resort backend (the #126 fix pattern: Ctx-shaped adapter over execFileSync, no shell, hard timeout, single-inviction transaction flush). Scope: live acceptance of DB tools/plugins. Evidence: TODO #126 + commits a43311a/a276ef1. Review trigger: a host build with working bun:sqlite lands.
 
 ### 2026-10-15 curation (direct ses_ec048b57affeZzCMG1NTRZFluG, prompt-adaptation session)
 Inbox entries cured this session: 2026-09-30_04-49 (observer-feedback
@@ -23,9 +7,9 @@ delivery+apply claims) → MEM-0101 addendum (extended); 2026-09-30_05-40
 (stale-reference sweep vs actual listing) → MEM-0112 (new). Destill lines
 updated in the same commit. The six remaining uncured entries stay for the
 next maintenance pass.
-### 2026-10-21_21-06 planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ
-Direct-mode rule re-confirmed (2026-10-21, new-model session): maintainer said "you may start workers if needed" — explicit OK overrides the no-delegation-without-prior-OK guideline (MEM-0110 trigger); still verify a --comment review draft against current code line-ranges BEFORE believing it (2 of its claims were stale — MOVE dst-guards already existed at block_transfer.ts 636-646; 1 confirmed real — targetMarker resolution after src write, lines 706-710) and hold the fixes for his ruling.
-
-### 2026-10-21_21-17 planner_FlashNext ses_ea02d3559ffe1L4pox2q8iU1CZ
-Model-output testing (observed 2026-10-21, direct ses_ea02d3559ffe…): a self-review our model produced of its OWN tool code mixed REAL catches (PEEK from/count bypass the plan25 digit-string coercion — Number.isInteger 377/380; MAP uncapped verbatim echo; COPY empty-refs form error; TMP/TMPDIR root gap) with CONFIDENT P0 HALLUCINATIONS about the deployed file (a syntax error that does not exist; an unknown-mode lie blocked by the schema enum) — because the review ran on a PASTED/older variant. Rule: when testing models on pasted code, diff paste-vs-deployed and check load/smoke proof BEFORE believing any P0; a review's confidence is not evidence.
-
+### 2026-10-21 (autorun planner-12 maintenance pass) curation
+Entries cured this session → `memory.md` (full entries) + destill lines in the
+new "Spec authoring + host-fact triggers" section: 2026-09-30_16-57 → MEM-0117;
+2026-09-30_16-58 → MEM-0118; 2026-10-01_05-02 → MEM-0113; 2026-10-01_05-26 →
+MEM-0114; 2026-10-01_06-22 → MEM-0115; 2026-10-04_23-54 → MEM-0116; 2026-10-21_21-06
+→ MEM-0119; 2026-10-21_21-17 → MEM-0120. Inbox EMPTIED.

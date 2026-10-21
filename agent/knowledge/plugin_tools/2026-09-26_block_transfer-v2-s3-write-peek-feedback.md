@@ -11,7 +11,7 @@
   - CLEAR: `Cleared buffer 'b' - buffer: 0 lines.`
   - COPY/APPEND (S2, unchanged): `Copied 4 lines from 'src' into buffer 'b' (lines 2..5, first: 'E') - buffer: 4 lines.`
   The shared helper is `opLine(verb, count, phrase, rangeText, firstLine, bufferAfter)` in the tool file (bufferAfter = null for non-buffer ops).
-- **Why (evidence):** built 2026-09-26 per the approved proposal `2026-09-25_block_transfer-v2.md` Part F (unit S3); verified: smokes 112/112 + 61/61, probe S30 (305-315) + the S15 re-pins (108/110/111/115/116/117/262/263), gate green.
+- **Why (evidence):** built 2026-09-26 per the approved proposal `2026-09-25_block_transfer-v2.md` Part F (unit S3); verified: smokes 112/112 + 61/61 (HISTORICAL landing counts — superseded 2026-10-21: smoke 150/150 + sandbox 64/64, see knowledge_tools.md block_transfer hardening entry), probe S30 (305-315) + the S15 re-pins (108/110/111/115/116/117/262/263), gate green.
 - **Ref:** worker-20 (worker_Q3S_245K_slow) session 2026-09-26 (bt-v2 S3); `.opencode/tools/block_transfer.ts` (the `opLine` helper + the per-mode returns).
 - **Keys:** block_transfer, Part F, feedback, opLine, one line per op.
 

@@ -403,3 +403,91 @@ knowledge / NAP) is re-stated.
   2026-10-15 audit.
 - Related: MEM-0103 (placement rulings — index lines are placement).
 - Review when: the next tree reorg or index rework.
+
+## MEM-0113 — A spec that names a SMOKE block as the pin site still needs a PROBE-section pin audit
+- Lesson (2026-10-01, plan2 #128): the probe's S13 checks 92/93/95/222-226
+  + S32 340 pinned the same gate OUT of the spec-named Gate-M smoke block;
+  the re-pins were not derivable from the named region; the probe run caught
+  them on the first red.
+- Rule: when authoring a spec for a behavior change with probe coverage,
+  name the probe check ids explicitly in the spec (audit both sections).
+- Evidence: memory_inbox 2026-10-01_05-02; worker handover plan2.
+- Review when: the next spec names a smoke block as the pin site for a gate change.
+
+## MEM-0114 — Task specs citing installed-library API shapes: verify signatures at authoring time
+- Lesson (2026-10-01, plan3 #129): an unverified `QContextMenuEvent(QPoint)`
+  ctor claim cost the worker a discovery step (real PySide6 6.11.2 ctor:
+  `(Reason, pos[, globalPos])`, 2-arg deprecated).
+- Rule: one import/inspect call at spec-authoring time before citing an
+  installed-library API shape in verified-facts.
+- Evidence: memory_inbox 2026-10-01_05-26; spec commit 6d1b3f5; plan3 handover.
+- Confidence: medium (single occurrence).
+- Review when: the same friction class recurs.
+
+## MEM-0115 — Count Python logging call sites with BOTH greps: `logging.` AND `logger.`
+- Lesson (2026-10-01, plan4 #131): a `logging\.`-only grep returned 4 in the
+  FST repo; `logger.` module-level call sites made the real count ~14.
+- Rule: grep BOTH forms when counting logging call sites for spec
+  verified-facts.
+- Evidence: memory_inbox 2026-10-01_06-22; research doc
+  `agent/research/2026-10-01_fst-logging-design.md` §7.1.
+- Confidence: high; stable grep lesson.
+
+## MEM-0116 — A tool/plugin file landed mid-session is NOT live until the next host start; acceptance rides the NEXT session
+- Lesson (2026-10-04, plan10): the host auto-detects `.opencode/tools/*.ts`
+  at PROCESS START only; a mid-session landing shows absent from the
+  current toolset — NOT a failure.
+- Rule: verify such builds from files (git + handover numbers) + a targeted
+  spot smoke re-run in-session; record live acceptance as PENDING the next
+  session's restart in the TODO/NAP status line.
+- Evidence: memory_inbox 2026-10-04_23-54; plan10 commits 8d332d7/2c3cbb3.
+  Today's bt mode-guard micro-fix followed the same path (live only after
+  the maintainer restart).
+- Review when: the host gains hot-reload of tools mid-process.
+
+## MEM-0117 — After a model/config swap, the injected ctx budget suffix can transiently read cap 1; trust ctx_gauge
+- Lesson (2026-09-30): the nudge resolves the session ROW model (stale
+  until the first new-process prompt); unlisted model + no `default` key
+  → cap 1 (compaction_core.ts resolveCap L205-211).
+- Rule: for budget decisions after a model/config change, use the
+  self-gauge (ctx_gauge), not the injected suffix.
+- Evidence: memory_inbox 2026-09-30_16-57; the session's own gauge read
+  `CTX=notAvailable` at 2026-10-21 start with suffix `3 compactions left`
+  (a first-ever gauge readout in a fresh session — normal).
+- Review when: a `default` key lands in the budget file, or nudge model
+  resolution changes. Related: knowledge_plugins.md §329 (the no-total
+  root cause).
+
+## MEM-0118 — The live host has NO in-process sqlite; any DB tool must ship the spawn-sqlite3 last resort
+- Lesson (2026-09-30, #126): both bun:sqlite and node:sqlite dynamic imports
+  fail in the live host process (context_trim live report returned
+  `db-error: no in-process writable sqlite backend`); the only proven live
+  backend is spawn-sqlite3 via `.opencode/plugin/tools/sqlite3.exe`.
+- Rule: fixture smokes (node v24, node:sqlite) CANNOT detect this — any
+  DB-writing tool ships the #126 pattern: Ctx-shaped adapter over
+  execFileSync, no shell, hard timeout, single-invocation transaction.
+- Evidence: memory_inbox 2026-09-30_16-58; TODO #126; commits a43311a/a276ef1
+  + knowledge_plugins.md §412 (the CLI facts).
+- Review when: a host build with working bun:sqlite lands.
+
+## MEM-0119 — An explicit maintainer worker-OK overrides the MEM-0110 no-delegation guideline (direct mode)
+- Lesson (2026-10-21): "you may start workers if needed" = prior explicit
+  OK; the guideline's trigger condition is satisfied, proceed.
+- Rule: still verify a `--comment` review draft against current code
+  line-ranges BEFORE believing it (2 of its claims were stale — the MOVE
+  dst-guards already existed at block_transfer.ts 636-646), hold fixes
+  for his ruling.
+- Evidence: memory_inbox 2026-10-21_21-06; direct ses_ea02d3559ffe….
+- Review when: MEM-0110's ruling changes.
+
+## MEM-0120 — Model self-reviews of PASTED code mix real catches with confident P0 hallucinations; diff paste-vs-deployed first
+- Lesson (2026-10-21): our model's self-review of its OWN tool code claimed
+  a non-existent syntax error + an unknown-mode lie (schema-blocked), while
+  its real catches (PEEK digit-string bypass, MAP uncapped echo, empty-refs
+  form error, TMP/TMPDIR gap) were valid.
+- Rule: when a review ran on pasted/older code, diff paste-vs-deployed and
+  check load/smoke proof BEFORE believing any P0; a review's confidence is
+  not evidence.
+- Evidence: memory_inbox 2026-10-21_21-17; the 2026-10-21 review-draft
+  verdict in the NAP.
+- Review when: another model-testing session uses pasted code.

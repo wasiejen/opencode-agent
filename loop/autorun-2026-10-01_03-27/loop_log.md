@@ -75,3 +75,4 @@
 2026-10-22_01-07 -->START worker-12 ses_e9f4b2fceffeutBMvp16FEv4Pr worker_FlashNext TODO #140 unit A: block_transfer sandbox roots become config-driven (opencode.jsonc external_directory allow roots + fail-open fallback; pins re-run + new fixture pins; clone twin port)
 2026-10-22_01-41 DONE<--- worker-12 ses_e9f4b2fceffeutBMvp16FEv4Pr worker_FlashNext SESSION=ses_e9f4b2fceffeutBMvp16FEv4Pr CTX=175852 | 6 compactions left
 2026-10-22_01-44 -RETURN- planner-12 ses_e9fb4e611ffeQmrH3PkDK6r4Ct planner_FlashNext worker-12 ses_e9f4b2fceffeutBMvp16FEv4Pr planner_FlashNext — spec A unit A LANDED, main 5ce85b3, clone 8d6bbd5, my re-verification: sandbox smoke 76/76 + probe 360/360 PASS
+2026-10-22_01-46 -->START worker-13 ses_e9f24eaf0ffeBCobIEf3PWPc0z worker_FlashNext Spec B: intercept log field-content rule — path fields never cut mid-path (TODO #140 unit B): main repo intercept_observer_core.ts + smoke/probe pins, then clone twin on migration

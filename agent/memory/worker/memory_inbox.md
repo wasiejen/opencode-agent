@@ -9,3 +9,6 @@ First curation of this lane — all 10 entries cured into the NEW
 ### 2026-10-22_14-55 worker_FlashNext ses_e9c6c3cbcffeSLiyxqFZ9f5pl7
 Byte-exact smoke pinning (observed, high confidence, port work): derive expected feedback strings from the code's format functions first, and design fixtures to satisfy the tool's own anchor-uniqueness rule (prefix anchors match shorter twins, e.g. 'X' matches X1..X5); new-file writes have NO trailing newline while existing files keep their own EOL — mispinned both legs 4 times in unit 5c before re-running. Evidence: clone block_transfer.smoke.mjs fix iterations 2026-10-22. Review trigger: writing any new byte-exact smoke.
 
+### 2026-10-22_18-41 worker_FlashNext ses_e9b8ed378ffewWRy0cDWYNTkQA
+Ordering/behavior pins must be proven DISCRIMINATING before the implementation lands: run the new pin against the UNCHANGED tool first and require it to FAIL (observed 2026-10-22 state_snapshot marker-order unit — the spec-suggested `maintainer/live_note.md` fixture passed 21/21 pre-change, pin was vacuous; switching the fixture to `WIKI.md` gave the measured FAIL-then-PASS sequence). Type: learned; confidence: high; scope: any worker adding a pin for a reordering/behavior change; review trigger: a new pin that passes on the pre-change code.
+

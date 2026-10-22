@@ -1,84 +1,93 @@
-# Worker summary — TODO #137 unit 5c: block_transfer ported to v2 (clone `migration`)
+# Worker summary — state_snapshot digest: LIVE-class marker hits sort first
 
-Status: COMPLETE
+Status: IN PROGRESS (MAIN unit LANDED + verified; clone v2 unit pending).
+Session: `ses_e9b8ed378ffewWRy0cDWYNTkQA` (`worker_FlashNext`), looprun
+`autorun-2026-10-01_03-27`. Spec: `agent/handover/specs/2026-10-22_state-
+snapshot-marker-order.md` (= `agent/handover/handover_task.md`).
 
 ## Task and scope
-Ported `block_transfer` to v2 as a plugin-registered tool in the CLONE
-`C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`). The design of
-record = the MAIN repo `.opencode/tools/block_transfer.ts` (1034 lines, the
-current v1 behavior incl. the #140/#142 hardening). The CLONE's stale v1 twin
-(845 lines, TODO #143) was NOT touched and NOT the baseline. The MAIN repo
-itself was untouched except this summary.
 
-## Files changed (CLONE, commit `1b0ebdb`)
-- NEW `.opencode/plugins/block_transfer.ts` (1276 lines) — id `block_transfer`,
-  registered via `await ctx.tool.transform((editor) => editor.add(blockTransferTool))`
-  (the compact_memory shape); teardown disposes.
-- NEW `.opencode/plugins/tests/block_transfer.smoke.mjs` (90 checks).
-- NEW `.opencode/plugins/tests/block_transfer.sandbox.smoke.mjs` (23 checks).
-- `.opencode/plugins/tests/tsconfig.json` — `files` += `../block_transfer.ts`.
-- `.opencode/plugins/tests/README.md` — the unit-5c section.
+`markersSection` in the `state_snapshot` planner init digest partitions the
+marker-sweep hits into LIVE-CLASS (`maintainer/` prefix, `.opencode/` prefix,
+or exactly `TODO.md` / `README.md` / `WIKI.md`) and DOC-CLASS (everything else),
+sorts each group by the line string, and emits LIVE first, then DOC. The
+20-line cap + `… (+<k> more)` steer, the sweep command, the tool description
+and args stay untouched. No new output line shape.
 
-## Behavior carried (byte-compatible vs the MAIN twin)
-The helper region, the description template literal, and the execute body were
-sliced VERBATIM from the MAIN twin by a generation script (the reader truncates
-the 9298-char description line; transcription-by-hand would have broken byte-
-identity) — same MODES set + no-default-mode guard, unified anchor rule + Closest-
-lines hint, ALL-DIGIT line-number refs, buffer semantics (`last_write` auto-store,
-`last_move_source`, COPY-replaces/APPEND-appends/PASTE-REPLACE-preserve, no-partial-
-state-on-rejection), all feedback-line formats (opLine/assemblyFeedback, the WRITE
-`old A..B -> new C..D, file now N line(s)` group, insertion suffixes), the
-multi-region + one-text REJECT, the overlap REJECT, same-file MOVE-with-shift
-(above/below/INSIDE legs), dst-checks-before-cut ordering, and the EOL/EOF
-hardening (items 3/4/5/6/7/8/10). v2 surface deviations only: JSON-schema input
-(required `[mode]`, refs as anyOf string|integer, every describe() text VERBATIM
-— 12/12 verified consumed by the generator), `{output: string}` return,
-setup-captured `ctx.location.directory` root (fallback `process.cwd()`), and
-`loadConfigRoots()` extended to support BOTH config shapes: the on-disk v1
-object form UNCHANGED + the v2 native array form `permissions:[{action,resource,
-effect}]` with LAST MATCH WINS (fork findLast), /** stripped, cross-shape dedupe
-— the config file itself NEVER edited.
+## MAIN files changed (unit 1)
 
-## One deliberate code delta (flagged)
-`let insertAfter: number = 0;` in the MOVE block — v1 left it UNINITIALIZED;
-tsgo (which never checks the v1 tools files) demands definite assignment.
-Typecheck-only, behavior identical (every sameFile path assigns before use).
-Noted in the file comment + commit body.
+- `.opencode/tools/state_snapshot.ts` — new `isLiveHit` helper + the
+  partition/sort in `markersSection` + the two header comments.
+- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — FX1 marker fixture is
+  now `WIKI.md` (`--main`, LIVE-CLASS) + the existing `loop/notes.md`
+  (`--now`, DOC-CLASS); new pin 21 asserts the LIVE hit prints BEFORE the
+  `loop/notes.md` DOC hit. Pin count 20 → 21. FX3 and its fixture marker-line
+  count untouched.
+- `agent/readme/repo_commands.md` §Marker sweep — one note: the digest re-
+  orders the sweep OUTPUT only (LIVE first, each group sorted); the ready-
+  made command unchanged.
 
-## Measured verification (all at the CLONE, post-commit state)
-- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360
-  PASS` UNCHANGED — PASS.
-- 12 v1 node smokes (`node .opencode/plugin/tests/*.smoke.mjs`) ALL PASS, incl.
-  `block_transfer.smoke.mjs` 132/132 + `block_transfer.sandbox.smoke.mjs`
-  76/76 pinning the STALE twin UNCHANGED — PASS.
-- ALL 11 v2 plugin smokes (`bun run <f>.smoke.mjs` from `.opencode/plugins/tests`)
-  final line `SMOKE: ALL PASS` — incl. the new 90-check + 23-check twins — PASS.
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/
-  plugins/tests/tsconfig.json` → exit 0 — PASS.
-- Clone `git status` clean at `1b0ebdb`; HEAD chain: 5434a93 → 1b0ebdb.
-- Exact verify commands + results in README section; one-shot re-run of every
-  suite against the committed tree (no EBUSY flakes seen this run — TODO #144
-  untouched).
+## Behavior changed
 
-## Inbox/TODO
-No new TODO entries. Findings submitted at close: 1 friction entry (block_transfer
-relative paths resolve against the SESSION CWD — cross-repo needs absolute paths
-— `agent/agent_feedback.md`), 1 knowledge entry (deny-matrix fixtures must sit
-OUTSIDE the scratchpad config root; fixture-repo plugin copies read their OWN
-config — `agent/knowledge/knowledge_inbox.md`), 1 memory entry (byte-exact pin
-discipline — `agent/memory/worker/memory_inbox.md`). Loop-log DONE line written.
+The `## markers` section window is now ordered LIVE-first, so live
+maintainer/TODO markers can no longer be crowded out by the DOC-heavy `agent/`
+hits (MAIN sweep measured 143 hits = 18 LIVE + 125 DOC; the old window carried
+ZERO live hits).
 
-## Deliberately omitted (per spec)
-- Refreshing the clone's stale v1 twin + repinning its 132+76 v1 smokes — TODO
-  #143 (planner decision).
-- Live v2 acceptance (maintainer domain); `session_info` (native); auto_resume
-  v2 (HELD queue item).
+## Deviation from the suggested scope (measured, planner to curate)
 
-## Blockers
-None.
+The spec suggested the FX1 fixture `maintainer/live_note.md`. That fixture
+CANNOT pin the ordering: the sweep emits hits in its path ARGUMENT order, so a
+`maintainer/` hit already precedes the `loop/notes.md` DOC line pre-change
+(the pin written with it passed 21/21 against the UNCHANGED tool — measured).
+The worker used a `WIKI.md` fixture (LIVE-CLASS per the spec's own list, prints
+AFTER `loop/` raw) → the pin FAILS pre-change, PASSES after. Logged to
+`todo_inbox.md` (2026-10-22_18-41) for the planner to correct the spec text.
 
-## Lesson
-Verbatim-slice generation (script assembling the new file from the design-of-
-record file) beats hand-transcription when the source has lines the reader
-truncates — and the extractor's count asserts (12 describes, anchor lines) caught
-every drift attempt.
+## Measured verification (MAIN)
+
+- Pre-change baseline: `node .opencode/plugin/tests/state_snapshot.smoke.mjs`
+  → `ALL PASS (20/20)`; probe → `PROBE handover: 360/360 PASS` (exit 0).
+- Fixture+pin before the tool edit → exit 1, `FAIL markers: the LIVE-class
+  WIKI.md hit prints BEFORE the DOC-class loop/notes.md hit [{live:1,doc:0}]`
+  (the pin discriminates).
+- After the tool edit → `STATE_SNAPSHOT_SMOKE: ALL PASS (21/21)`, exit 0.
+- Full v1 gate → 12/12 suites ALL PASS (state_snapshot 21/21, the other
+  counts unchanged: auto_resume 170/170, block_transfer 151/151, sandbox
+  76/76, compact_memory 110/110, context_recovery 17/17, context_trim 40/40,
+  ctx_gauge 3/3, gauge_core ALL PASS, intercept_observer 96/96, loop_log
+  69/69, submit 32/32).
+- Probe AFTER the edit → `PROBE handover: 360/360 PASS`, exit 0 — count
+  IDENTICAL to the pre-edit capture.
+- `git status` before the MAIN commit: only the task files + the inbox files
+  dirty; `maintainer/SCRATCH_PAD.md` + `opencode.jsonc` are the maintainer's
+  own dirty files — NOT staged, NOT committed.
+
+## TODO / inbox entries
+
+- No `TODO.md` entry added (the unit is idea-driven, no TODO id).
+- `todo_inbox.md` 2026-10-22_18-41 — the spec-fixture gap above.
+- `agent/knowledge/knowledge_inbox.md` 2026-10-22_18-41 — the sweep's raw
+  path ARGUMENT order fact.
+- `agent/memory/worker/memory_inbox.md` 2026-10-22_18-41 — prove a new pin
+  FAILS on the unchanged tool before implementing.
+
+## Deliberately omitted
+
+No `doc-quotes: N` counter line (spec's deliberate non-change); no tool
+description/args change (the probe pins the surface); the live host is not
+restarted (`.opencode/tools/*.ts` registers at the NEXT host start — the
+behavior is smoke-pinned, no live acceptance in this unit).
+
+## Remaining (unit 2 — clone `C:/Users/Wasiejen/Repos/opencode-agent-v2`, branch `migration`)
+
+- `.opencode/tools/state_snapshot.ts` ← copy of MAIN (must stay byte-identical
+  to MAIN — `cmp -s`).
+- `.opencode/plugins/state_snapshot.ts` (v2) — the twin edit (semicolon style).
+- `.opencode/plugins/tests/state_snapshot.smoke.mjs` — FX1 `WIKI.md` fixture
+  (already added: 1 write) + the ordering pin + pin (12) line-count 46→47.
+- `agent/readme/repo_commands.md` — the twin §Marker sweep note.
+- Verify: `bun run state_snapshot.smoke.mjs` ALL PASS + the other v2 smokes,
+  `tsgo -p .opencode/plugins/tests/tsconfig.json` exit 0, twin `cmp -s` PASS.
+
+Baseline for the clone unit: HEAD `4045331`, clean at session start.

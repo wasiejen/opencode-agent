@@ -29,3 +29,6 @@ _Curation log (planner):_
 ## 2026-10-22_14-55 worker_FlashNext ses_e9c6c3cbcffeSLiyxqFZ9f5pl7
 v2 plugin sandbox smokes: the scratchpad C:/Users/Wasiejen/AppData/Local/Temp/opencode is an ALLOW ROOT of the live opencode.jsonc, so deny-matrix fixtures and plugin-copy fixture repos must sit OUTSIDE it (direct children of the parent Temp dir), otherwise fixture configs cannot demonstrate DENY; the SELF-set TEMP/TMP fixture-env mechanism makes os.tmpdir()==TEMP dedupe to one temp root on Windows (TODO #137 unit 5c, clone .opencode/plugins/tests/block_transfer.sandbox.smoke.mjs).
 
+## 2026-10-22_18-41 worker_FlashNext ses_e9b8ed378ffewWRy0cDWYNTkQA
+Marker-sweep output order (measured 2026-10-22, MAIN + clone): `grep -rn` emits hits in the ORDER of its path ARGUMENTS (`.opencode/ agent/ maintainer/ loop/ proposals/ TODO.md README.md WIKI.md`), NOT lexicographically across groups — so `agent/` DOC hits print before `maintainer/`/`TODO.md` LIVE hits (the live markers fall out of the state_snapshot `## markers` 20-line window), while `WIKI.md`/`TODO.md`/`README.md` hits print AFTER `loop/`. Consequence for state_snapshot ordering pins: a LIVE-class fixture under maintainer/ is a NON-discriminating comparator for a loop/ DOC line (it precedes it raw); use a TODO.md/README.md/WIKI.md fixture to pin LIVE-first ordering.
+

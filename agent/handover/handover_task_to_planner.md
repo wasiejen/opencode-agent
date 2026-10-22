@@ -1,122 +1,84 @@
-# Worker summary — TODO #137 unit 5b: ctx_gauge + state_snapshot + dev helper ported to v2 (clone `migration`)
+# Worker summary — TODO #137 unit 5c: block_transfer ported to v2 (clone `migration`)
 
 Status: COMPLETE
 
 ## Task and scope
-Ported the three read-only/dev tools to v2 plugin-registered tools: the gauge
-readout (`ctx_gauge`), the planner init digest (`state_snapshot`), and the tool-
-context dump (`dev_get_tool_context_contents`). Digest byte-shape and gauge
-readout forms carried from the v1 twins (the clone `.opencode/tools/` files,
-byte-identical to MAIN at baseline). All code changes landed in the CLONE
-`C:\Users\Wasiejen\Repos\opencode-agent-v2` (branch `migration`, baseline
-`a5da17b` — stayed on the checkout). MAIN repo: this summary only; nothing
-else touched. DO-NOT-touch list (maintainer/**, clone `opencode.jsonc`,
-`.opencode/tools/**`, `.opencode/plugin/**`, `.opencode/plugin-unported-v1/**`,
-`plugins/intercept_observer.ts`, `context_family.ts`, `context_trim_v2.ts`,
-`compact_memory.ts`, 5a's `loop_log.ts`/`submit.ts`, the live DB) — UNBROKEN:
-`git status` shows no edit to any of them; the v1 twins stayed inert design-of-
-record (their 12 v1 smokes still pin them).
+Ported `block_transfer` to v2 as a plugin-registered tool in the CLONE
+`C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`). The design of
+record = the MAIN repo `.opencode/tools/block_transfer.ts` (1034 lines, the
+current v1 behavior incl. the #140/#142 hardening). The CLONE's stale v1 twin
+(845 lines, TODO #143) was NOT touched and NOT the baseline. The MAIN repo
+itself was untouched except this summary.
 
-## Files changed (CLONE, 3 checkpoint commits)
-- `8e630f1` — NEW `.opencode/plugins/ctx_gauge.ts` (id `ctx_gauge`) + NEW
-  `.opencode/plugins/tests/ctx_gauge.smoke.mjs` (11 pins) + tsconfig `files`
-  entry + README section.
-  The tool wraps the SHARED gauge core via the context_family relative spec
-  `"../plugin/scripts/gauge.mjs"`: `formatGauge(readGauge(undefined, sid))`;
-  `kind:"db-error"` → ` — <error>` APPENDED (never a stack). The budget suffix +
-  the `(unlisted)` marker ride the core's `compactionsLeftSuffix` — NOTHING
-  re-derived. Deviation logged in-file: the v1 bare-string return becomes the
-  v2 `{output}` result; NO repo-root capture needed (the core resolves its own
-  paths).
-- `ef3ebbb` — NEW `.opencode/plugins/state_snapshot.ts` (id `state_snapshot`) +
-  NEW `state_snapshot.smoke.mjs` (24 pins) + tsconfig entry + README section.
-  All six sections carried: `## git` (`execFileSync git log --oneline -20`),
-  `## nap` (first 40 + `… (read … for the rest)` steer), `## todo` (count +
-  LAST 15 `#<id> — <60-char trunc>` headers), `## maintainer` (inbox first-
-  lines max 5 + `… (+k more)` + priority first 10), `## proposals` (root `.md`
-  names), `## markers` (`execFileSync("bash", ["-c", MARKER_SWEEP])` — the sweep
-  VERBATIM from v1), `(none)` empties, fail-closed lines, the 60-line hard cap
-  (LAST section's content lines trim from the end backwards; headers + steers
-  preserved), and the EXACT soft-gate refusal line for a non-planner agent.
-  READ-ONLY (pinned: the fixture tree byte-identical around a run). Deviation
-  logged: the root rides the setup-captured `dir = ctx.location.directory`
-  (context_family.ts:497 precedent) — the v1 execute-time `context.directory`
-  has NO v2 carrier.
-- `45bb52e` — NEW `.opencode/plugins/dev_get_tool_context_contents.ts` (same
-  id) + NEW `dev_get_tool_context_contents.smoke.mjs` (13 pins) + tsconfig
-  entry + README section. ONE plain string (the v1 2026-09-27 discipline kept).
-  Dump fields = the v2 `ToolContext` keys that EXIST (`contextKeys` +
-  `sessionID`/`agent`/`messageID`/`id`/`progress`/`signal`, `progress` →
-  `<function>`). The v1-only legs (`callID`,`extra`,`messages`,`metadata`,`ask`,
-  `directory`,`worktree`,`client`) → NO keys invented; absence rides the
-  runtime `contextKeys`. Non-serializable → the v1 keys-only fallback line,
-  NEVER a throw.
-- `8e630f1..45bb52e` — `.opencode/plugins/tests/tsconfig.json` (`files` +3) and
-  `.opencode/plugins/tests/README.md` (+3 sections).
+## Files changed (CLONE, commit `1b0ebdb`)
+- NEW `.opencode/plugins/block_transfer.ts` (1276 lines) — id `block_transfer`,
+  registered via `await ctx.tool.transform((editor) => editor.add(blockTransferTool))`
+  (the compact_memory shape); teardown disposes.
+- NEW `.opencode/plugins/tests/block_transfer.smoke.mjs` (90 checks).
+- NEW `.opencode/plugins/tests/block_transfer.sandbox.smoke.mjs` (23 checks).
+- `.opencode/plugins/tests/tsconfig.json` — `files` += `../block_transfer.ts`.
+- `.opencode/plugins/tests/README.md` — the unit-5c section.
 
-## Behavior changed
-Three new tools become available to v2 plugin-discovery (`ctx.tool.transform` +
-`editor.add`, teardown `dispose()`, no `opencode.jsonc` change — the 3a auto-
-discovery precedent). Live v2 acceptance is the maintainer's domain (unchanged
-here). `state_snapshot` now gates on the v2 `context.agent`; its repo root is
-the setup capture, not an execute-time context field.
+## Behavior carried (byte-compatible vs the MAIN twin)
+The helper region, the description template literal, and the execute body were
+sliced VERBATIM from the MAIN twin by a generation script (the reader truncates
+the 9298-char description line; transcription-by-hand would have broken byte-
+identity) — same MODES set + no-default-mode guard, unified anchor rule + Closest-
+lines hint, ALL-DIGIT line-number refs, buffer semantics (`last_write` auto-store,
+`last_move_source`, COPY-replaces/APPEND-appends/PASTE-REPLACE-preserve, no-partial-
+state-on-rejection), all feedback-line formats (opLine/assemblyFeedback, the WRITE
+`old A..B -> new C..D, file now N line(s)` group, insertion suffixes), the
+multi-region + one-text REJECT, the overlap REJECT, same-file MOVE-with-shift
+(above/below/INSIDE legs), dst-checks-before-cut ordering, and the EOL/EOF
+hardening (items 3/4/5/6/7/8/10). v2 surface deviations only: JSON-schema input
+(required `[mode]`, refs as anyOf string|integer, every describe() text VERBATIM
+— 12/12 verified consumed by the generator), `{output: string}` return,
+setup-captured `ctx.location.directory` root (fallback `process.cwd()`), and
+`loadConfigRoots()` extended to support BOTH config shapes: the on-disk v1
+object form UNCHANGED + the v2 native array form `permissions:[{action,resource,
+effect}]` with LAST MATCH WINS (fork findLast), /** stripped, cross-shape dedupe
+— the config file itself NEVER edited.
 
-## Measured verification (workdir = the CLONE)
-- Gate probe: `node .opencode/plugin/probes/handover_probe.mjs` →
-  `PROBE handover: 360/360 PASS`, exit 0 — UNCHANGED baseline.
-- All 12 v1 node smokes, each `node .opencode/plugin/tests/<f>.smoke.mjs`
-  (auto_resume 170/170, block_transfer.sandbox 76/76, block_transfer 132/132,
-  compact_memory 110/110, context_recovery 17/17, context_trim 40/40, ctx_gauge
-  3/3, gauge_core, intercept_observer 85/85, loop_log 69/69, state_snapshot
-  20/20, submit 31/31) → ALL PASS, exit 0 (the v1 twins' pins intact; NOT
-  repurposed).
-- All 7 v2 plugin smokes, `bun run <f>.smoke.mjs` from
-  `.opencode/plugins/tests` (smoke 52-pin intercept, context_family, compact_memory,
-  context_trim_v2, loop_log, submit, + the 3 new) → `SMOKE: ALL PASS`, exit 0.
-- Exact typecheck command: `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/
-  tsgo.exe -p tsconfig.json` (run in `.opencode/plugins/tests`) → no output,
-  **PASS** (exit 0), with all three new plugins in `files`. Re-verified after
-  the last commit: `... -p .opencode/plugins/tests/tsconfig.json` from the clone
-  root → PASS (exit 0).
-- New smoke pin counts: ctx_gauge 11, state_snapshot 24, dev helper 13.
+## One deliberate code delta (flagged)
+`let insertAfter: number = 0;` in the MOVE block — v1 left it UNINITIALIZED;
+tsgo (which never checks the v1 tools files) demands definite assignment.
+Typecheck-only, behavior identical (every sameFile path assigns before use).
+Noted in the file comment + commit body.
 
-## Working-tree status
-`clean` in the CLONE at `45bb52e` (branch `migration`). MAIN repo: this summary
-file written UNCOMMITTED (the planner owns MAIN bookkeeping/commits); MAIN also
-shows a pre-existing `maintainer/SCRATCH_PAD.md` modification — not mine,
-untouched.
+## Measured verification (all at the CLONE, post-commit state)
+- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360
+  PASS` UNCHANGED — PASS.
+- 12 v1 node smokes (`node .opencode/plugin/tests/*.smoke.mjs`) ALL PASS, incl.
+  `block_transfer.smoke.mjs` 132/132 + `block_transfer.sandbox.smoke.mjs`
+  76/76 pinning the STALE twin UNCHANGED — PASS.
+- ALL 11 v2 plugin smokes (`bun run <f>.smoke.mjs` from `.opencode/plugins/tests`)
+  final line `SMOKE: ALL PASS` — incl. the new 90-check + 23-check twins — PASS.
+- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/
+  plugins/tests/tsconfig.json` → exit 0 — PASS.
+- Clone `git status` clean at `1b0ebdb`; HEAD chain: 5434a93 → 1b0ebdb.
+- Exact verify commands + results in README section; one-shot re-run of every
+  suite against the committed tree (no EBUSY flakes seen this run — TODO #144
+  untouched).
 
-## Commits (clone, on top of baseline a5da17b)
-`8e630f1` ctx_gauge · `ef3ebbb` state_snapshot · `45bb52e` dev helper. No
-push (agents never push).
+## Inbox/TODO
+No new TODO entries. Findings submitted at close: 1 friction entry (block_transfer
+relative paths resolve against the SESSION CWD — cross-repo needs absolute paths
+— `agent/agent_feedback.md`), 1 knowledge entry (deny-matrix fixtures must sit
+OUTSIDE the scratchpad config root; fixture-repo plugin copies read their OWN
+config — `agent/knowledge/knowledge_inbox.md`), 1 memory entry (byte-exact pin
+discipline — `agent/memory/worker/memory_inbox.md`). Loop-log DONE line written.
 
-## Findings for the planner (TODO entry work NOT mine — no clone TODO.md edit)
-1. `agent/readme/repo_commands.md` (clone AND MAIN) names "this probe + the
-   smoke suite" as the standard gate but documents NO smoke-suite commands
-   (v1 = `node .opencode/plugin/tests/<f>.smoke.mjs` from the root; v2 = `bun
-   run <f>.smoke.mjs` in `.opencode/plugins/tests`); I had to derive them from
-   the two tests READMEs. Worth a docs entry.
-2. The clone's v1 twin `.opencode/tools/dev_get_tool_context_contents.ts`
-   carries the v1-only legs (`callID`/`extra`/`ask`/…); the v2 dump has NO
-   carrier for them — expected deviation, already logged in the plugin header
-   (mirrors the 5a `submit` twin note, TODO #143 twin staleness).
-3. Verified nuance: the dev-helper keys-only fallback fires ONLY when a DUMP-
-   CARRIED field is unserializable (a `contextKeys`-only string can never trip
-   `JSON.stringify`); pinned that way (`signal` circular).
-
-## Deliberately omitted / out of scope
-- `block_transfer` v2 (unit 5c) and `session_info` (native — no port), per the
-  spec's out-of-scope list.
-- Live v2 acceptance (maintainer); the v1-side reduction/dual-merge unit; no
-  `opencode.jsonc` registration.
-- No MAIN `TODO.md` / `todo_inbox.md` writes (the planner curates); findings
-  above go through the `submit` tool's todo channel instead — see Friction.
+## Deliberately omitted (per spec)
+- Refreshing the clone's stale v1 twin + repinning its 132+76 v1 smokes — TODO
+  #143 (planner decision).
+- Live v2 acceptance (maintainer domain); `session_info` (native); auto_resume
+  v2 (HELD queue item).
 
 ## Blockers
 None.
 
-## Lessons
-- A v2 plugin smoke can steer the SHARED gauge core (`setDbPath` /
-  `setBudgetFileForTest`) because the plugin's relative `.mjs` import and the
-  smoke's absolute `pathToFileURL` import resolve to ONE module instance — the
-  fixture-DB steering needs no plugin test hook (context_family precedent).
+## Lesson
+Verbatim-slice generation (script assembling the new file from the design-of-
+record file) beats hand-transcription when the source has lines the reader
+truncates — and the extractor's count asserts (12 describes, anchor lines) caught
+every drift attempt.

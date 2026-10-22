@@ -26,3 +26,6 @@ _Curation log (planner):_
 
 - 2026-10-22 (planner-20, ITER-20 maintenance pass): 2026-10-22_05-23 (v2 request-draft hook + LLM.Message + synthetic + hooks) + 2026-10-22_10-24 (v2 DB table pair + bun:sqlite/execFileSync facts) + 2026-10-22_11-14 (stale clone v1 twins → anchor on MAIN) → all cured into `plugin_tools/2026-10-16_v2-plugin-harness-and-config.md` (3 new sections, tails matched prior Keys anchors). Inbox EMPTIED.
 
+## 2026-10-22_14-55 worker_FlashNext ses_e9c6c3cbcffeSLiyxqFZ9f5pl7
+v2 plugin sandbox smokes: the scratchpad C:/Users/Wasiejen/AppData/Local/Temp/opencode is an ALLOW ROOT of the live opencode.jsonc, so deny-matrix fixtures and plugin-copy fixture repos must sit OUTSIDE it (direct children of the parent Temp dir), otherwise fixture configs cannot demonstrate DENY; the SELF-set TEMP/TMP fixture-env mechanism makes os.tmpdir()==TEMP dedupe to one temp root on Windows (TODO #137 unit 5c, clone .opencode/plugins/tests/block_transfer.sandbox.smoke.mjs).
+

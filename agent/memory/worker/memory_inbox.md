@@ -6,3 +6,6 @@ First curation of this lane — all 10 entries cured into the NEW
 2026-09-30_16-46 → WM-01; 2026-10-01_04-09 → WM-02; 2026-10-05_02-34 → WM-03;
 2026-10-21_21-59 → WM-04; 2026-10-22_01-34 → WM-05; 04-07 → WM-06; 04-28 → WM-07;
 08-18 → WM-08; 11-01 → WM-09; 14-03 → WM-10. Inbox EMPTIED.
+### 2026-10-22_14-55 worker_FlashNext ses_e9c6c3cbcffeSLiyxqFZ9f5pl7
+Byte-exact smoke pinning (observed, high confidence, port work): derive expected feedback strings from the code's format functions first, and design fixtures to satisfy the tool's own anchor-uniqueness rule (prefix anchors match shorter twins, e.g. 'X' matches X1..X5); new-file writes have NO trailing newline while existing files keep their own EOL — mispinned both legs 4 times in unit 5c before re-running. Evidence: clone block_transfer.smoke.mjs fix iterations 2026-10-22. Review trigger: writing any new byte-exact smoke.
+

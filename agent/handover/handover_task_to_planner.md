@@ -11,7 +11,7 @@ Built `agent/scripts/git/port_sync.cjs` (MAIN `main` → clone `migration` sync 
 |---|---|
 | `agent/scripts/git/port_sync.cjs` | NEW — dry run (conflict set + per-path resolution plan + exact commands + `zero-mutation: PROVEN` for BOTH trees) / `--apply` (`merge --no-commit FETCH_HEAD` → `--theirs` resolutions → `opencode.jsonc` kept branch-local → discovery guard → clone gate → `gate: FAIL` + `git merge --abort`, or `gate: PASS` + `merge staged, not committed`) / `--main` `--clone` path overrides / `--no-gate`. Refuses on branch mismatch or a dirty clone. |
 | `agent/scripts/git/port_sync.selftest.cjs` | NEW — throwaway git repo pair (base commit → clone BEFORE the MAIN-side commit → diverge both sides), 84 checks. |
-| `agent/scripts/git/README.md` | NEW — purpose / what it does / excluded / env overrides / usage (13 lines). |
+| `agent/scripts/git/README.md` | NEW — purpose / what it does / excluded / env overrides / usage (11 lines, the <=20 cap) |
 | `agent/scripts/README.md` | categories row for `git/`. |
 
 ## Behavior added

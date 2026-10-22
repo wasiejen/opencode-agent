@@ -1,151 +1,131 @@
-# Worker summary — v2 model-reader port, UNIT 1 (session MODEL read on `session_v2`)
+# Worker summary — state_snapshot digest: LIVE-class marker hits sort first
 
-Status: LANDED (unit 1 complete; unit 2 = the token-mass legs, not started).
-Session: ses_e9fa32e59ffemX2wEPTSI2WMYJ (`worker_FlashNext`,
-`strata/qwen3.8-flash-next-coder-iq1_m`), looprun `autorun-2026-10-01_03-27`.
-Repo: clone `C:/Users/Wasiejen/Repos/opencode-agent-v2`, branch `migration`
-(verified `git branch -v` at start: `* migration 28e4fa5 [ahead 3]`).
-Handover path used: `agent/handover/handover_task_to_planner.md` IN THE CLONE
-(the clone carries its own `agent/handover/` harness — the clone's convention
-per spec DoD 5). The main repo was NOT edited (read-only per spec).
+Status: LANDED (both units verified + committed; the clone-side commit hash
+is recorded below after the clone commit landed).
+Session: `ses_e9b8ed378ffewWRy0cDWYNTkQA` (`worker_FlashNext`), looprun
+`autorun-2026-10-01_03-27`. Spec: `agent/handover/specs/2026-10-22_state-
+snapshot-marker-order.md` (= `agent/handover/handover_task.md`).
 
 ## Task and scope
-Per the main repo's spec `agent/handover/handover_task.md`: make the shared
-session-DB reader resolve `id` + `model` + the resolved LIMIT for a session
-row living in `session_v2`, pin one read form per shape in the clone's
-smokes, and wire the clone plugin's `model` log field through that reader
-(`unknown` otherwise, 8-field pipe shape byte-compat).
-NOT touched: the token-mass / context-mass SQL legs (unit 2), the v2 tools
-estate, the clone root `opencode.jsonc`, `maintainer/**`, the live global DB.
 
-## Files changed (clone, 3 + this handover)
-1. `.opencode/plugin/scripts/gauge.mjs` — the SESSION-ROW leg is now
-   TABLE-AWARE: `sessionRow`/`sessionTablesIn` read `session_v2` FIRST, then
-   `session` (sqlite_master probe); an id present in BOTH → `session_v2`
-   wins; the newest-session form across both tables takes the greater
-   `time_updated`; a DB with NEITHER session table still throws (the v1
-   db-error outcome preserved). The v1 SQL goes out BYTE-IDENTICAL on a
-   v1-only DB (`SQL_NEWEST_SESSION`/`SQL_SESSION_BY_ID` are now the
-   `session` instantiation of the table templates). The `no-total` result
-   shape gains `window` = `resolveWindow(modelId)` — the LIMIT half (config-
-   first, name-marker fallback); `modelId` was already the `{"id":…}`
-   unwrap via `parseModelId`. The TOKEN-mass legs (`SQL_FINISHED_STEP*`,
-   the spawn MARKER SQL) are UNCHANGED; that leg degrades to null (no-total)
-   only when the v1 `message`/`session` tables are absent.
-2. `.opencode/plugin/tests/gauge_core.smoke.mjs` — +5 pins (27 → 32), one
-   per read form, names carry the `v2unit1` marker: (1) v1 `session` table
-   read (sid + model id + mass + window), (2) `session_v2` read (sid +
-   JSON-unwrapped model + `window:120000`, lands as no-total), (3) an id
-   in NEITHER table (the existing not-found outcome), (4) the coexisting
-   DB newest form (the v2 row's greater `time_updated` wins), (5) a DB with
-   no session table (db-error preserved). Fixture DBs live under the
-   scratchpad (`freshSandbox("gauge_v2_read")`) — NEVER the live DB.
-3. `.opencode/plugins/intercept_observer.ts` — the model field now
-   resolves: value import `readGauge` from `../plugin/scripts/gauge.mjs`,
-   the v1 pattern restored verbatim (`getModel` + TTL-bounded
-   `modelCache`, `MODEL_CACHE_TTL_MS = 60_000`), called AFTER the "nothing
-   to log" gate and BEFORE the (4b) hard-stop throw, so intercept-error
-   lines carry the real id too. Empty sid → `unknown` (no cross-session
-   fallback); any lookup failure → `unknown`, never a throw. Header note
-   (the old "reader port is OUT of this unit") replaced.
-4. `.opencode/plugins/tests/smoke.mjs` (bun) + `README.md` — 45 → 46
-   checks: the gauge core is STEERED at a scratchpad FIXTURE DB
-   (`fx_gauge_v2.db`) carrying a `session_v2` row for the mock sid (module
-   identity: the smoke imports the same `gauge.mjs` URL the plugin imports,
-   then `setDbPath`); C1 and the whole-log INV now pin the model field =
-   `smoke-v2-model-120K`; a new pin fires the hook with an id present in
-   NEITHER table → the field stays `unknown`. Byte-compat of the 8-field
-   shape re-pinned unchanged.
+`markersSection` in the `state_snapshot` planner init digest partitions the
+marker-sweep hits into LIVE-CLASS (`maintainer/` prefix, `.opencode/` prefix,
+or exactly `TODO.md` / `README.md` / `WIKI.md`) and DOC-CLASS (everything
+else), sorts each group by the line string, and emits LIVE first, then DOC.
+The 20-line cap + `… (+<k> more)` steer, the sweep command, the tool
+description and args are untouched. No new output line shape, no new header
+or steer text.
+
+## Files changed
+
+MAIN (commit `97714b5`):
+- `.opencode/tools/state_snapshot.ts` — new `isLiveHit` helper + the
+  partition/sort in `markersSection` + the two header comments (206 → 234 lines).
+- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — the FX1 marker fixture is
+  now `WIKI.md` (`--main`, LIVE-CLASS) alongside `loop/notes.md` (`--now`,
+  DOC-CLASS); new pin 21 asserts the LIVE hit prints BEFORE the `loop/notes.md`
+  DOC hit. Pins 20 → 21. FX3 + its fixture marker-line count untouched.
+- `agent/readme/repo_commands.md` §Marker sweep — the note: the digest re-
+  orders the sweep OUTPUT only; the ready-made command unchanged.
+
+Clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`):
+- `.opencode/tools/state_snapshot.ts` — copied from MAIN (byte-identical, 234
+  lines, `cmp -s` PASS after the change).
+- `.opencode/plugins/state_snapshot.ts` (v2) — the twin edit in the file's
+  semicolon style: `isLiveHit` + the partition/sort + the markers header
+  comment + a header note in the CARRIED block (265 → 293 lines).
+- `.opencode/plugins/tests/state_snapshot.smoke.mjs` — FX1 `WIKI.md` fixture
+  + the ordering pin + pin (12) FX1 digest line count 46 → 47 (the fixture
+  adds one sweep hit) + the header-comment line for the pinned contract.
+- `agent/readme/repo_commands.md` — the twin §Marker sweep note (identical text).
 
 ## Behavior changed
-- Gauge/`ctx_gauge`/`context_trim` session reads on v2 sessions resolve
-  sid + model id + the resolved limit instead of `unknown`/empty. The
-  readout line format is UNCHANGED (`formatGauge` ignores `window` when
-  `!ok`); the "N compactions left" suffix now keys off the v2 row's model.
-- Intercept log lines: the `model` slot carries the real model id when
-  resolvable, `unknown` otherwise (the 2026-10-21 byte-compat ruling
-  ends here for that field only).
-- Regression note (intentional): a v1-shaped DB that LACKS the `message`
-  table now returns `no-total` with the session row resolved, where v1
-  returned `db-error`.
 
-## Measured verification (exact commands, PASS/FAIL counts)
-Baseline (measured FRESH at `28e4fa5`, before any edit):
-- `node .opencode/plugin/probes/handover_probe.mjs` → exit 1, 0 checks:
-  `ERR_MODULE_NOT_FOUND … .opencode/plugin/ctx_watchdog.ts` (pre-existing:
-  commit `5516a83` moved the unported v1 plugin sources out of `.opencode/
-  plugin/`; the probe still imports them) — RED at baseline.
-- `node .opencode/plugin/tests/<11>.smoke.mjs` (auto_resume, block_transfer,
-  block_transfer.sandbox, compact_memory, context_recovery, context_trim,
-  ctx_gauge, intercept_observer, loop_log, state_snapshot, submit) → 0
-  PASS / 0 FAIL each: same pre-existing `ERR_MODULE_NOT_FOUND` for the
-  moved v1 sources — RED at baseline.
-- `node .opencode/plugin/tests/gauge_core.smoke.mjs` → 27 PASS / 0 FAIL,
-  `GAUGE_CORE_SMOKE: ALL PASS` — GREEN.
-- `bun run smoke.mjs` (in `.opencode/plugins/tests/`) → 45 PASS / 0 FAIL,
-  `SMOKE: ALL PASS` — GREEN.
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p tsconfig.json`
-  → exit 0, 0 error lines — GREEN.
+The `## markers` window is LIVE-first, so live maintainer/TODO markers can
+no longer be crowded out by the DOC-heavy `agent/` hits. MAIN sweep measured
+143 hits = 18 LIVE + 125 DOC; the old 20-line window carried ZERO live hits.
 
-After (`1b7a202`): probe exit 1 (output BYTE-IDENTICAL to baseline,
-`diff` clean); the 11 untouched smokes BYTE-IDENTICAL to baseline (`diff`
-clean, 0 PASS/0 FAIL each); `gauge_core.smoke.mjs` 32 PASS / 0 FAIL →
-PASS; `bun run smoke.mjs` 46 PASS / 0 FAIL → PASS; tsgo exit 0, 0 error
-lines → PASS. No new red anywhere; both GREEN harnesses grew their pins
-(27→32, 45→46).
+## Deviation from the suggested scope (measured — planner to curate)
 
-## Commits (branch `migration`, named-path staging, no `git add -A`)
-- `4c0e607` port gauge session-row read to session_v2 (table-aware…)
-- `1b7a202` wire intercept observer model field through the gauge session
-  reader (unknown fallback kept)
-- final (this handover) — the hash lands in the planner's follow-up bookkeeping
-  commit in the MAIN repo, never here.
-- Deviation (recorded): the session-activity DONE line + the two `submit`
-  inbox entries were written and committed in the MAIN repo
-  (`loop/autorun-2026-10-01_03-27/loop_log.md`,
-  `agent/agent_feedback.md`, `agent/knowledge/knowledge_inbox.md`) — the
-  role-mandated activity/friction channels; NO main-repo code, gate file,
-  `TODO.md`, prompt, or NAP was touched.
+The spec suggested the FX1 fixture `maintainer/live_note.md`. That fixture
+cannot pin the ordering: `grep -rn` emits hits in its path ARGUMENT order, so
+a `maintainer/` hit already precedes the `loop/notes.md` DOC line pre-change.
+Measured: the pin written with that fixture passed `ALL PASS (21/21)` against
+the UNCHANGED tool (vacuous pin). The worker used a `WIKI.md` fixture instead
+(LIVE-CLASS per the spec's own list, prints AFTER `loop/` raw), which yields
+the FAIL→PASS sequence that pins the behavior. Logged to `todo_inbox.md`
+(2026-10-22_18-41); the spec text still names the weaker fixture.
 
-Working tree at writing time: clean for the tracked files above (this file
-becomes the third commit).
+Clone-side pin placement: label `(23)` sits inside the FX1 block (after pin
+(10)) so the existing `(11)`..`(22)` labels — incl. the FX3 pins the spec
+forbade touching — stay intact; the label is append-only, not positional.
 
-## Inbox / findings
-- Two `submit` entries fired (2026-10-22_00-08): FEEDBACK — `block_transfer`
-  is sandboxed to the launching CWD repo + Windows temp, so it has NO
-  access to a sibling clone repo (`edit`/`write` do reach it); a truncated
-  path typo escalated to maintainer approval instead of a plain sandbox
-  error. KNOWLEDGE — the same fact + the "verify path completeness before
-  a write call" rule.
-- No `TODO.md`/`todo_inbox.md` entries: no discrepancy inside unit scope.
-  The probe/v1-smoke red-at-baseline is PRE-EXISTING and already tracked
-  by the v2 migration's later units (the tools estate), not by this one.
+## Measured verification
+
+MAIN:
+- Baseline (pre-edit): smoke `ALL PASS (20/20)`; probe `PROBE handover:
+  360/360 PASS`, exit 0.
+- Fixture+pin before the tool edit: exit 1 —
+  `FAIL  markers: the LIVE-class WIKI.md hit prints BEFORE the DOC-class
+  loop/notes.md hit  [{"live":1,"doc":0}]` (the pin discriminates).
+- `node .opencode/plugin/tests/state_snapshot.smoke.mjs` after the tool edit
+  → `STATE_SNAPSHOT_SMOKE: ALL PASS (21/21)`, exit 0 — PASS.
+- `node .opencode/plugin/tests/*.smoke.mjs` (12 files) → 12/12 `ALL PASS`,
+  the other suites' counts unchanged (auto_resume 170/170, block_transfer
+  151/151, sandbox 76/76, compact_memory 110/110, context_recovery 17/17,
+  context_trim 40/40, ctx_gauge 3/3, gauge_core ALL PASS,
+  intercept_observer 96/96, loop_log 69/69, submit 32/32) — PASS.
+- `node .opencode/plugin/probes/handover_probe.mjs` after the edit →
+  `PROBE handover: 360/360 PASS`, exit 0 — count IDENTICAL to the pre-edit
+  capture — PASS.
+
+Clone (`C:/Users/Wasiejen/Repos/opencode-agent-v2`, branch `migration`):
+- Pre-change plugin + the edited smoke (`bun run
+  .opencode/plugins/tests/state_snapshot.smoke.mjs`) → exit 1 —
+  `FAIL  (23) markers ordering ... [[2,0]]` (raw order: DOC at 0, LIVE at 2),
+  26 PASS — the pin discriminates.
+- Edited v2 plugin → `SMOKE: ALL PASS`, exit 0, 27 PASS lines (pins 26 → 27)
+  — PASS.
+- Every `*.mjs` in `.opencode/plugins/tests` (11 files) run with `bun run` →
+  all `SMOKE: ALL PASS`, loop exit 0 — PASS.
+- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p
+  .opencode/plugins/tests/tsconfig.json` from the clone root → exit 0,
+  0 output lines — PASS.
+- `cmp -s .opencode/tools/state_snapshot.ts
+  ../opencode-agent/.opencode/tools/state_snapshot.ts` → identical (234 lines
+  each) — PASS.
+- `git status` of the clone before its commit: only the 4 task files dirty.
+
+Working tree: MAIN clean except the maintainer's own
+`maintainer/SCRATCH_PAD.md` + `opencode.jsonc` (never staged, never committed
+— the SCRATCH_PAD is a maintainer file). Clone clean except its 4 task files
+before the clone commit.
+
+Commits: MAIN unit `97714b5`; clone unit — recorded after the clone commit
+(pending at this write); MAIN bookkeeping commit carries this final summary.
+
+## TODO / inbox entries
+
+- No `TODO.md` entry added (the unit is idea-driven, no TODO id; `TODO.md`
+  unchanged in both trees).
+- `todo_inbox.md` 2026-10-22_18-41 — the spec-fixture gap (above), for the
+  planner to correct the spec text + the clone twin suggestion.
+- `agent/knowledge/knowledge_inbox.md` 2026-10-22_18-41 — the sweep's raw
+  path ARGUMENT order fact (measured both trees).
+- `agent/memory/worker/memory_inbox.md` 2026-10-22_18-41 — prove a new pin
+  FAILS on the unchanged tool before implementing.
 
 ## Deliberately omitted
-- The TOKEN-MASS legs (`SQL_FINISHED_STEP`, `SQL_FINISHED_STEP_SESSION`,
-  the spawn-sqlite3 MARKER SQL `GAUGE_SQL_MARKER`/`sqlMarkerForSession`) —
-  unit 2 by spec; the reader signature was NOT pre-shaped for them.
-  Consequence: on a v2 session the gauge still reads `CTX=notAvailable`
-  (no-total) until unit 2 lands — the sid/model/limit halves are the fix.
-- The spawn-sqlite3 session-row leg stays v1 SQL (the last-resort backend);
-  the in-process backends cover v2 (both share `readApiDb`).
-- Re-pinning the probe (it cannot run at HEAD); adding v1-table pins to the
-  bun smoke (gauge_core covers that form).
-- The clone `agent/scripts/v2_intercept_acceptance.sh` re-run — the
-  MAINTAINER's (agents never run the clone host against the backend slot).
 
-## Pending live acceptance (name it)
-Expect intercept.log lines whose model slot carries the real model id
-(`qwen3.8-flash-next-coder-iq1_m`) instead of `unknown` — the maintainer's
-re-run of `agent/scripts/v2_intercept_acceptance.sh` decides it.
+- No `doc-quotes: N` counter line (the spec's deliberate non-change).
+- No change to the tool description or args (the probe pins the SURFACE; the
+  probe count stayed 360).
+- FX3 fixtures and their marker-line counts untouched in both trees.
+- No live acceptance: `.opencode/tools/*.ts` registers at the NEXT host start;
+  the digest behavior is smoke-pinned (no host restart in this unit).
+- No push (agents never push).
 
-## Blockers
-None for unit 1. Unit 2 (token mass) and the later tools-estate units stay
-the planner's call.
+## Lesson (one line)
 
-## Lesson (reusable)
-In this clone, the "standard gate" (probe + the 11 node smokes) is RED at
-HEAD because the v1 plugin sources moved to `.opencode/plugin-unported-v1/`
-— the verifiable v2 harness is `gauge_core.smoke.mjs` (node) + `bun run
-smoke.mjs` + the tsgo typecheck; diff untouched smokes before/after to
-prove no new red.
+A new pin must be proven DISCRIMINATING — run it against the unchanged tool
+and require the FAIL — before the implementation lands.

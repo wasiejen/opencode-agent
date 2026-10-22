@@ -1,56 +1,53 @@
-# Worker summary — TODO #145: intercept_sweep.cjs per-event filter view
+# Worker summary — TODO #147 unit 1: build + verify the port-sync helper (no real apply)
 
-Status: LANDED (one code unit + one doc/state unit, both verified and committed)
+Worker: `worker_FlashNext` (session `ses_e9acefcfbffewfyOO0y7VCJsfP`), MAIN tree `C:/Users/Wasiejen/Repos/opencode-agent`, branch `main` (unchanged checkout).
+Status: DONE (unit 1).
 
-## Task and scope
+## Scope
+Built `agent/scripts/git/port_sync.cjs` (MAIN `main` → clone `migration` sync by MERGE, dry-run default), its self-test, and the README rows. No `--apply` against the real trees; the scratch pair under `C:/Users/Wasiejen/AppData/Local/Temp/opencode/port_sync_selftest/` was the only apply surface.
 
-Per-event FILTER VIEW of `.opencode/temp/intercept.log` (planner-26 spec, TODO #145, pre-approved class — agent-usage friction). Files: `agent/scripts/log/intercept_sweep.cjs` (new), `agent/scripts/log/tests/intercept_sweep_fixture.log` (new), `agent/scripts/log/tests/intercept_sweep.smoke.cjs` (new), `agent/scripts/log/README.md`, `TODO.md` #145 status. DO-NOT-touch list respected: `summarize_intercept.cjs` + its fixture + its smoke byte-unchanged (only `README.md` shows as modified under `agent/scripts/log/`); no `.opencode/**`, `opencode.jsonc`, `AGENTS.md`, `agent/prompts/**`, `maintainer/**` change (the maintainer's own dirty `maintainer/SCRATCH_PAD.md` + `opencode.jsonc` were left unstaged, untouched).
+## Files changed
+| file | change |
+|---|---|
+| `agent/scripts/git/port_sync.cjs` | NEW — dry run (conflict set + per-path resolution plan + exact commands + `zero-mutation: PROVEN` for BOTH trees) / `--apply` (`merge --no-commit FETCH_HEAD` → `--theirs` resolutions → `opencode.jsonc` kept branch-local → discovery guard → clone gate → `gate: FAIL` + `git merge --abort`, or `gate: PASS` + `merge staged, not committed`) / `--main` `--clone` path overrides / `--no-gate`. Refuses on branch mismatch or a dirty clone. |
+| `agent/scripts/git/port_sync.selftest.cjs` | NEW — throwaway git repo pair (base commit → clone BEFORE the MAIN-side commit → diverge both sides), 84 checks. |
+| `agent/scripts/git/README.md` | NEW — purpose / what it does / excluded / env overrides / usage (13 lines). |
+| `agent/scripts/README.md` | categories row for `git/`. |
 
-## Behavior changed
+## Behavior added
+- Boundary as ruled: take MAIN (`--theirs`) for `.opencode/tools/`, `.opencode/plugin/probes/`, `.opencode/plugin/tests/`, `agent/handover/`, `loop/`, `TODO.md` (exact), `agent/knowledge/`, `agent/memory/`, `agent/readme/`, `agent/scripts/`; everything else git's own 3-way; `opencode.jsonc` never written (resolved `checkout --ours` + `add`, so its bytes stay byte-identical to the clone's own and MAIN's side never lands — conflict markers stripped).
+- Discovery guard fires only on `.ts` NEWLY present under `.opencode/plugin/` in the merge result (computed from the `merge-tree --write-tree` tree minus the clone branch tree) → moved to `.opencode/plugin-unported-v1/` (substructure preserved) + WARNING line. Against the real trees the guard preview is empty — the clone's `R100` renames already carry MAIN's edits, matching the verified "a merge re-adds nothing at `.opencode/plugin/*.ts`".
+- Gate (skippable by `--no-gate`): probe (PASS needs exit 0 + `PROBE handover: n/n PASS`), v1 smokes by directory enumeration (`node`, exit 0), v2 smokes (`bun run`, PASS needs `SMOKE: ALL PASS`), tsgo typecheck (exit 0, no output). Missing suites/`tsconfig`/`tsgo`/`bun` print SKIP, never fake PASS.
 
-New read-only script, stdout only. Default: last 20 events, printed oldest-first. Filters: `--session=`, `--verdict=`, `--grep=` (case-insensitive substrings; verdict matches the verdict token only, so `--verdict=edit` catches `edit-hint`/`edit-ambiguous`/`fuzzy-edit` and never a line whose TOOL is `edit`; `--verdict=nosuchkind` is accepted — no frozen-vocabulary pin), `--lines=N` (0 = header + match count), optional positional logfile (default `.opencode/temp/intercept.log`).
+## Measured verification (exact commands)
+| command | result |
+|---|---|
+| `node agent/scripts/git/port_sync.selftest.cjs` | PASS — exit 0, `checks: 84 pass=84 fail=0`, `SELFTEST: ALL PASS` |
+| `node agent/scripts/git/port_sync.cjs` (real-tree dry run) | PASS — exit 0, `merge-tree: 7 conflict(s)`, 6 `take MAIN (--theirs)` plan lines, `config: kept branch-local (host-owned)`, `zero-mutation: PROVEN (both trees: HEAD + status --porcelain identical)` |
+| `node .opencode/plugin/probes/handover_probe.mjs` (MAIN, after the change) | PASS — `PROBE handover: 360/360 PASS` (matches this tree's annotation; do not restate as the clone's) |
+| `git -C C:/Users/Wasiejen/Repos/opencode-agent-v2 rev-parse --short HEAD` | `90d6d6c` before and after the dry run (clone untouched, status clean) |
 
-One line per event, ≤120 chars: `date_time session tool verdict ev=<evidence> args=<args-json>`; evidence and args are truncated with the U+2026 marker, the free budget splits evidence-first with an args floor (`ARGS_SHARE=0.4`), so short args (`intercept-error`) buy the evidence room. Head fields carry safety caps (`block_transfer` renders as `block_trans…`). Omitted by design: `model` and `scope`. Grammar reuse: `require("./summarize_intercept.cjs")` → `parseLine` keeps the right-anchored split (an args value containing ` | ` merges into the args region; verified). Malformed lines (<8 fields) render as `MALFORMED(5f)`, filter by session/grep but never by verdict, and their count rides the header (`malformed 1`). Exit: 0 = view printed (0 matches still 0), 1 = unreadable log, 2 = bad flag.
+Self-test coverage of the DoD-mandated points: both resolution glob sets (10 positive + 5 negative rule checks, incl. `TODO.md.bak`, `agent/handovers/`, `.opencode/plugin/x.ts` NOT take-main); `opencode.jsonc` never touched (byte-identical, no conflict markers, MAIN side absent); guard moves `.opencode/plugin/x.ts` → `.opencode/plugin-unported-v1/x.ts` with the WARNING line, leaves pre-existing plugin `.ts` and the `.opencode/plugins/**` estate alone; gate-FAIL path prints `gate: FAIL` + echoes `cmd: git -C <clone> merge --abort` and leaves the clone clean at HEAD with all merged content reverted (exit 1).
 
-## Measured verification (all PASS)
+## Commits
+- `dfebc3a` — `agent/scripts/git/port_sync.cjs` + `agent/scripts/git/README.md` + the `agent/scripts/README.md` row.
+- `db91bb3` — `agent/scripts/git/port_sync.selftest.cjs` (green self-test).
+- Final commit (this file + the TODO #147 status line + the loop-log DONE line + the `submit` inbox lanes) — its hash lives in `git log`, not in this file.
+Committed together: `TODO.md`, `agent/handover/handover_task_to_planner.md`, `loop/autorun-2026-10-01_03-27/loop_log.md`, and the inbox lanes `agent/agent_feedback.md`, `agent/knowledge/knowledge_inbox.md`, `agent/memory/worker/memory_inbox.md` (my `submit` entries; those two lanes also carried other sessions' uncommitted appends — preserved, not authored by me).
+Working tree after: `dirty` — `agent/agent_ideas.md` (pre-existing, not mine), `maintainer/SCRATCH_PAD.md` + `opencode.jsonc` (maintainer-owned, never staged). No code file left dirty.
 
-- `node agent/scripts/log/tests/intercept_sweep.smoke.cjs` → 35 `PASS`, 0 `FAIL`, final line `SMOKE intercept_sweep: all checks passed`, exit 0 (fixture 24 events: 1 malformed, 3 new-verdict kinds, ` | `-in-args line, 16 filler lines; pins include the last-20 window, every-line ≤120, the marker on both long fields, two byte-exact event lines, filter semantics, exit codes, and a fixture-bytes-unchanged read-only proof).
-- `node agent/scripts/log/tests/summarize_intercept.smoke.cjs` → `SMOKE summarize_intercept: all checks passed`, exit 0 (UNCHANGED file, confirmed by `git status --short agent/scripts/log/`).
-- Live log (5693 events, 0 malformed) — 5 forms, all exit 0, max line length 120, no line over 120:
-  - `node agent/scripts/log/intercept_sweep.cjs` → header `events 5693/5693 showing last 20`, 20 event lines, first `2026-10-22_19-49 …`
-  - `node agent/scripts/log/intercept_sweep.cjs --session=ses_e9b46b7a2ffeRuFWSaQcOKdMTQ` → `events 10/5693 showing last 10`
-  - `node agent/scripts/log/intercept_sweep.cjs --verdict=edit-hint --lines=8` → `events 7/5693 showing last 7`
-  - `node agent/scripts/log/intercept_sweep.cjs --verdict=fuzzy-rejected --lines=6` → `events 37/5693 showing last 6`
-  - `node agent/scripts/log/intercept_sweep.cjs --verdict=error` → `events 2/5693 showing last 2`
-- Gate, run ONCE: `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS`, exit 0 (the 14 lines matching `FAIL` in the output are prose inside `PASS` lines — `CLEAN FAIL` / `FAIL-CLOSED`; zero failures).
+## TODO / inbox
+- `TODO.md` #147: appended one status line inside the existing entry (unit 1 BUILT + GREEN, the two deltas below). No new entry.
+- Deltas recorded (not silently widened): #147's acceptance line says `--ours` for `agent/handover/**`+`loop/**`, and a green gate "commit the merge"; the ruled boundary + this spec say `--theirs` and stage-only. The script follows the ruled spec. The printed config line is `config: kept branch-local (host-owned)` per DoD 4, not `config: skipped (host-local)`.
+- Friction + lesson submitted through the `submit` tool (see below).
 
-## Commits and working tree
-
-- `c3f856e` — the code unit (script + fixture + smoke), verified green before commit.
-- Final commit (this file + `README.md` + `TODO.md` #145 + the inbox/loop-log bookkeeping) carries `c3f856e`; a commit cannot contain its own hash — the planner's follow-up commit records it on the TODO line if desired.
-- Working tree after the final commit: clean except the maintainer's own `maintainer/SCRATCH_PAD.md` and `opencode.jsonc` (pre-existing, not mine).
-
-## TODO / inbox entries
-
-- `TODO.md` #145: status bullet → `LANDED 2026-10-22 …` with the decision taken (new file) and the measured verification; entry header marker flipped `OPEN` → `LANDED 2026-10-22` for consistency (repo convention: the header carries the status marker, cf. #88). No other TODO entry touched. No new TODO entry needed (no open decision left, no blocker).
-- Submitted: 1 feedback line (the two tool/scratch friction points) and 1 worker memory line (the block_transfer buffer-vs-text rule).
-
-## Deliberately omitted
-
-- `agent/readme/repo_commands.md` pointer (spec: optional, only with a natural home). No natural home: its sections are gates/smokes/marker-sweep/handover-paths; adding a script pointer would mean restructuring the file. The README row + the script's own usage header carry it.
-- No byte-exact whole-view pin file (e.g. `expected_sweep_view.txt`): the caps are dynamic by design, so the smoke pins structure + two short-field byte-exact event lines instead. Marked deviation from the summarize smoke's snapshot style.
-- `model` and `scope` fields, and log line numbers, left out of the event line (the 120-char budget).
-
-## Lessons
-
-- `block_transfer` `REPLACE` takes a named BUFFER, never a direct `text`; passing `text` to REPLACE silently fanned a stale `default` buffer into the target region — my new fixture file got two foreign lines and needed a `WRITE` repair. Use `WRITE` for direct text, or `edit` for a small exact swap.
-- Two real defects were caught by the smoke before commit (both fixed in the code unit, no red commit): a malformed line matched any non-verdict filter unconditionally, and the header path cap (44) truncated the fixture path the CLI pin checks.
+## Omitted deliberately
+- The first real `--apply` and the clone-gate run against the real v2 estate (spec DO-NOT-touch: the maintainer's act).
+- The `agent/readme/repo_commands.md` pointer to the new script — maintainer-owned, flagged instead: that file's §Run/test section still describes only the MAIN-tree gate; the clone gate command set lives in the task spec.
+- Merge-commit / push paths: the script has none.
 
 ## Blockers
-
 None.
 
-## Friction
-
-1. `block_transfer` REPLACE-with-`text` corruption (above) — the mode error surfaced as a wrong-content write, not as a rejection.
-2. `AGENTS.md` §Command Output names `$TMP/opencode` as the Git Bash scratch path, but `$TMP`/`$OLDPWD` are unset in this host shell: `> "$OLDPWD/s.txt"` resolved to `/s.txt` (Permission denied). Use the literal `C:/Users/Wasiejen/AppData/Local/Temp/opencode`.
+## Lesson
+Node `spawnSync` cannot exec this host's PATH shims: `bun` (extensionless) → ENOENT, `bun.cmd` → EINVAL. The script resolves the real exe `C:/Users/Wasiejen/AppData/Roaming/npm/node_modules/bun/bin/bun.exe` (env `BUN_EXE` override) and falls back to PATH `bun`/`bun.exe`, printing SKIP rather than a fake PASS.

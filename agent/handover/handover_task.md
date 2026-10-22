@@ -1,40 +1,82 @@
-# Task spec — TODO #137 order 2: auto_resume ported to v2 (plugin-driven)
-
-Assigned worker: `worker_FlashNext` (model `llama-swap/Qwen3.8-NEXT-Coder`, same as the launching planner). Work happens in the v2 clone: `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`). Stay on the current checkout.
+# Task spec — unify the gauge core so the MAIN→clone merge lands green (TODO #147)
 
 ## Goal
-A v2 plugin `.opencode/plugins/auto_resume.ts` carrying the v1 plugin's loop legs onto the v2 API, so the autorun loop works on a v2 host without the CLI: successor spawn, SELF-compaction at the limit, action-line routing, the silent-limit-stop detector, and the counter/lineage + evidence logs.
 
-## Design of record
-`.opencode/plugin/auto_resume.ts` (MAIN, v1, also present inert at clone `plugin-unported-v1/auto_resume.ts`). Do NOT read the whole file: read its header block (~first 120 lines) plus targeted greps — `spawnPlanner`, `limitStopCheck`, `actionRe`, `LINEAGE_MAX_DEPTH`, `saturationThreshold`, `ctx.log`, `spawn=`. The v1 unit map: UNIT 1 event log + one-shot surface probe; UNIT 2 the PASSIVE ctx-line suffix (ALREADY ported — it lives in clone `.opencode/plugins/context_family.ts`; do not re-port); UNIT 3 the successor spawn (create + ONE queued prompt + the spawn marker/ident + `spawn=`/`spawn-fail=` lines); UNIT 4 the restart / recovery-continue branch + the `action:` line reading; the #109 silent-limit-stop detector (5-clause signature, `limitStopCheck` at ~L1536, idle threshold ~60_000, `0.99 * window`); the loop-iteration counter + lineage legs.
+Make ONE gauge core and ONE probe serve both trees, so `port_sync --apply` ends
+`gate: PASS` and the merge can be committed on the clone (`migration`).
 
-## Verified facts (measured at spec time, this planner session, ITER-28)
-- v2 plugin session domain = `Pick<SessionApi, "create" | "get" | "remove" | "switchAgent" | "switchModel" | "prompt" | "generate" | "command" | "compact" | "synthetic" | "interrupt" | "update" | "move" | "wait" | "context">` + `hook` (fork `packages/plugin/src/promise/session.ts:137-176`).
-- `SessionCreateInput` (fork `packages/client/src/promise/generated/types.ts:3064-3082`): `id?: { id?, parentID?, title?, agent?, model?: { id, providerID, variant? }, location?: { directory }, metadata?, permissions?: [{action,resource,effect:"allow"|"deny"|"ask"}] }` + a top-level `parentID?`. So the v1 spawn-with-agent + title-ident mechanism ports directly; `create` is OPTIONAL-input (`input?`).
-- v2 hooks available for this shape: `session.hook("prompt" | "context" | "compaction" | "retry" | …)` (same file, `SessionHooks`); the status/idle event names live in fork `packages/schema/src/session-status-event.ts` — confirm the exact event key with ONE grep there; the v1 UNIT 1 event log lines in `.opencode/temp/auto_resume.log` show the v1 keys as the reference set.
-- Plugin auto-discovery roots = `["plugin","plugins"]` (fork `packages/core/src/plugin/source-directory.ts:7`) → the new plugin LOADS at the next v2 host start with NO config edit. Therefore: every leg must FAIL-OPEN (a throw inside a hook must never reach the host), and no `opencode.jsonc` change is expected.
-- Clone gate baselines at HEAD `90d6d6c`: probe `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS`; 12 v1 node smokes green (clone root); 8 v2 bun smokes `SMOKE: ALL PASS` (from `.opencode/plugins/tests`); tsgo `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/plugins/tests/tsconfig.json` exit 0. Re-run fresh; the trio EBUSY flake is fixed (TODO #144), so red = real.
-- The v2 ports so far (same tree, same registration shape): `plugins/compact_memory.ts` (dispatch via `ctx.session.compact` fire-and-forget + the `session.compaction.ended` evidence gate), `plugins/context_family.ts` (the `context` hook + `session.synthetic(delivery:"queue")`), `plugins/loop_log.ts`/`submit.ts` (`ctx.tool.transform` + `editor.add`). Root path rides the setup capture `ctx.location.directory` (the v1 `context.directory` has no v2 carrier) — the same deviation applies here.
-- #147 (`agent/scripts/git/port_sync.cjs`, MAIN) exists; the real sync (`--apply`) is HELD by the maintainer until this unit lands. Do not run it.
+Durable route (chosen by the maintainer: "durable is always better than an interim fix"):
+MAIN adopts the clone's table-aware gauge core, and MAIN's probe + gauge smokes are
+re-pinned to the unified core. The clone keeps its own files only until the merge lands them.
+
+## Facts measured (do not re-derive)
+
+- MAIN core: `C:/Users/Wasiejen/Repos/opencode-agent/.opencode/plugin/scripts/gauge.mjs` = 769 lines, v1 schema only (`tokens.total`), 2 ordered prepares.
+- Clone core: `C:/Users/Wasiejen/Repos/opencode-agent-v2/.opencode/plugin/scripts/gauge.mjs` = 1015 lines, table-aware: catalog probes x2 → `session_v2`/`session` newest x2 → `time_updated` x2 → mass (`tokens.total` OR `session_message`), 7 ordered prepares.
+- Probe loads it RELATIVE: `handover_probe.mjs:1198` → `await import(new URL("../scripts/gauge.mjs", import.meta.url).href)` (path-agnostic — no patch needed).
+- Only 2 probe checks fail today in the merged tree: `[32] unit-mock bun:sqlite ...` and `[38] fallback: ...` (clone probe passes 360/360; MAIN probe fails those 2 against the clone core).
+- Probe divergence between trees: 276 diff lines / 12 hunks (see `C:/Users/Wasiejen/AppData/Local/Temp/opencode/probe_diff.txt`). 3 hunks = the gauge pins, 3 = path repoints, the rest = clone lagging MAIN.
+- `port_sync.cjs` Rule (A) already landed (MAIN `f651dd6`): the probe takes MAIN + a post-merge patch repoints its `".opencode", "plugin", "<rel>.ts"` refs to `plugin-unported-v1`; `.opencode/plugin/probes/` is in `TAKE_MAIN`.
 
 ## Definition of done
-1. NEW clone file `.opencode/plugins/auto_resume.ts` (`{ id: "auto_resume", setup(ctx) }`, tool/event legs per the v1 unit map, minus UNIT 2 which is already in `context_family.ts`).
-2. New/renamed evidence log shapes byte-carried where v1 has them (`auto_resume.log` event lines `<ISO time> event=<type> sid=<sessionID> <key fields>`, `spawn=` / `spawn-fail=`, the action-line decision lines, the #109 detector fire line → the loop_log `-WARNING` line), plus a v2-in-file comment block listing every deviation (v1-only legs with no v2 carrier, e.g. `extra.model.id`, `session?.id`).
-3. `tests/auto_resume.smoke.mjs` under `.opencode/plugins/tests/` with pins per leg (spawn input shape incl. `title`/`agent`/`model` fields, the SELF-compact gate thresholds, the once-per-overflow claim guard, the detector's clauses, fail-open on a throwing hook, the counter/lineage suffix) → `SMOKE: ALL PASS`; `tsconfig.json` `files` += the new plugin; the tests README gains a section.
-4. Gate green after the change, measured by the worker: probe `360/360`, the 9 v2 bun smokes `ALL PASS` (8 existing + the new one), the 12 v1 node smokes untouched-green, tsgo exit 0, clone tree clean.
-5. Checkpoint commits per verified unit (code only); the `TODO.md` #137 status line (order 2 status + hashes of the code commits, never its own hash) and `agent/handover/handover_task_to_planner.md` ride the FINAL commit.
+
+1. MAIN working tree green:
+   - `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: N/N PASS` with N >= 360, exit 0.
+   - `node .opencode/plugin/tests/gauge_core.smoke.mjs` and `node .opencode/plugin/tests/ctx_gauge.smoke.mjs` → `SMOKE: ALL PASS`, exit 0.
+   - the other 10 `.opencode/plugin/tests/*.smoke.mjs` unchanged and still PASS.
+2. `node agent/scripts/git/port_sync.cjs` (dry) prints a `plan:` line taking MAIN for
+   `.opencode/plugin/scripts/gauge.mjs`; the selftest prints `SELFTEST: ALL PASS`.
+3. One commit per logical change; the planner performs the sync and the merge commit.
+
+## Approval boundary
+
+Agent-side tooling and gate pins only. No host behavior change for the maintainer, no
+new user-visible feature. The merge itself is the maintainer's approved act and is the
+planner's job, not this worker's.
 
 ## Suggested scope (non-exhaustive)
-`.opencode/plugins/auto_resume.ts`, `.opencode/plugins/tests/auto_resume.smoke.mjs`, `.opencode/plugins/tests/tsconfig.json`, `.opencode/plugins/tests/README.md`, `TODO.md`, `agent/handover/handover_task_to_planner.md`.
 
-## DO-NOT touch
-- `opencode.jsonc` in either tree (maintainer-owned; no registration needed — auto-discovery).
-- `.opencode/plugins/context_family.ts`, `compact_memory.ts`, `context_trim_v2.ts`, `block_transfer.ts`, `loop_log.ts`, `submit.ts`, `ctx_gauge.ts`, `state_snapshot.ts`, `dev_get_tool_context_contents.ts`, `intercept_observer.ts` — read-only reference only.
-- MAIN tree files (the planner's own tree) — nothing in it, including `agent/readme/**`, `agent/scripts/**`, `loop/**`. This unit's `TODO.md` status line and handover file are written in the CLONE tree (this task's tree); the MAIN-side bookkeeping is the planner's own commit.
-- `maintainer/**`, `AGENTS.md`. Never `git push`; never `port_sync.cjs --apply`; never start the v2 host or any request to the inference backend; no deletion of the inert v1 estate.
+- `.opencode/plugin/scripts/gauge.mjs` (MAIN) — replace with the clone's core.
+- `.opencode/plugin/probes/handover_probe.mjs` (MAIN) — re-pin checks 31-40 to the unified core.
+- `.opencode/plugin/tests/gauge_core.smoke.mjs`, `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (MAIN) — re-pin.
+- `agent/scripts/git/port_sync.cjs` + `agent/scripts/git/port_sync.selftest.cjs` — add the take-main glob.
+- `TODO.md`, `agent/handover/handover_task_to_planner.md`.
 
-## Tree and path discipline (read first)
-The launching planner's cwd is the MAIN tree. Every git operation for this unit runs with `workdir` = `C:/Users/Wasiejen/Repos/opencode-agent-v2` (or `git -C <that path>`), and every file read/edit uses absolute clone paths (`C:/Users/Wasiejen/Repos/opencode-agent-v2/.opencode/plugins/…`) — relative paths resolve against the session CWD and would hit the wrong tree.
+## Procedure (guidance, not protocol)
 
-## Expectation on discrepancies
-No new TODO entry is expected; if a v1 leg turns out to have no v2 carrier at all, log it in-file AND append a numbered `TODO.md` entry rather than inventing a substitute.
+1. Take the core from the clone verbatim, do not rewrite it:
+   `git -C C:/Users/Wasiejen/Repos/opencode-agent-v2 show HEAD:.opencode/plugin/scripts/gauge.mjs > .opencode/plugin/scripts/gauge.mjs`
+   (run from MAIN; then `wc -l` must read 1015).
+2. Run `node .opencode/plugin/tests/gauge_core.smoke.mjs 2>&1 | tail -20` and
+   `node .opencode/plugin/probes/handover_probe.mjs 2>&1 | grep -E "^(FAIL|PROBE)" | head -8`.
+3. Re-pin only what the unified core legitimately changed: pin to the OBSERVED
+   behavior when that behavior is correct for BOTH a v1-only DB (no `session_v2`
+   table) and a v2 DB (`session_v2` + `session_message`). The probe's own MOCK
+   decides which catalog the core sees — make the MOCK explicit per check so the
+   pins are tree-independent. If the unified core returns `no-total`,
+   `notAvailable`, or throws against a v1-only DB catalog, STOP and report: that is
+   a core defect, not a pin to move.
+4. Keep one implementation: never fork the core in MAIN, never add a second gauge
+   module. `.opencode/plugin-unported-v1/scripts/gauge.mjs` (clone, 7-line shim)
+   already re-exports `../../plugin/scripts/gauge.mjs` — leave it.
+5. `port_sync.cjs`: add `.opencode/plugin/scripts/` to `TAKE_MAIN`; extend the
+   selftest rule-layer pins (`isTakeMain(".opencode/plugin/scripts/gauge.mjs")`,
+   `classify(...) === "take-main"`) and, in the fixture, add a conflicting
+   `.opencode/plugin/scripts/gauge.mjs` on both sides so the apply case asserts the
+   MAIN bytes land in the clone copy.
+6. Commit: one commit for the core swap + its pins, one for the port_sync glob.
+   Never stage `opencode.jsonc` or `maintainer/**`.
+
+## Large-file discipline
+
+The core is 1015 lines and the probe ~4600. Never read either whole. Use
+`grep -n "<anchor>"` plus `sed -n "<range>p"`, and write with chunked
+`edit`/`block_transfer` calls of at most ~8 KB. Re-grep exact line ranges
+immediately before any line-anchored surgery.
+
+## Worker
+
+`worker_FlashNext`. Work happens in `C:/Users/Wasiejen/Repos/opencode-agent`
+(branch `main`, stay on the current checkout). Write
+`agent/handover/handover_task_to_planner.md` with the change summary, the exact
+verification commands with PASS/FAIL, the working-tree status, and the commit hashes.

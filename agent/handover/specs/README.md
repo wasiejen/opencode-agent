@@ -74,5 +74,10 @@ AGENTS.md (wave spec lists them).
 - `2026-10-22_15-smoke-env-bt-regions.md` — two small pre-approved fixes: sandbox smoke ENV robustness (todo_inbox 01-34) + bt WRITE N-regions-with-1-text REJECT (todo_inbox 03-26; REJECT recommended end state), BOTH trees.
 - Order: unit 2 (clone gauge) first, then the small-fixes spec.
 
+## Wave 2026-10-22 (planner-16, iter 16) — TODO #137 unit 3, the v2 CONTEXT FAMILY (clone `migration`)
+- `2026-10-22_137u3a-context-family-core.md` — new clone plugin `.opencode/plugins/context_family.ts`: gauge readout via the shared v2-paired gauge core + the `ctx:` line injection at the v2 `session.context` hook (append-at-tail, cache discipline) + evidence lines + its own bun smoke + tsgo coverage. Launch channel: copy to `agent/handover/handover_task.md`.
+- `2026-10-22_137u3b-nudge-ladder.md` — extends the SAME plugin: 5-rung nudge ladder at `execute.after` (per-session read, verbatim v1 rungs, dedup, silence rules) delivered via `ctx.session.synthetic(delivery:"queue")` fire-and-forget + the `subagent` handover pre-flight warn. Launch AFTER 3a verifies (same file, additive).
+- Order: 3a then 3b; both clone-only, live v2 acceptance = maintainer (backend slot).
+
 ## What does NOT go here
 NAP, non-compaction specs.

@@ -1218,3 +1218,35 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Maintainer ruling (2026-10-01, direct):** build B' + C, NOT A. B' semantics per his clarification: trigger = OUTSIDE THE SANDBOX (absorbs "(doubled AND outside) OR outside") — a folder doubling in itself is NEVER wrong (it may sit in an allowed root → stays a log signal via C); "path exists" = the CONTAINING DIRECTORY (never the file); "outside the sandbox" = not under any allowed root = the R8 set (workspace + scratchpad + the `external_directory` allows in opencode.jsonc).
 - **LANDED (2026-10-01, same session, direct):** B' hard-stop in the before hook (`intercept_observer.ts`): for the EFFECTIVE (post-redirect) write/edit `filePath` — outside every allowed root AND containing directory missing → the hook throws a `HardStopError` (the hook's catch distinguishes the deliberate throw: logs ONE `intercept-error` line, then RE-THROWS — a throwing before hook fails the tool call, the agent sees the error); existing external paths pass to the host permission gate; in-root new-dir writes pass to writeWithDirs; read is out of scope (read-only). C fix (`intercept_observer_core.ts` `observePathAnomaly`): collapse the JSON-escaped `\\` pairs back to one separator before `DOUBLED_RE` — doubled segments in typed Windows paths now log `path-anomaly` (the 14-verdict vocabulary is unchanged — the block is a throw, not a verdict).
 - **Status:** LANDED 2026-10-01 (planner-9 direct — hook block + C fix; standard gate green: probe 355/355 + all 11 smokes; intercept_observer.smoke 85/85 incl. 7 new (4b)/C pins; 7 probe pins updated — they encoded the pre-C detector blindness (2 new path-anomaly lines / 1 line where ZERO was expected). Live acceptance = natural occurrence after the host restart (the next out-of-sandbox write to a missing path shows the block error; the next doubled typed path logs `path-anomaly`). **C-part LIVE-ACCEPTED (plan10, 2026-10-04, verified from files):** the post-restart process logged `path-anomaly` for a live typed-path call carrying adjacent doubled segments (`doubled= maintainer, proposals`, intercept.log 2026-10-04_22-54 — the JSON-escaped `\\` collapse now lets DOUBLED_RE fire on typed Windows/POSIX paths). **B'-part** (the hard-stop throw) still PENDING a natural occurrence (no out-of-sandbox write to a missing path since the restart).)
+
+
+## #137. (IN PROGRESS — order 2 unit landed 2026-10-22, clone `migration`, worker ses_e9aa4e4e1f) the v2 clone port of the plugin estate — order 2: `auto_resume`
+
+- **Status (order 2):** LANDED in the CLONE. Code commits: `d2f7cff` (the v2
+  plugin `.opencode/plugins/auto_resume.ts` + the tsconfig `files` line),
+  `34b27f8` (the smoke levers: `runTick` export + `ctx.options` tickMs / log
+  caps / limitStopIdleMs, live defaults unchanged), `accd960` (the smoke
+  `.opencode/plugins/tests/auto_resume.smoke.mjs` + this tests-README section
+  + this status entry — in the FINAL commit). No `opencode.jsonc` change
+  (auto-discovery roots `["plugin","plugins"]`). UNIT 2 stays in
+  `plugins/context_family.ts`; the v1 legs with NO v2 carrier are listed in-file
+  (deviations (a)-(g)).
+- **Gate (measured by the worker, clone tree, after the change):** probe
+  `PROBE handover: 360/360 PASS`; 11 v2 bun smoke files `SMOKE: ALL PASS`
+  (incl. the new `auto_resume.smoke.mjs`, 45 checks); `tsgo -p .opencode/plugins
+  /tests/tsconfig.json` exit 0 with NO output (the wiring is pinned — a
+  deliberate error in `auto_resume.ts` surfaced, then reverted). Working tree
+  clean at the final commit.
+- **Discrepancy (v1 node smokes):** the spec baseline claims 12 green; MEASURED
+  11 of 12 — `.opencode/plugin/tests/state_snapshot.smoke.mjs` FAILS 4 checks
+  (`digest is exactly 60 lines` → 59; `markers: the fixture --now line` →
+  `(none)`; `proposals 24 of 30`). UNRELATED to this unit: the smoke's last
+  touching commit is `6130a70`, this unit's diff is 3 files (the new plugin,
+  its smoke, the tsconfig line), and the failure reproduces when the smoke runs
+  ALONE on a clean tree. Needs its own unit — do NOT fix here.
+- **Deferred v1 legs (no v2 carrier, NOT invented):** the #120 post-compaction
+  TAIL-SET write lane (the context_trim core's `tailSetKeep` — the v2 twin
+  `plugins/context_trim_v2.ts` owns that surface, a separate unit) and the
+  `compact_message_*` temp-file legs (item-2 CONTINUE relay, item-4 restart
+  INTENT HINT, the item-3 age SWEEP — the v2 compact_memory plugin uses the
+  native inbox queue, so no file store exists).

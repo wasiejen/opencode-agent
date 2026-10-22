@@ -1,131 +1,126 @@
-# Worker summary — state_snapshot digest: LIVE-class marker hits sort first
+# Worker handover — TODO #137 order 2: the `auto_resume` v2 port
 
-Status: LANDED (both units verified + committed; the clone-side commit hash
-is recorded below after the clone commit landed).
-Session: `ses_e9b8ed378ffewWRy0cDWYNTkQA` (`worker_FlashNext`), looprun
-`autorun-2026-10-01_03-27`. Spec: `agent/handover/specs/2026-10-22_state-
-snapshot-marker-order.md` (= `agent/handover/handover_task.md`).
+Status: COMPLETE (this unit) — one baseline discrepancy reported, deliberately
+not fixed.
 
 ## Task and scope
 
-`markersSection` in the `state_snapshot` planner init digest partitions the
-marker-sweep hits into LIVE-CLASS (`maintainer/` prefix, `.opencode/` prefix,
-or exactly `TODO.md` / `README.md` / `WIKI.md`) and DOC-CLASS (everything
-else), sorts each group by the line string, and emits LIVE first, then DOC.
-The 20-line cap + `… (+<k> more)` steer, the sweep command, the tool
-description and args are untouched. No new output line shape, no new header
-or steer text.
+Port the v1 `auto_resume` plugin's LOOP legs onto the v2 plugin surfaces, in the
+v2 clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`), so the
+autorun loop works on a v2 host without the CLI. Assigned: `worker_FlashNext`.
+Scope: `.opencode/plugins/auto_resume.ts`, `.opencode/plugins/tests/auto_resume
+.smoke.mjs`, `.opencode/plugins/tests/tsconfig.json`, `.opencode/plugins/tests
+/README.md`, `TODO.md`, `agent/handover/handover_task_to_planner.md`.
 
 ## Files changed
 
-MAIN (commit `97714b5`):
-- `.opencode/tools/state_snapshot.ts` — new `isLiveHit` helper + the
-  partition/sort in `markersSection` + the two header comments (206 → 234 lines).
-- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — the FX1 marker fixture is
-  now `WIKI.md` (`--main`, LIVE-CLASS) alongside `loop/notes.md` (`--now`,
-  DOC-CLASS); new pin 21 asserts the LIVE hit prints BEFORE the `loop/notes.md`
-  DOC hit. Pins 20 → 21. FX3 + its fixture marker-line count untouched.
-- `agent/readme/repo_commands.md` §Marker sweep — the note: the digest re-
-  orders the sweep OUTPUT only; the ready-made command unchanged.
+1. `.opencode/plugins/auto_resume.ts` (NEW, 1084 lines) — `{ id: "auto_resume
+   ", setup(ctx) }`, DEFAULT export only. Legs: UNIT 1 event log (`<ISO> event
+   =<type> sid=<sid> <key fields>`, the delta classes never logged) + the
+   `surface=` probe + the #96 log-size guard; UNIT 3 successor spawn (the
+   trigger file, the FLAT `SessionCreateInput` with `title`/`agent`/`model`,
+   ONE `delivery:"queue"` prompt, `spawn=`/`spawn-fail=`, consume-even-on-failure);
+   UNIT 4 watchdog (the `context`-hook verdict carrier, the LINE-ANCHORED
+   `action:` scan over `session.text.ended` accumulation, stop/ask routes, the
+   recovery budget + dead-mark, the successor check, the LINEAGE-DEPTH cap,
+   STICKY deactivation, the loop counter + `ident=`, `tailCompactRearm`, the
+   #90 part-C log RESTORE); #109 detector (5 clauses, `limit-stop=` + the
+   `-WARNING` line in `loop/<folder>/loop_log.md`, the per-episode latch).
+   Deviations (a)-(g) in the header block.
+2. `.opencode/plugins/tests/auto_resume.smoke.mjs` (NEW, 432 lines, 45 checks).
+3. `.opencode/plugins/tests/tsconfig.json` — `files` += `"../auto_resume.ts"`.
+4. `.opencode/plugins/tests/README.md` — the new smoke section.
+5. `TODO.md` — the `#137` entry with the order-2 status line + the code hashes.
+6. This handover.
 
-Clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`):
-- `.opencode/tools/state_snapshot.ts` — copied from MAIN (byte-identical, 234
-  lines, `cmp -s` PASS after the change).
-- `.opencode/plugins/state_snapshot.ts` (v2) — the twin edit in the file's
-  semicolon style: `isLiveHit` + the partition/sort + the markers header
-  comment + a header note in the CARRIED block (265 → 293 lines).
-- `.opencode/plugins/tests/state_snapshot.smoke.mjs` — FX1 `WIKI.md` fixture
-  + the ordering pin + pin (12) FX1 digest line count 46 → 47 (the fixture
-  adds one sweep hit) + the header-comment line for the pinned contract.
-- `agent/readme/repo_commands.md` — the twin §Marker sweep note (identical text).
+UNIT 2 (the PASSIVE ctx-line nudge) was NOT re-ported — it already lives in
+`plugins/context_family.ts`.
 
-## Behavior changed
+## Behavior changed (measured, per leg)
 
-The `## markers` window is LIVE-first, so live maintainer/TODO markers can
-no longer be crowded out by the DOC-heavy `agent/` hits. MAIN sweep measured
-143 hits = 18 LIVE + 125 DOC; the old 20-line window carried ZERO live hits.
+- Every hook/event handler swallows (fail-open); the tick is the only decision
+  +send funnel; `setInterval` is `unref`'d and cleared by the setup cleanup.
+- Test levers ride `ctx.options` (`tickMs`, `maxLogBytes`, `logTailBytes`,
+  `limitStopIdleMs`); absent → the v1 defaults (5000 / 20 MiB / 2 MiB / 60_000)
+  — live behavior unchanged. `runTick()` is the smoke-only single-tick export.
+- No `opencode.jsonc` change (auto-discovery); no v2 host start; no backend
+  request; the inert v1 estate untouched; `port_sync.cjs` NEVER run.
 
-## Deviation from the suggested scope (measured — planner to curate)
+## Verification (exact commands, run in the CLONE tree)
 
-The spec suggested the FX1 fixture `maintainer/live_note.md`. That fixture
-cannot pin the ordering: `grep -rn` emits hits in its path ARGUMENT order, so
-a `maintainer/` hit already precedes the `loop/notes.md` DOC line pre-change.
-Measured: the pin written with that fixture passed `ALL PASS (21/21)` against
-the UNCHANGED tool (vacuous pin). The worker used a `WIKI.md` fixture instead
-(LIVE-CLASS per the spec's own list, prints AFTER `loop/` raw), which yields
-the FAIL→PASS sequence that pins the behavior. Logged to `todo_inbox.md`
-(2026-10-22_18-41); the spec text still names the weaker fixture.
+- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/plug
+  ins/tests/tsconfig.json` → **PASS** (exit 0, no output). Wiring pinned: a
+  deliberate type error appended to `auto_resume.ts` produced
+  `error TS2322 … auto_resume.ts(1076,7)`, then reverted → exit 0 again.
+- `cd .opencode/plugins/tests && bun run auto_resume.smoke.mjs` → **PASS**
+  (`SMOKE: ALL PASS`, `FAILURES=0`, 45 checks).
+- `for f in .opencode/plugins/tests/*.smoke.mjs; do bun run "$f" | tail -1;
+  done` → **PASS** (11 files, each `SMOKE: ALL PASS`).
+- `node .opencode/plugin/probes/handover_probe.mjs` → **PASS**
+  (`PROBE handover: 360/360 PASS`).
+- v1 node smokes, `for f in .opencode/plugin/tests/*.smoke.mjs; do node "$f"
+  | tail -1; done` → **PARTIAL: 11 of 12 PASS**. `state_snapshot` FAILS 4
+  checks (`60-line digest` → 59; the fixture `--now` marker line → `(none)`;
+  `proposals 24 of 30`). Reproduced with that smoke run ALONE on a clean tree;
+  the smoke's own last-touch commit is `6130a70` and this unit's diff is 3
+  files (`git diff --stat 90d6d6c..HEAD`) → PRE-EXISTING at baseline
+  `90d6d6c`, not caused by this unit.
 
-Clone-side pin placement: label `(23)` sits inside the FX1 block (after pin
-(10)) so the existing `(11)`..`(22)` labels — incl. the FX3 pins the spec
-forbade touching — stay intact; the label is append-only, not positional.
+## Working tree / commits
 
-## Measured verification
+- Working tree: **clean** after the final commit (`git status --porcelain`
+  empty; branch `migration`).
+- Checkpoint commits: `d2f7cff` (plugin + tsconfig line), `34b27f8` (smoke
+  levers), `accd960` (smoke). FINAL (this bookkeeping): TODO.md status line +
+  README section + handover — hash reported below by the planner, NOT here
+  (a commit cannot contain its own hash).
+- NOTHING pushed (agents never push).
 
-MAIN:
-- Baseline (pre-edit): smoke `ALL PASS (20/20)`; probe `PROBE handover:
-  360/360 PASS`, exit 0.
-- Fixture+pin before the tool edit: exit 1 —
-  `FAIL  markers: the LIVE-class WIKI.md hit prints BEFORE the DOC-class
-  loop/notes.md hit  [{"live":1,"doc":0}]` (the pin discriminates).
-- `node .opencode/plugin/tests/state_snapshot.smoke.mjs` after the tool edit
-  → `STATE_SNAPSHOT_SMOKE: ALL PASS (21/21)`, exit 0 — PASS.
-- `node .opencode/plugin/tests/*.smoke.mjs` (12 files) → 12/12 `ALL PASS`,
-  the other suites' counts unchanged (auto_resume 170/170, block_transfer
-  151/151, sandbox 76/76, compact_memory 110/110, context_recovery 17/17,
-  context_trim 40/40, ctx_gauge 3/3, gauge_core ALL PASS,
-  intercept_observer 96/96, loop_log 69/69, submit 32/32) — PASS.
-- `node .opencode/plugin/probes/handover_probe.mjs` after the edit →
-  `PROBE handover: 360/360 PASS`, exit 0 — count IDENTICAL to the pre-edit
-  capture — PASS.
+## TODO.md entries
 
-Clone (`C:/Users/Wasiejen/Repos/opencode-agent-v2`, branch `migration`):
-- Pre-change plugin + the edited smoke (`bun run
-  .opencode/plugins/tests/state_snapshot.smoke.mjs`) → exit 1 —
-  `FAIL  (23) markers ordering ... [[2,0]]` (raw order: DOC at 0, LIVE at 2),
-  26 PASS — the pin discriminates.
-- Edited v2 plugin → `SMOKE: ALL PASS`, exit 0, 27 PASS lines (pins 26 → 27)
-  — PASS.
-- Every `*.mjs` in `.opencode/plugins/tests` (11 files) run with `bun run` →
-  all `SMOKE: ALL PASS`, loop exit 0 — PASS.
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p
-  .opencode/plugins/tests/tsconfig.json` from the clone root → exit 0,
-  0 output lines — PASS.
-- `cmp -s .opencode/tools/state_snapshot.ts
-  ../opencode-agent/.opencode/tools/state_snapshot.ts` → identical (234 lines
-  each) — PASS.
-- `git status` of the clone before its commit: only the 4 task files dirty.
-
-Working tree: MAIN clean except the maintainer's own
-`maintainer/SCRATCH_PAD.md` + `opencode.jsonc` (never staged, never committed
-— the SCRATCH_PAD is a maintainer file). Clone clean except its 4 task files
-before the clone commit.
-
-Commits: MAIN unit `97714b5`; clone unit — recorded after the clone commit
-(pending at this write); MAIN bookkeeping commit carries this final summary.
-
-## TODO / inbox entries
-
-- No `TODO.md` entry added (the unit is idea-driven, no TODO id; `TODO.md`
-  unchanged in both trees).
-- `todo_inbox.md` 2026-10-22_18-41 — the spec-fixture gap (above), for the
-  planner to correct the spec text + the clone twin suggestion.
-- `agent/knowledge/knowledge_inbox.md` 2026-10-22_18-41 — the sweep's raw
-  path ARGUMENT order fact (measured both trees).
-- `agent/memory/worker/memory_inbox.md` 2026-10-22_18-41 — prove a new pin
-  FAILS on the unchanged tool before implementing.
+- `#137` entry appended in the CLONE with the order-2 status line + the three
+  code hashes; the entry carries the `state_snapshot` baseline discrepancy (with
+  evidence) and the two deferred no-carrier v1 legs. MAIN-side curation is the
+  planner's own commit (this unit never writes the MAIN tree).
+- No new TODO entry was invented for the deviations: the v1 legs with no v2
+  carrier are recorded in-file (deviations (c)+(d)) and in the #137 entry.
 
 ## Deliberately omitted
 
-- No `doc-quotes: N` counter line (the spec's deliberate non-change).
-- No change to the tool description or args (the probe pins the SURFACE; the
-  probe count stayed 360).
-- FX3 fixtures and their marker-line counts untouched in both trees.
-- No live acceptance: `.opencode/tools/*.ts` registers at the NEXT host start;
-  the digest behavior is smoke-pinned (no host restart in this unit).
-- No push (agents never push).
+- UNIT 2 (already ported); the #120 TAIL-SET write lane (the v2 twin
+  `context_trim_v2.ts` owns that surface — a separate unit); the
+  `compact_message_*` relay/intent/sweep legs (no v2 file store — the native
+  inbox queue); abort escalation, subagent special-casing, busy-silence stall
+  detection (v1 "DELIBERATELY ABSENT" list); the `state_snapshot` smoke repair
+  (out of scope, own unit); NO `opencode.jsonc` edit; NO `switchAgent`/`switchM
+  odel` (would be a behavior change → a maintainer call).
 
-## Lesson (one line)
+## Blockers
 
-A new pin must be proven DISCRIMINATING — run it against the unchanged tool
-and require the FAIL — before the implementation lands.
+None for the code. LIVE acceptance is PENDING by design: it needs the maintainer
+'s v2 host runs (the backend slot); registration/config stays maintainer domain.
+
+## Deviation from the suggested procedure (explain)
+
+The spec listed `spawn=`/`actionRe`/`limitStopCheck` greps against the v1 file
+plus its header block; I read those slices ONLY (never the whole 2191-line file)
+and additionally confirmed each v2 surface in the fork (the status-event key,
+`session.text.ended`, `session.step.ended` finish+tokens, `SessionCreateInput`,
+`SessionPromptInput`, `ModelDomain`, `EventDomain.subscribe`, `App`) so no leg
+rests on assumption. Two findings differ from the spec's stated facts and are
+recorded, not patched over: (1) the v2 `session.status` event (NOT the deprecated
+`session.idle`) is the arm/idle carrier — the plugin accepts both; (2) the
+`state_snapshot` baseline RED above.
+
+## Friction
+
+- The spec's `SessionCreateInput` sketch (`id?: { … }`) reads as a NESTED object
+  ; the generated type is FLAT (each field declared via the `{ <field>: <type> }
+  ["<field>"]` idiom, types.ts:3064-3134). The smoke pins the FLAT body; the
+  plugin header records it. Worth a knowledge-line from the planner/curation.
+
+## Lessons
+
+- A baseline gate claim must be re-measured per suite and per file: a RED that
+  pre-dates the unit must be REPORTED with its own evidence (last-touch commit,
+  alone re-run, diff stat), not absorbed into the unit's gate.

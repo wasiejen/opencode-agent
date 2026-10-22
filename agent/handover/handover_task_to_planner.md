@@ -1,53 +1,55 @@
-# Worker summary — TODO #147 unit 1: build + verify the port-sync helper (no real apply)
+# Worker summary — #147 gauge-core unification (MAIN adopts the clone's table-aware core)
 
-Worker: `worker_FlashNext` (session `ses_e9acefcfbffewfyOO0y7VCJsfP`), MAIN tree `C:/Users/Wasiejen/Repos/opencode-agent`, branch `main` (unchanged checkout).
-Status: DONE (unit 1).
+Status: COMPLETE (green, committed). Task spec `agent/handover/handover_task.md` (spec commit `f9baff6`).
+Work tree: `C:/Users/Wasiejen/Repos/opencode-agent`, branch `main`. No merge performed, no `port_sync --apply` run — those stay the planner's/maintainer's act.
 
-## Scope
-Built `agent/scripts/git/port_sync.cjs` (MAIN `main` → clone `migration` sync by MERGE, dry-run default), its self-test, and the README rows. No `--apply` against the real trees; the scratch pair under `C:/Users/Wasiejen/AppData/Local/Temp/opencode/port_sync_selftest/` was the only apply surface.
+## Files changed (MAIN)
 
-## Files changed
-| file | change |
+| File | Change |
 |---|---|
-| `agent/scripts/git/port_sync.cjs` | NEW — dry run (conflict set + per-path resolution plan + exact commands + `zero-mutation: PROVEN` for BOTH trees) / `--apply` (`merge --no-commit FETCH_HEAD` → `--theirs` resolutions → `opencode.jsonc` kept branch-local → discovery guard → clone gate → `gate: FAIL` + `git merge --abort`, or `gate: PASS` + `merge staged, not committed`) / `--main` `--clone` path overrides / `--no-gate`. Refuses on branch mismatch or a dirty clone. |
-| `agent/scripts/git/port_sync.selftest.cjs` | NEW — throwaway git repo pair (base commit → clone BEFORE the MAIN-side commit → diverge both sides), 84 checks. |
-| `agent/scripts/git/README.md` | NEW — purpose / what it does / excluded / env overrides / usage (11 lines, the <=20 cap) |
-| `agent/scripts/README.md` | categories row for `git/`. |
+| `.opencode/plugin/scripts/gauge.mjs` | REPLACED verbatim with the clone's table-aware core (769 → 1015 lines). Blob `b4bb98eb8b064294d3d38445dd937236ebc23694` = byte-identical to the clone's `HEAD:.opencode/plugin/scripts/gauge.mjs`. |
+| `.opencode/plugin/probes/handover_probe.mjs` | 3 gauge-pin hunks taken from the clone probe, nothing else: the bun:sqlite unit-mock `get()` (mass prepare keys on `tokens.total` OR `session_message`), check 32's 7-ordered-prepares assertion, `MockBunNoStep` `get()`. 8677 → 8691 lines. The other 20 diverging hunks (path repoints + clone lag) untouched. |
+| `.opencode/plugin/tests/gauge_core.smoke.mjs` | := the clone's superset (v1 pins + the v2 table-aware read/mass/spawn pins, 370 lines) with MAIN's two `// #144 retry-on-EBUSY` annotations re-added at the `rmTear(tmpC…)` / `rmTear(tmpB…)` lines. |
+| `agent/scripts/git/port_sync.cjs` | `TAKE_MAIN` += `.opencode/plugin/scripts/`. |
+| `agent/scripts/git/port_sync.selftest.cjs` | +5 checks: the gauge-core take-main pin, `classify(...) === "take-main"`, a fixture `gauge.mjs` conflicting on BOTH sides (base → clone v2 / main unified) with the dry conflict + `plan:` pin, the apply assertion that MAIN's bytes land in the clone copy, and the abort-restore pin. 82 → 87 `ck(` sites. |
+| `TODO.md` | two bullets appended to the `#147` entry (LANDED status + the measured spec discrepancies). |
 
-## Behavior added
-- Boundary as ruled: take MAIN (`--theirs`) for `.opencode/tools/`, `.opencode/plugin/probes/`, `.opencode/plugin/tests/`, `agent/handover/`, `loop/`, `TODO.md` (exact), `agent/knowledge/`, `agent/memory/`, `agent/readme/`, `agent/scripts/`; everything else git's own 3-way; `opencode.jsonc` never written (resolved `checkout --ours` + `add`, so its bytes stay byte-identical to the clone's own and MAIN's side never lands — conflict markers stripped).
-- Discovery guard fires only on `.ts` NEWLY present under `.opencode/plugin/` in the merge result (computed from the `merge-tree --write-tree` tree minus the clone branch tree) → moved to `.opencode/plugin-unported-v1/` (substructure preserved) + WARNING line. Against the real trees the guard preview is empty — the clone's `R100` renames already carry MAIN's edits, matching the verified "a merge re-adds nothing at `.opencode/plugin/*.ts`".
-- Gate (skippable by `--no-gate`): probe (PASS needs exit 0 + `PROBE handover: n/n PASS`), v1 smokes by directory enumeration (`node`, exit 0), v2 smokes (`bun run`, PASS needs `SMOKE: ALL PASS`), tsgo typecheck (exit 0, no output). Missing suites/`tsconfig`/`tsgo`/`bun` print SKIP, never fake PASS.
+Unchanged, verified still green: `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (live-db pins — no schema pin to move) and the other 10 `.opencode/plugin/tests/*.smoke.mjs`.
 
-## Measured verification (exact commands)
-| command | result |
+## Behavior changed
+
+One gauge core serves both trees. Against a v1-only DB (no `session_v2`) the unified core emits the v1 SQL byte-identically, so every pre-existing MAIN pin (S6 21-28, S7 29/30/31/33-39, S33/S34, the 12 smokes) passes unchanged. The unit-mock pins now script the coexisting catalog, so they assert the table-aware prepare order in BOTH trees (tree-independent pins). The clone's v2 smoke pins now live in MAIN, so `port_sync` (tests + scripts take MAIN) cannot drop them at merge.
+
+## Verification (exact commands, run in MAIN, post-change)
+
+| Command | Result |
 |---|---|
-| `node agent/scripts/git/port_sync.selftest.cjs` | PASS — exit 0, `checks: 84 pass=84 fail=0`, `SELFTEST: ALL PASS` |
-| `node agent/scripts/git/port_sync.cjs` (real-tree dry run) | PASS — exit 0, `merge-tree: 7 conflict(s)`, 6 `take MAIN (--theirs)` plan lines, `config: kept branch-local (host-owned)`, `zero-mutation: PROVEN (both trees: HEAD + status --porcelain identical)` |
-| `node .opencode/plugin/probes/handover_probe.mjs` (MAIN, after the change) | PASS — `PROBE handover: 360/360 PASS` (matches this tree's annotation; do not restate as the clone's) |
-| `git -C C:/Users/Wasiejen/Repos/opencode-agent-v2 rev-parse --short HEAD` | `90d6d6c` before and after the dry run (clone untouched, status clean) |
+| `node .opencode/plugin/probes/handover_probe.mjs` | `PROBE handover: 360/360 PASS`, exit 0 — PASS |
+| `node .opencode/plugin/tests/gauge_core.smoke.mjs` | `GAUGE_CORE_SMOKE: ALL PASS`, exit 0 — PASS |
+| `node .opencode/plugin/tests/ctx_gauge.smoke.mjs` | `CTX_GAUGE_SMOKE: ALL PASS (3/3)`, exit 0 — PASS |
+| `for f in .opencode/plugin/tests/*.smoke.mjs; do node "$f"; done` | 12/12 exit 0 (`ok=12 fail=0`) — PASS |
+| `node agent/scripts/git/port_sync.selftest.cjs` | `checks: 106 pass=106 fail=0` + `SELFTEST: ALL PASS`, exit 0 — PASS |
+| `node agent/scripts/git/port_sync.cjs` (dry) | exit 0, `zero-mutation: PROVEN (both trees: HEAD + status --porcelain identical)`, `merge-tree: 9 conflict(s)`, 8 `take MAIN (--theirs)` plan lines + `config: kept branch-local (host-owned)` — PASS (see delta below) |
+| `git -C C:/Users/Wasiejen/Repos/opencode-agent-v2 show HEAD:.opencode/plugin/scripts/gauge.mjs \| wc -l` | `1015` — PASS (core size per spec) |
 
-Self-test coverage of the DoD-mandated points: both resolution glob sets (10 positive + 5 negative rule checks, incl. `TODO.md.bak`, `agent/handovers/`, `.opencode/plugin/x.ts` NOT take-main); `opencode.jsonc` never touched (byte-identical, no conflict markers, MAIN side absent); guard moves `.opencode/plugin/x.ts` → `.opencode/plugin-unported-v1/x.ts` with the WARNING line, leaves pre-existing plugin `.ts` and the `.opencode/plugins/**` estate alone; gate-FAIL path prints `gate: FAIL` + echoes `cmd: git -C <clone> merge --abort` and leaves the clone clean at HEAD with all merged content reverted (exit 1).
+Before the pin move, the same probe run failed exactly 2 checks — `[32] unit-mock bun:sqlite …` and `[38] fallback: …` — the spec's predicted pair; after the move 0 FAIL. No core defect: the unified core never returned `no-total`/`notAvailable`/a throw against the v1-only fixtures (all 360 green).
+
+Delta vs the spec's DoD-2 wording: the real-tree dry run prints NO `plan:` line for `.opencode/plugin/scripts/gauge.mjs`, because after the swap both sides hold the SAME blob (verified: clone `git rev-parse HEAD:…` == `git hash-object` MAIN's file) so `merge-tree` auto-merges it — a `plan:` line prints only for conflicted paths. The rule is pinned instead in the selftest fixture (a conflicting `gauge.mjs` both sides). The dry run now lists 9 conflicts (the unit-1 record said 7): `TODO.md` and `loop/autorun-2026-10-01_03-27/loop_log.md` joined the set because both trees edited them; both take MAIN by rule.
 
 ## Commits
-- `dfebc3a` — `agent/scripts/git/port_sync.cjs` + `agent/scripts/git/README.md` + the `agent/scripts/README.md` row.
-- `db91bb3` — `agent/scripts/git/port_sync.selftest.cjs` (green self-test).
-- Final commit (this file + the TODO #147 status line + the loop-log DONE line + the `submit` inbox lanes) — its hash lives in `git log`, not in this file.
-Committed together: `TODO.md`, `agent/handover/handover_task_to_planner.md`, `loop/autorun-2026-10-01_03-27/loop_log.md`, and the inbox lanes `agent/agent_feedback.md`, `agent/knowledge/knowledge_inbox.md`, `agent/memory/worker/memory_inbox.md` (my `submit` entries; those two lanes also carried other sessions' uncommitted appends — preserved, not authored by me).
-Working tree after: `dirty` — `agent/agent_ideas.md` (pre-existing, not mine), `maintainer/SCRATCH_PAD.md` + `opencode.jsonc` (maintainer-owned, never staged). No code file left dirty.
 
-## TODO / inbox
-- `TODO.md` #147: appended one status line inside the existing entry (unit 1 BUILT + GREEN, the two deltas below). No new entry.
-- Deltas recorded (not silently widened): #147's acceptance line says `--ours` for `agent/handover/**`+`loop/**`, and a green gate "commit the merge"; the ruled boundary + this spec say `--theirs` and stage-only. The script follows the ruled spec. The printed config line is `config: kept branch-local (host-owned)` per DoD 4, not `config: skipped (host-local)`.
-- Friction + lesson submitted through the `submit` tool (see below).
+1. `ac7c468` (this worker) — the core swap + the 3 probe pins + the unified gauge_core smoke.
+2. the port_sync glob + selftest pins + TODO.md + this handover = THIS commit (its own hash cannot appear here; the planner reads it from `git log`).
 
-## Omitted deliberately
-- The first real `--apply` and the clone-gate run against the real v2 estate (spec DO-NOT-touch: the maintainer's act).
-- The `agent/readme/repo_commands.md` pointer to the new script — maintainer-owned, flagged instead: that file's §Run/test section still describes only the MAIN-tree gate; the clone gate command set lives in the task spec.
-- Merge-commit / push paths: the script has none.
+Working tree after the commits: clean for the task files; the only residue is host/runtime noise deliberately left unstaged — `opencode.jsonc`, `maintainer/SCRATCH_PAD.md`, `.opencode/temp/compact_budget.json`, `todo_inbox.md`, and two untracked `archive/sessions/compaction_dumps/ses_e9b246…_*` files (never staged per the access rules).
 
-## Blockers
-None.
+## Deliberately omitted / not done
+
+- No `--apply`, no merge commit, no clone-tree write — the planner/maintainer owns that (spec approval boundary).
+- MAIN's probe path-repoint hunks NOT taken from the clone (the #141 `plugin-unported-v1` repoint stays clone-side; `port_sync`'s Rule-A patch applies it post-merge).
+- No second gauge module, no fork of the core (spec step 4); `.opencode/plugin-unported-v1/scripts/gauge.mjs` (clone 7-line shim) untouched.
+- The clone tree's own files stay as they are until the merge lands them.
 
 ## Lesson
-Node `spawnSync` cannot exec this host's PATH shims: `bun` (extensionless) → ENOENT, `bun.cmd` → EINVAL. The script resolves the real exe `C:/Users/Wasiejen/AppData/Roaming/npm/node_modules/bun/bin/bun.exe` (env `BUN_EXE` override) and falls back to PATH `bun`/`bun.exe`, printing SKIP rather than a fake PASS.
+
+A gauge-core swap needs the MOCK catalog pinned before the SQL pins: the probe's unit-mock `get()` decides which catalog the core sees, so a pin that keys only on `tokens.total` silently turns a table-aware core into a `no-total` reader (that is what made check 38, a fallback-chain pin, fail for a schema reason).

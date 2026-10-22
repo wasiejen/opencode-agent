@@ -66,5 +66,8 @@ AGENTS.md (wave spec lists them).
 - `2026-10-22_path-field-truncation-B.md` — the intercept log NEVER cuts inside a single-path field (main repo + clone twin).
 - Order: A then B (independent changes; both fix TODO #140; #141 = the clone gate red baseline the clone numbers must be diffed against).
 
+## Wave 2026-10-22 — the v2 clone gate (TODO #141; maintainer priority item 2, first step)
+- `2026-10-22_v2-clone-gate-141.md` — repoint the clone probe + smoke v1-module paths to `.opencode/plugin-unported-v1/` (or v2 twins) until the clone gate prints real green counts. Launch channel: copied into `agent/handover/handover_task.md`.
+
 ## What does NOT go here
 NAP, non-compaction specs.

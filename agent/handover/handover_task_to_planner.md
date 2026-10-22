@@ -1,81 +1,151 @@
-# Worker summary — planner-15 units: sandbox-smoke env-robustness + block_transfer WRITE regions (BOTH trees)
+# Worker summary — TODO #137 unit 3a: the v2 context-family plugin core (clone `migration`)
 
-Status: COMPLETE
-Assigned: `worker_FlashNext`, session `ses_e9e9f2891ffe2dP7gkx74SGSxH`.
-Work order: MAIN repo (`opencode-agent`, branch `main`) units 1+2, then the clone (`opencode-agent-v2`, branch `migration`) twins. Stayed on each branch; absolute paths used for every clone file edit (relative paths resolve against the session CWD = MAIN).
+Status: COMPLETE (the unit as specced; the live v2-host acceptance of the ctx
+line stays PENDING maintainer restart, per the spec).
 
-## Files changed
+## Task and scope
 
-MAIN (`C:\Users\Wasiejen\Repos\opencode-agent`) — commit `05df70f`:
-- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — the smoke SELF-SETS `process.env.TEMP`/`TMP` to `<Temp>/bt_sandbox_env_temp` (a fixture dir under `SCRATCHPAD/..`, created at startup, deleted in the exit finally, ambient values restored). `tempRoot` no longer reads the ambient shell env. The 3 byte-exact roots-list pins (REPLACE reject, fixture REJECT, item-3 single-root) now hold because the test-side mirror and the tool's `sandboxCheck` read the SAME env at call time. Tool isolation design untouched.
+Port the context-family core of the v1 `.opencode/plugin/ctx_watchdog.ts` into
+ONE new v2 plugin in the clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`
+(branch `migration`, baseline `4054a0a` clean): the gauge readout through the
+shared v2-paired gauge core + the per-request `ctx:` line injection at the
+v2 `session.context` hook with cache discipline + evidence log lines. The
+nudge ladder and the handover pre-flight ride spec 3b (same file, next
+launch) — deliberately absent.
 
-MAIN — commit `b713585`:
-- `.opencode/tools/block_transfer.ts` — WRITE gains the regions/text contract guard; the `description` MODES WRITE sentence and the `regions` arg describe gain the N-regions contract line.
-- `.opencode/tools/block_transfer.md` — one new bullet: the WRITE `regions` contract.
-- `.opencode/plugin/tests/block_transfer.smoke.mjs` — the old 2-region fan-out pin replaced by a reject pin; a paired 1-region pin added.
-- `.opencode/plugin/probes/handover_probe.mjs` — check 307 REPINNED (named repin).
+## Files changed (IN THE CLONE ONLY)
 
-CLONE (`C:\Users\Wasiejen\Repos\opencode-agent-v2`) — commit `2a3759f`:
-- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — same self-set fixture env block (clone twin), same finally restore.
-
-CLONE — commit `4054a0a`:
-- `.opencode/tools/block_transfer.ts`, `.opencode/tools/block_transfer.md`, `.opencode/plugin/tests/block_transfer.smoke.mjs`, `.opencode/plugin/probes/handover_probe.mjs` (check 307 REPINNED) — same contract guard and message, byte-identical reject text; the pins use the CLONE's own older feedback format (`(lines 2..3, first: 'REPL')`, not MAIN's hardening-item-7 form).
+- NEW `.opencode/plugins/context_family.ts` — default export `{ id:
+  "context_family", setup }` ONLY (the v2 loader contract); registers
+  `ctx.session.hook("context", …)` (fires per PRIMARY request —
+  `model-request.ts:422-431`); `readGauge(undefined, requestOwnSessionID)` →
+  `formatGauge` + `loopIterationSuffix`; APPEND-ONLY tail entry
+  `{ role: "user", content: [{ type: "text", text: "ctx: …" }] }`;
+  match-only own-session gate (mismatch → no post, no line); evidence
+  lines to `.opencode/temp/ctx_family.log` (v1 vocabulary: kinds `ctxmsg`
+  / `gauge`, reasons `db-error` + `messages-not-array`; the v1
+  `invalid-messageID` branch has no v2 counterpart — the draft carries no
+  messageID — recorded, unemitted).
+- NEW `.opencode/plugins/tests/context_family.smoke.mjs` — 24 checks, bun
+  + mock ctx, fixtures in the scratchpad
+  `C:/Users/Wasiejen/AppData/Local/Temp/opencode/ctx-family-smoke-v2`
+  (fixture `session_v2` + `session_message` DB, budget + loop-root files;
+  the live DB never read; the gauge core steered via `setDbPath` /
+  `setBudgetFileForTest` / `setLoopRootForTest`).
+- MOD `.opencode/plugins/tests/tsconfig.json` — `files` now
+  `["typecheck.ts", "../context_family.ts"]`; `paths` gained
+  `"@opencode/ai": ["C:/Users/Wasiejen/Repos/opencode/packages/ai/src/index.ts"]`
+  (needed so the plugin's TYPE-ONLY `Message` import resolves for tsgo —
+  same file, machine-local test infra).
+- MOD `.opencode/plugins/tests/typecheck.ts` — pins BOTH plugin defaults
+  against `Plugin.Plugin`.
+- MOD `.opencode/plugins/tests/README.md` — a short new section for the
+  new smoke (docs).
 
 ## Behavior changed
 
-- WRITE with a `regions` LIST of more than one region and the single `text` arg now returns, byte-exact:
-  `Error: the 'regions' list has 2 regions but WRITE takes ONE 'text' (it would fan the same text into every region) — use exactly one region in the list, or one WRITE call per region.`
-  (the count tracks the region count). The guard runs AFTER the overlap check — the overlap teaching stays reachable — and BEFORE any write, so no partial state and no `last_write` store on rejection. The single-span form and the ONE-region list form are UNCHANGED (verified byte-exact).
-- Gate hygiene only: the sandbox smoke no longer depends on the ambient `TEMP`/`TMP`; it self-sets them and restores the ambient values.
-- Deviation from the suggested procedure: none in substance. Probe repins exceeded the spec's single check-113 assumption — the regions change forces check 307 in both trees (its byte-exact fan-out pin asserted the old behavior); check 113 did NOT move (no sandbox message shape change).
+New v2 plugin module + its smoke + the typecheck config. No existing file's
+behavior changed; no live host effect yet (plugin registration/restart =
+maintainer domain; `opencode.jsonc` untouched).
 
-## Measured verification (exact commands, PASS/FAIL)
+## The bounded shape question (answered, measured)
 
-MAIN, after unit 1 (commit `05df70f`):
-- `env -u TEMP -u TMP node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → PASS `BT-SANDBOX-SMOKE: ALL PASS (76/76)` (was a startup `TypeError` before: `path.join(undefined)`).
-- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → PASS 76/76.
-- `node .opencode/plugin/tests/block_transfer.smoke.mjs` → PASS 150/150 (baseline intact).
-- `node .opencode/plugin/probes/handover_probe.mjs` → PASS 360/360.
+The injectable entry is `@opencode/ai`'s `LLM.Message` —
+`packages/ai/src/schema/messages.ts:237-244` (a `Schema.Class` over Struct
+fields; instance type = plain structural fields: `role` required,
+`content: Array<ContentPart>` required, `id` optional). The append form
+`{ role: "user", content: [{ type: "text", text }] }` typechecks against the
+REAL type (a TYPE-ONLY import of `Message` — erased at runtime, the clone
+has no node_modules). NEGATIVE CONTROL MEASURED: a deliberately bogus
+push (`role: "bogus-role", content: 5`) turned tsgo RED with
+`Type '"bogus-role"' is not assignable to type '"assistant" | "system"
+| "tool" | "user"'` + the content-part union error → the pin is real
+(not an `any` widening). An earlier GENERIC attempt was the failed
+approach (push into `Array<unknown>` = no check); replaced by the typed
+import before commit.
 
-MAIN, after unit 2 (commit `b713585`):
-- bt smoke → PASS `BLOCK_TRANSFER_SMOKE: ALL PASS (151/151)` (150 baseline + 1 net new pin).
-- sandbox smoke both forms → PASS 76/76 each.
-- probe → PASS 360/360. Pre-repin run showed exactly one FAIL: `[307] WRITE 'regions' LIST (2 regions...` → the named repin.
+## Measured verification (2026-10-22, run in the clone)
 
-CLONE, after unit 1 (commit `2a3759f`):
-- sandbox smoke env-less → PASS 76/76; with env → PASS 76/76; bt smoke → PASS 131/131; probe → PASS 360/360.
+- New smoke: `bun .opencode/plugins/tests/context_family.smoke.mjs` →
+  24 `PASS` lines, 0 `FAIL`, final `SMOKE: ALL PASS` → PASS.
+- Typecheck: `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe
+  -p C:/Users/Wasiejen/Repos/opencode-agent-v2/.opencode/plugins/tests/tsconfig.json`
+  → 0 bytes of output = ZERO errors → PASS.
+- Clone gate UNCHANGED (15 units, `green=15 red=0`): `node
+  .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360
+  PASS`; all 12 node smokes (`auto_resume`,
+  `block_transfer.sandbox`, `block_transfer`, `compact_memory`,
+  `context_recovery`, `context_trim`, `ctx_gauge`, `gauge_core`,
+  `intercept_observer`, `loop_log`, `state_snapshot`, `submit`) → `ALL
+  PASS`; the existing v2 intercept smoke `bun .opencode/plugins/tests/smoke.mjs`
+  unchanged → `SMOKE: ALL PASS` (47 checks + the unit pins); the new smoke
+  → `SMOKE: ALL PASS`.
+- Baseline re-measured BEFORE unit A's commit (green=14 red=0 pre-smoke) and
+  AFTER every commit; identical.
+- Working tree: CLEAN in the clone after each commit (`git status --short`
+  empty). MAIN repo: only the UNCOMMITTED handover file (this file) + no
+  other change; MAIN repo untouched otherwise.
 
-CLONE, after unit 2 (commit `4054a0a`):
-- bt smoke → PASS `BLOCK_TRANSFER_SMOKE: ALL PASS (132/132)` (131 baseline + 1).
-- sandbox smoke env-less and with env → PASS 76/76 each.
-- probe → PASS 360/360 (check 307 repinned to the paired + reject forms).
+## Commits (IN THE CLONE, branch `migration`)
 
-Working tree: MAIN `clean` after the final commit (branch `main`); CLONE `clean` (branch `migration`). Fixture dir `bt_sandbox_env_temp` removed by the smoke's finally (verified by `ls` of the Temp dir).
+- `1174d98` — Add v2 context_family plugin: session.context ctx-line injection
+  (plugin + tsconfig `files`/`paths` + typecheck pins).
+- `f149745` — Add the context_family v2 smoke: 24 pins (+ tests README
+  section). Code-only per the #141 precedent (no handover file in the clone).
 
-## Commits
+## Deviations from the suggested procedure (recorded)
 
-- MAIN `05df70f` — sandbox smoke self-set fixture TEMP env.
-- MAIN `b713585` — WRITE regions reject + desc/.md lines + smoke + probe 307 repin.
-- CLONE `2a3759f` — clone twin of the smoke env fix.
-- CLONE `4054a0a` — clone twin of the regions contract (smoke + probe 307 repin).
-- MAIN final commit (with this file) — handover + loop-log DONE + inbox writes.
+1. Evidence per-fire ordering: v1 logged its `chatmsg` line BEFORE the db-error
+   check (two lines); the spec DoD 5 demands ONE line on `db-error` → the
+   per-fire line is suppressed on gauge-failure branches. Documented in the
+   plugin header.
+2. DoD 5 vocabulary kept: `db-error` + `messages-not-array` (the
+   `parts-not-array` analogue on the draft array). No new reason invented.
+3. The `messages` param is typed against `@opencode/ai` `Message` (TYPE-ONLY
+   import + tsconfig `paths` addition) instead of the spec's guessed
+   generic-inference route — measured: the generic route silently accepted a
+   bogus literal (no pin). Fail-closed is preserved by tsgo.
+4. `typecheck.ts` pins both plugin defaults (the spec only required the tsconfig
+   `files` extension) — kept the existing file's purpose, extended it.
 
-Probe repins named: check 307 in BOTH trees (MAIN `b713585`, CLONE `4054a0a`). Check 113 untouched.
+## TODO / inbox entries
 
-## Inbox entries submitted (todo channel + others)
+- None written into `TODO.md` (worker ownership: the planner records the #137
+  status line with its bookkeeping commit).
+- Two findings submitted through `submit` (feedback + knowledge) — see the
+  friction lines below; both are tooling facts, not repo defects.
 
-- `todo_inbox.md`: MAIN `.opencode/tools/block_transfer.md` staleness (line 7 "creates the file if absent" vs MAIN's "never creates a file"; line 13 omits the config allow roots from TODO #140 unit A) — found while editing the file, not fixed (out of scope, would need a 5th commit).
-- `agent/agent_feedback.md`: the spec's pin audit named only check 113; a contract change forces one named repin per tree in the probe.
-- `agent/knowledge/knowledge_inbox.md`: the smoke self-set fixture env pattern (gate runs must not read ambient TEMP/TMP).
-- `agent/memory/worker/memory_inbox.md`: pin-inventory-before-contract-change + twin message-parity/feedback-format rules.
+## Deliberately omitted (per spec)
 
-## Deliberately omitted
+The nudge ladder + watchdog handover pre-flight (spec 3b, same file, next
+launch); compact_memory / context_trim / U3 ports (port map §4 order 4);
+the small tools (order 5-8); LIVE v2-host acceptance of the ctx line
+(backend slot = maintainer domain) — STATE: PENDING; the v1-side event
+observer log (no v2 role — retired-in-v2 for this family).
 
-- The paired per-region-text alternative end state (the inbox's other option) NOT built, per spec.
-- The clone's older WRITE hardening gaps (no empty-`regions` rejection, no hardening-item-7 feedback form) NOT ported — out of task scope.
-- MAIN `.md` staleness lines NOT fixed (see the inbox entry).
-- The multi-region summary line in the WRITE feedback (`Wrote N regions into ...`) left in place — unreachable while the guard rejects, but it becomes live again if the paired-text alternative is ever chosen; removing it would touch more pin surface than the guard needs.
+## Blockers
 
-## Reusable lesson
+None.
 
-Pin inventory before a contract change: grep the byte-exact message/feedback strings in EVERY pin file (both smokes and the probe) in BOTH trees; the probe pins what the smokes pin, so each tree needs one named repin. Keep the new error text byte-identical across trees while copying each tree's own feedback-line format.
+## Lessons
+
+- On win32 Git-Bash, node cannot spawn the `bun` PATH shim (ENOENT) and
+  `bun.cmd` needs `shell: true` (EINVAL otherwise); run bun units through
+  bash, or spawn `bun.cmd` with a shell (measured 2026-10-22).
+- A generic `E extends Array<unknown>` hook param silently widens to
+  `Array<unknown>` — for a real type pin, name the fork's type
+  (`@opencode/ai` `Message`) with a TYPE-ONLY import and verify with a
+  negative control.
+
+## Friction (recorded here, NOT submitted)
+
+The spec restricts MAIN-repo writes to this summary file, so the
+`submit` channels (which write into the MAIN repo's inbox files) and the
+loop-log `DONE` line were deliberately WITHHEPT — the planner owns that
+bookkeeping. Friction found: (1) no aggregate clone-gate runner exists, so
+the 14-unit gate was hand-rolled (a scratchpad bash runner
+`$TMP/opencode/run_gate.sh` did the job; a ready-made aggregate runner would
+save calls); (2) the win32 bun-spawn surprise cost ~6 calls of runner
+debugging (fact above); (3) the illusory typecheck pin (zero errors while a
+bogus literal was accepted) cost one extra iteration before the negative
+control confirmed the REAL pin.

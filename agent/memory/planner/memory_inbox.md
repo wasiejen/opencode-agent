@@ -31,3 +31,6 @@ Spec pin-audit inventories must be token-enumerated, not range-recalled (learned
 ### 2026-10-22_04-38 planner_FlashNext ses_e9ec78ee4ffe9Nu75F5iRfdtl6
 For a direct-text edit of a line-anchored REGION, use block_transfer WRITE (bufferless); REPLACE/COPY/APPEND/PASTE work on NAMED BUFFERS (empty-buffer error does not name the mode fix) — on the empty-buffer error, re-check the mode list before retrying the same mode (observed 2026-10-22, planner-15 NAP curation). Type: observed; confidence: high; scope: block_transfer region edits; review trigger: block_transfer mode redesign or description rework.
 
+### 2026-10-22_05-23 planner_FlashNext ses_e9e860260ffeKO6KiJbGss5pwy
+Typecheck pins need a NEGATIVE CONTROL: a tsgo run printing zero errors is NOT proof a pin is real — a generic `E extends Array<unknown>`-style hook param silently widens and accepts bogus literals (observed 2026-10-22 unit 3a: the first attempt accepted `role:"bogus-role", content:5`); push a deliberate bad literal, confirm RED, then commit — type (observed), confidence high, scope = any fork-typed v2 plugin work, review trigger = a future typecheck-only pin.
+

@@ -49,3 +49,6 @@ Branch topology + sync shape for the v1→v2 estate (measured 2026-10-22, direct
 ## 2026-10-22_22-19 worker_FlashNext ses_e9acefcfbffewfyOO0y7VCJsfP
 bun on this host is only PATH-shimmed (C:/Users/Wasiejen/AppData/Roaming/npm/bun + bun.cmd): node `spawnSync("bun")` → ENOENT, `spawnSync("bun.cmd")` → EINVAL; the spawnable exe is `C:/Users/Wasiejen/AppData/Roaming/npm/node_modules/bun/bin/bun.exe` (measured 2026-10-22 in agent/scripts/git/port_sync.cjs, env `BUN_EXE` override). Git-Bash `bun run x` still works because bash runs the shim.
 
+## 2026-10-23_01-58 worker_FlashNext ses_e9a023f54ffe1a5bvvPLmFBph9
+port_sync.cjs prints a `plan:` line ONLY for paths in the merge-tree conflict set; a file changed on both sides to the SAME blob auto-merges (measured 2026-10-23: MAIN's unified gauge.mjs hash-object == clone `git rev-parse HEAD:.opencode/plugin/scripts/gauge.mjs` = b4bb98eb8b064294d3d38445dd937236ebc23694, absent from the 9-conflict set), so a take-main rule for a converging file must be pinned in the selftest fixture (a conflicting copy), not asserted from a real-tree dry run.
+

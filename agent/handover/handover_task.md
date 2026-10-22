@@ -1,128 +1,74 @@
-# Task spec — TODO #137 unit 5c: block_transfer ported to v2 (clone `migration`) — QUEUED, launch AFTER 5b verifies
+# Spec — state_snapshot digest: live-class marker hits sort first
+
+Task id: idea-driven (agent_ideas.md entry 2026-10-22_04-38), no TODO id.
+Pre-approved class: agent-facing tool digest shape, no maintainer-visible behavior change.
 
 ## Goal
-Port the `block_transfer` tool (the file-manipulation workhorse) to v2 as a
-plugin-registered tool: same modes, anchors, buffers, feedback lines, sandbox
-rules — re-registered via `ctx.tool.transform` because v2 never loads
-`.opencode/tools/`.
 
-## Assignment
-- Repo: the v2 clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`, branch `migration`
-  (HEAD = post-5b). Stay on the current checkout.
-- Assigned worker: `worker_FlashNext`.
-- TODO entry: `TODO.md` #137 + the staleness entry #143. Design of record (READ-ONLY):
-  the MAIN repo `.opencode/tools/block_transfer.ts` (1034 lines MEASURED 2026-10-22 —
-  the CURRENT v1 behavior, incl. the #140/#142 field rules, the WRITE-regions
-  N>1+one-text REJECT and the item-7 feedback formats). The CLONE twin
-  `.opencode/tools/block_transfer.ts` (845 lines) is STALE (189-line delta — TODO #143)
-  and is NOT the baseline. Read the MAIN file in SECTIONS, never all at once:
-  header 1-140, the mode/anchor resolver ~200-560, the execute/return assembly
-  ~560-1034 (ranges indicative; grep the section markers first).
+In the `## markers` section of the planner init digest, marker-sweep hits from
+LIVE-CLASS paths print BEFORE DOC-CLASS hits, so live maintainer/TODO markers are
+never crowded out by the 20-line cap. Nothing else changes.
 
-## Definition of done (measurable)
-1. NEW plugin `.opencode/plugins/block_transfer.ts` (id `block_transfer`)
-   registering the tool via `await ctx.tool.transform((editor) =>
-   editor.add(blockTransferTool))` (5a/4a pattern; the input schema mirrors the
-   v1 args: `mode`, `srcFile`/`dstFile`, `startMarker`/`endMarker`/`targetMarker`,
-   `refs[]`, `text`, `regions[{start,end}]`, `from`/`count`, `bufferName`).
-2. Behavior carried BYTE-COMPATIBLE against the MAIN twin (the current v1
-   behavior): the MODES set
-   (MOVE/COPY/APPEND/CUT/PASTE/REPLACE/WRITE/PEEK/MAP/DELETE/CLEAR), the anchor
-   semantics (line-number refs vs prefix markers, the ALL-DIGIT rule), the buffer
-   semantics (`last_write` auto-store, `last_move_source`, CLEAR), the RETURN-LINES
-   feedback formats = the MAIN TWIN'S formats (incl. the WRITE
-   `old A..B -> new C..D, file now N lines` line and the multi-region REJECT —
-   the MAIN twin carries hardening the clone twin LACKS, see Verified facts),
-   the teaching errors (non-unique
-   anchor with match count + first 3 matches, out-of-range ref, empty buffer,
-   overlapping regions list, the WRITE multi-region + one-text REJECT), the
-   same-file MOVE-with-shift rule, the extraction-order guarantees (dst checks
-   before the source cut), and the WRITE auto-stores-`last_write` leg.
-3. Sandbox carried (the MAIN twin's CURRENT form, incl. the hardening items
-   the clone twin lacks): roots = repo CWD root + config allow roots + the
-   TEMP/TMP env OVERRIDE AHEAD of `os.tmpdir()` (hardening item 10, 2026-10-21 —
-   POSIX-safe; Windows keeps the byte-exact 2-root error form since TEMP ==
-   os.tmpdir()), dedupe by EXACT string equality on the resolved lower-cased
-   native form, trailing `/**` stripped, config unreadable → EMPTY set (fail-open
-   to the CWD+temp roots). Config root source = the plugin's OWN repo root
-   `opencode.jsonc`: read the ON-DISK shape (measured today: the v1-style
-   `"permission": { "external_directory": {...allow...} }` object) AND support the
-   v2 native array form `permissions: [{action:"external_directory", resource,
-   effect}]` if the maintainer converts the file — support BOTH, never edit the
-   config file.
-4. SMOKE — new `.opencode/plugins/tests/block_transfer.smoke.mjs` +
-   `block_transfer.sandbox.smoke.mjs` (bun or node per the plugins/tests home;
-   scratchpad fixture trees; the sandbox twin self-sets its fixture TEMP env,
-   mirroring the v1 sandbox smoke's mechanism). Pins: one per teaching error +
-   the mode happy paths + the buffer legs + the multi-region REJECT + the
-   same-file move-with-shift + the sandbox allow/deny lines (the deny line's
-   allowed-roots list format carried). `SMOKE: ALL PASS`.
-5. GATE — clone probe `360/360` UNCHANGED; the 12 v1 node smokes ALL PASS incl.
-   `plugin/tests/block_transfer.smoke.mjs` 132/132 + `block_transfer.sandbox.smoke.mjs`
-   76/76 (they pin the v1 file — DO NOT repurpose); ALL v2 plugin smokes ALL
-   PASS; tsgo exit 0 (tsconfig `files` += the plugin); tests README section; clone
-   tree clean.
+## Definition of done
 
-## Verified facts (measured at spec-authoring, 2026-10-22)
-- Sandbox facts measured in the MAIN twin (1034 lines @ 2026-10-22): `loadConfigRoots()`
-  at module top (`:113` `const CONFIG_ROOTS = loadConfigRoots()` — ONCE at load); roots list
-  `[cwd, ...CONFIG_ROOTS, tempOverride, os.tmpdir()]` at `:130-131`
-  (`tempOverride = process.env.TEMP ?? process.env.TMP`); the out-of-sandbox
-  error line `Error: '<givenPath>' is outside the sandbox (allowed: <roots>)`
-  at `:140`; the note that out-of-sandbox is handled upstream by the intercept
-  plugin + this stays the backstop at `:202-203`; execute root =
-  `context.directory || process.cwd()` at `:523` → in v2: the setup-captured
-  `ctx.location.directory` (context_family.ts:497 precedent).
-- v2 config permission shape (if/when the file is converted): flat ordered
-  `permissions: [{action, resource, effect}]`, last match wins — fork
-  `schema/src/permission.ts:71-81` + `core/src/tool.ts:292-295` (`findLast`),
-  research doc `agent/research/2026-10-15_opencode-v2-impact.md` §5 table;
-  the clone `opencode.jsonc` on disk TODAY still carries the v1 object form
-  (measured this session).
-- Tool contract + registration + ToolContext facts: as pinned in the 5a spec
-  (fork `packages/schema/src/tool.ts:99-106` / `:84-88`,
-  `packages/plugin/src/promise/tool.ts:11-24`; clone
-  `plugins/compact_memory.ts:693-694`).
-- Twin staleness (measured 2026-10-22, `cmp`/`wc -l`/`diff` between the trees):
-  MAIN `.opencode/tools/block_transfer.ts` = 1034 lines, clone twin = 845 —
-  333 `diff` lines; the clone twin LACKS the MAIN hardening items (item 10
-  POSIX temp root at MAIN `:121-133` etc.). `submit.ts`: MAIN 189 vs clone 167
-  (the 2026-10-21 newline-guard leg) — same staleness class → TODO #143. The
-  5b trio is BYTE-IDENTICAL between the trees (`cmp` clean).
-- Baselines: clone probe 360/360; clone v1 bt smokes 132/132 + sandbox 76/76
-  (they pin the STALE twin — untouched, DO NOT repurpose); MAIN bt 151/151 +
-  sandbox 76/76 (MAIN gate untouched by this unit); v2 smokes to date: intercept
-  52, context_family 46, context_trim_v2 65, compact_memory 63, loop_log 29 +
-  submit 29 (5a), (post-5b) the read-tool suites.
+- `markersSection` partitions the sweep lines into LIVE-CLASS (path matches
+  `maintainer/` prefix, `TODO.md`, `README.md`, `WIKI.md`, or `.opencode/` prefix)
+  and DOC-CLASS (everything else), sorts each group by the line string, and emits
+  LIVE first, then DOC, then the existing cap + `… (+<k> more)` steer unchanged.
+- No new output line shape; no new header/steer text; the sweep command itself
+  stays byte-verbatim.
+- MAIN smoke + clone smoke each gain ONE pin: a LIVE-path fixture marker line
+  appears in the markers section BEFORE the `loop/notes.md` DOC fixture line.
+- Verification (both trees): the state_snapshot smoke ends `ALL PASS` with
+  the pin count grown by exactly the pins added; MAIN v1 gate 12/12 suites
+  PASS; the MAIN probe count captured BEFORE the edit stays identical after it
+  (exit 0); clone v2 bun smokes ALL PASS + tsgo exit 0.
+- Checkpoint commits per verified unit (MAIN, then clone); `TODO.md` +
+  `agent/handover/handover_task_to_planner.md` ride the final commit;
+  status `LANDED` (hash recorded by the planner, never in the worker commit).
+
+## Verified facts (measured 2026-10-22, this session)
+
+- Sweep total: 143 hits = 18 LIVE-CLASS + 125 DOC-CLASS (awk prefix test).
+  The digest today shows ZERO live hits inside the 20-line window (`… (+123 more)`).
+- MAIN `.opencode/tools/state_snapshot.ts` (206 lines): `MARKER_SWEEP` const
+  27-30; `markersSection` 141-170 (cap line 158: `const body = lines.slice(0, 20)`);
+  buildDigest entry 174.
+- Clone twin `.opencode/tools/state_snapshot.ts` is BYTE-IDENTICAL to MAIN pre-change
+  (`cmp -s` PASS, 206 lines) — it must stay byte-identical after the change.
+- Clone v2 twin `.opencode/plugins/state_snapshot.ts` (265 lines): `MARKER_SWEEP`
+  const at 47; `markersSection` 166-190 (cap line 184, semicolon style);
+  buildDigest entry 200.
+- Pin surfaces: MAIN `.opencode/plugin/tests/state_snapshot.smoke.mjs` — pins
+  `10` at 211-217 and `11` at 219-225 read the markers section; pin `19` (line 284+)
+  is the FX3 60-line cap arithmetic — DO NOT touch FX3 or its fixture marker-line count.
+  Clone `.opencode/plugins/tests/state_snapshot.smoke.mjs` — pins `(9)` 173-175,
+  `(10)` 176; FX3 pins `(21)` 240, `(22)` 242 — DO NOT touch FX3 there either;
+  the FX1 fixture block writes `loop/notes.md` at 131.
+- Probe `.opencode/plugin/probes/handover_probe.mjs` S35 block at 8578-8600 pins
+  the SURFACE only (file exists + `tool()` default export + empty args key list
+  + the description steer). Do not change the tool description or args → the
+  probe count must stay unchanged; capture it before editing.
+- `.opencode/tools/*.ts` is host-registered at the NEXT host start (no
+  registration step, no live acceptance in this unit; the digest behavior is
+  smoke-pinned).
 
 ## Suggested scope (non-exhaustive)
-- NEW: clone `.opencode/plugins/block_transfer.ts`, the two smokes, the tsconfig
-  entry, the tests README section.
-- Reference READ-ONLY: the clone v1 twin (section reads), 5a/5b's plugin shape,
-  MAIN repo (bookkeeping only).
 
-## Approval boundary
-Pre-approved class (agent-facing tool port; live v2 acceptance = maintainer
-domain). DO NOT touch: MAIN repo (except summary + planner bookkeeping);
-`maintainer/**`; clone `opencode.jsonc`, `.opencode/tools/**`, `.opencode/plugin/**`,
-`.opencode/plugin-unported-v1/**`, the landed plugins
-(`intercept_observer.ts`, `context_family.ts`, `context_trim_v2.ts`,
-`compact_memory.ts`, `loop_log.ts`, `submit.ts` + 5b's three), the live DB.
+- `.opencode/tools/state_snapshot.ts` — `markersSection` + its header comment
+  (the `grep -v` filter note near line 12).
+- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — add a FX1 fixture file
+  `maintainer/live_note.md` carrying a `--main` line (safe: `maintainerSection`
+  reads only `maintainer/inbox_planner/` and `maintainer/priority.md`), + 1 pin.
+- `agent/readme/repo_commands.md` §Marker sweep — one note: the digest orders
+  LIVE-CLASS paths first; the ready-made command itself is unchanged.
+- Clone: `.opencode/plugins/state_snapshot.ts`, `.opencode/tools/state_snapshot.ts`
+  (copy of MAIN), `.opencode/plugins/tests/state_snapshot.smoke.mjs`,
+  `agent/readme/repo_commands.md`.
 
-## Procedure (guidance)
-1. Read the MAIN twin in the 3 named sections (grep its section markers + error
-   strings first); diff the twins (`diff .opencode/tools/block_transfer.ts
-   ../opencode-agent/.opencode/tools/block_transfer.ts | head -60` from the clone)
-   to see exactly what the clone twin lacks.
-2. Port in checkpoint units: (i) the core ops + anchors, (ii) the buffer/PEEK/MAP/
-   WRITE legs + feedback lines, (iii) the sandbox roots (both config shapes).
-   Keep the clone's feedback-line formats byte-exact.
-3. Smoke (mirror the v1 pin SETS where they encode behavior, incl. the
-   teaching-error line formats), tsconfig, README, full clone gate; summary to
-   MAIN `agent/handover/handover_task_to_planner.md`.
+Deliberate non-change: NO `doc-quotes: N` counter line (keeps every existing
+cap/steer pin green; doc hits stay visible in the tail of the window).
 
-## Deliberately out of scope
-- Refreshing the clone's STALE v1 twin (+ repinning its v1 smokes) — TODO #143,
-  planner decision; this unit ports MAIN behavior and leaves the twin untouched.
-- Live v2 acceptance (maintainer); `session_info` (native); auto_resume v2
-  (order 2, HELD — see the NAP queue note).
+## Assigned worker
+
+worker_FlashNext (model `llama-swap/Qwen3.8-NEXT-Coder` — same as the planner).

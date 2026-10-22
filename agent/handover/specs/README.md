@@ -69,5 +69,10 @@ AGENTS.md (wave spec lists them).
 ## Wave 2026-10-22 — the v2 clone gate (TODO #141; maintainer priority item 2, first step)
 - `2026-10-22_v2-clone-gate-141.md` — repoint the clone probe + smoke v1-module paths to `.opencode/plugin-unported-v1/` (or v2 twins) until the clone gate prints real green counts. Launch channel: copied into `agent/handover/handover_task.md`.
 
+## Wave 2026-10-22 (planner-15, iter 15)
+- `2026-10-22_137u2-token-mass-legs.md` — TODO #137 unit 2: the clone gauge TOKEN-mass legs v2-aware (clone `migration` only; gate green; live v2 CTX acceptance = maintainer). Launch channel: copied to `agent/handover/handover_task.md`.
+- `2026-10-22_15-smoke-env-bt-regions.md` — two small pre-approved fixes: sandbox smoke ENV robustness (todo_inbox 01-34) + bt WRITE N-regions-with-1-text REJECT (todo_inbox 03-26; REJECT recommended end state), BOTH trees.
+- Order: unit 2 (clone gauge) first, then the small-fixes spec.
+
 ## What does NOT go here
 NAP, non-compaction specs.

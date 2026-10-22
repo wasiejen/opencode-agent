@@ -34,3 +34,6 @@ intercept.log per-event sweep is now agent/scripts/log/intercept_sweep.cjs (LAND
 ## 2026-10-22_20-13 planner_FlashNext ses_e9b46b7a2ffeRuFWSaQcOKdMTQ
 Width-bound verification = CHARACTERS, not bytes: Git-Bash `awk length()` counts bytes, so a node script's bounded output over the multibyte intercept.log (contains `→` and `…`) measured 73 lines as ">125" while the true max was 120 chars (measured 2026-10-22, plan26, TODO #145 verification). Use `node -e` reading stdin and `l.length` per line for the max/over-count; a `cut -c` display pipe also masks real widths.
 
+## 2026-10-22_20-23 planner_FlashNext ses_e9b2e455dffe197VdpiExjySXS
+Live Git-Bash tool shell on this host measures `TMP=/tmp TEMP=/tmp TMPDIR=[]` (measured 2026-10-22, planner-27 in-session echo) — so `$TMP/opencode` does NOT point at `C:/Users/Wasiejen/AppData/Local/Temp/opencode` as `agent/readme/repo_commands.md` lines 30-32 claim; for scratch work outside the repo use the LITERAL path (`C:/Users/Wasiejen/AppData/Local/Temp/opencode`, unix form `/c/Users/Wasiejen/AppData/Local/Temp/opencode`) — the tools' sandbox and block_transfer accept it and bash reaches it. Contradicts the doc line; filed as TODO #146 pending the maintainer's doc edit.
+

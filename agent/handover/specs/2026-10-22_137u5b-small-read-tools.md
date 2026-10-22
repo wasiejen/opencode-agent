@@ -60,6 +60,10 @@ no v2 counterpart logged as deviations.
    clean.
 
 ## Verified facts (measured at spec-authoring, 2026-10-22)
+- Twin freshness (measured 2026-10-22, `cmp`): the THREE 5b design-of-record files are
+  BYTE-IDENTICAL between MAIN and clone (ctx_gauge 36/36, state_snapshot 206/206,
+  dev helper 59/59) — the clone twin is a valid baseline here. (Contrast: the
+  `submit`/`block_transfer` twins DIFFER — the clone copies are STALE, TODO #143.)
 - `ToolContext` v2 (promise surface) = `{sessionID, agent, messageID, id, signal,
   progress}` — fork `packages/schema/src/tool.ts:14-19` (Context) +
   `packages/plugin/src/promise/tool.ts:11-13` (adds `signal`, re-types

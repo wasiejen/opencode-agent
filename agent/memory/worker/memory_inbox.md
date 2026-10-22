@@ -1,30 +1,8 @@
-### 2026-09-30_16-46 worker_Q3S ses_f0d49cb6bffeNMhGpmF7O3DyjU
-Verified lesson (observed, high confidence, scope: CLI-adapter / transaction-via-process work): when buffering a write transaction into a single CLI flush (the spawn-sqlite3 adapter pattern, context_trim.ts openSpawnDb), the terminating statement (COMMIT) is the TRIGGER of the flush, not a member of the buffer — it must be explicitly appended to the flushed script. The failure mode is silent: the CLI exits 0, the uncommitted batch rolls back at process exit, the tool returns its success line, and only a fixture read-back pin catches it. Evidence: #126 worker session (2026-09-30), the smoke pin "the part row carries the new tail_start_id (spawn path, readable back)" failed until COMMIT was added to the script; knowledge entry in the knowledge inbox has the full CLI facts. Review trigger: any future spawn/CLI-backed write path.
+# worker memory_inbox.md — append-only (the `submit(memory=...)` lane)
 
-### 2026-10-01_04-09 worker_Q3S ses_f0ad0bbfcffeCKb4FmU2gK7c29
-fs.rmSync on a DIRECTORY with only { force: true } throws ERR_FS_EISDIR even when the directory is empty — cleanup of a directory fixture in smoke tests needs { recursive: true, force: true } (learned: the first auto_resume smoke run crashed at my own cleanup line 1150; fixed by adding recursive; verified by the re-run 152/152). Confidence: high. Scope: test-fixture cleanup in .opencode/plugin/tests/*.smoke.mjs on this Windows/node host. Evidence: smoke log "$TMP/opencode/ar_smoke.log" first run (SystemError ERR_FS_EISDIR), second run all-pass. Review trigger: never.
-
-### 2026-10-05_02-34 worker_Q3S_slow ses_ef6b793f2ffek8H7AISRzFV4gX
-When converting print() -> logger.* in a suite run under pytest: capsys cannot see the records (pytest's root LogCaptureHandler intercepts them during every test) — use caplog/caplog.at_level(logger=...) pins instead, and BEFORE starting such a build grep the suite for (a) caplog.at_level(logger='...') pins naming the old loggers, (b) capsys assertions on the exact print texts being converted — both classes break silently (observed 2026-10-05 in the #131 FST logging build: test_extraction_filter_edges.py:176 and test_output_manager.py:607 were missing from the spec's affected-tests list; both found via the gate, cost one extra fix cycle each). Confidence: high. Scope: any FST (or this repo generally) logging refactor. Source: worker-11 session ses_ef6b793f2ffek8H7AISRzFV4gX, FST repo commits ea2aac3/cac6704/cd0f3a2. Review trigger: next print->logging conversion task.
-
-### 2026-10-21_21-59 worker_FlashNext ses_ea0120bd5ffeM6ggDl5IPr5o49
-Worker tooling, observed: on this host the tool-call JSON payload fails to parse above ~2 KB (two hits: a ~4 KB `write` and a ~3 KB bash heredoc, both "JSON Parse error: Unterminated string"); every call under ~1.8 KB succeeded, so keep multi-file/multi-edit content payloads under ~1.8 KB and split them into batches (heredoc appends + one splice script), as repo_commands #74 advises. Also: re-pin byte-exact feedback pins with a fail-loud replacement script (one `MISS(n)` report per pair) instead of many sequential edits — cheaper and harder to half-apply. Review trigger: if short payloads start failing again, the caveat's "length is not a predictor" note needs re-testing.
-
-### 2026-10-22_01-34 worker_FlashNext ses_e9f4b2fceffeutBMvp16FEv4Pr
-Cross-tree diff pitfalls (observed this session, both nearly corrupted a port): (1) `git show HEAD~1:path` runs against the CURRENT tree's HEAD — for another repo use `git -C <other-repo> show <ref>:path` into a temp file; (2) `cmp -s file <(cmd)` process-substitution in git-bash on Windows yields unreliable results (false DIFFERS) — compare real files after writing both to disk. Review trigger: any clone/second-tree port task.
-
-### 2026-10-22_04-07 worker_FlashNext ses_e9ebd604fffeparWJoUxnaC8DA
-Cross-repo clone work (worker): file tools (block_transfer, write, edit) resolve relative paths against the SESSION CWD (main repo), never the task's target clone — always pass absolute paths for clone files; a wrong-path write lands in the forbidden main repo and must be caught by git status before checkpoint (observed 2026-10-22, gauge unit 2; recovered via git checkout).
-
-### 2026-10-22_04-28 worker_FlashNext ses_e9e9f2891ffe2dP7gkx74SGSxH
-Before changing a tool contract, grep the byte-exact message/feedback strings across EVERY pin file (tests/*.smoke.mjs AND probes/handover_probe.mjs) in both trees; probe checks pin the same behavior the smokes do, so a contract change forces one named repin per tree. Twin rule: keep the reject message byte-identical across trees but copy each tree's OWN feedback format (clone WRITE line = `(lines 2..3, first: 'X')`; MAIN = hardening item 7 `(old 2..3 -> new 2..2, file now N lines, first: 'X')`). Type: observed, confidence high, scope: opencode-agent + opencode-agent-v2 tool-contract work, evidence: commits 05df70f/b713585 (MAIN), 2a3759f/4054a0a (clone), probe FAIL list at 307 before repin; review trigger: any tool message or span-format change.
-
-### 2026-10-22_08-18 worker_FlashNext ses_e9de1b381ffeM4308gaIvhBgTk
-Type: observed, confidence high, scope: any ported report/readout with byte-exact expectation pins. Lesson: derive pinned numbers from the DOCUMENTED rule (enumerate fixture masses, then the slice), never copy measured output — a copied measurement pins a bug in place. Evidence: the unit-4b dry-run line had a hardcoded `verdict=ok` (a floor-rejected target printed `verdict=ok`); the mismatch (keep mass 25556 vs my derived 25561 → my own sum was wrong; the verdict pin was the real bug) was found only because I re-derived every number by hand. Review trigger: whenever a smoke expectation is written from stdout.
-
-### 2026-10-22_11-01 worker_FlashNext ses_e9d393b49ffey7H784Nv2cXXPD
-Observed (high confidence, scope: v2 plugin smokes in the opencode-agent-v2 clone): the plugin's repo-root carrier is captured at setup (`dir = ctx.location.directory`), so EVERY fixture workspace in one smoke run needs its OWN `plugin.setup(makeCtx(dir))` call before its calls (the imported module is shared; dir retargets per setup), and each teardown disposes only its own registration — count dispose deltas per teardown call, not globally. Evidence: .opencode/plugins/tests/loop_log.smoke.mjs + submit.smoke.mjs (unit 5a, commits be5a278/a5da17b). Review trigger: any future v2 smoke (5b/5c ports).
-
-### 2026-10-22_14-03 worker_FlashNext ses_e9d19c62fffeWnNuPGQpxwVMOa
-Observed (high confidence, scope: clone v2 plugin smokes): a smoke can steer the shared gauge core via gaugeMod.setDbPath/setBudgetFileForTest because the plugin's relative ".mjs" import and the smoke's pathToFileURL import resolve to ONE module instance — no plugin-side test hook needed; evidence: .opencode/plugins/tests/ctx_gauge.smoke.mjs 11 pins + context_family.smoke.mjs:114-117 precedent, review trigger: gauge core gains a per-plugin path override.
-
+### 2026-10-22_14-03 planner_FlashNext (ses_e9d1b570…, ITER-20 maintenance pass) curation
+First curation of this lane — all 10 entries cured into the NEW
+`agent/memory/worker/memory.md` (WM-01…WM-10) + `destilled_mem.md` (same folder):
+2026-09-30_16-46 → WM-01; 2026-10-01_04-09 → WM-02; 2026-10-05_02-34 → WM-03;
+2026-10-21_21-59 → WM-04; 2026-10-22_01-34 → WM-05; 04-07 → WM-06; 04-28 → WM-07;
+08-18 → WM-08; 11-01 → WM-09; 14-03 → WM-10. Inbox EMPTIED.

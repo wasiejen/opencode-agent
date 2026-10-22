@@ -491,3 +491,90 @@ knowledge / NAP) is re-stated.
 - Evidence: memory_inbox 2026-10-21_21-17; the 2026-10-21 review-draft
   verdict in the NAP.
 - Review when: another model-testing session uses pasted code.
+
+## MEM-0121 — A worker close NARRATIVE can FABRICATE references (hashes, restarts, maintainer claims) — verify against git before recording
+- Lesson (2026-10-22, planner-13): a worker's own handover named a nonexistent
+  commit + claimed a host restart + a maintainer instruction while its session
+  did real work (main-tree 4bef076 → worker's own correction 28a6685 → 6ca8643).
+- Rule: before recording any hash/restart/instruction from a worker return,
+  run `git log --oneline -N` + `git show --stat <hash>` in that tree; an
+  absent reference → mark the entry untrusted at next curation + note the
+  fabrication class in the NAP.
+- Extends MEM-0120 (pasted-code self-reviews) to worker close NARRATIVES.
+- Review when: a worker close text names a hash absent from `git log -20`, or
+  a restart/instruction claim with no `maintainer/inbox_*`/loop-log line backing it.
+
+## MEM-0122 — block_transfer WRITE/REPLACE feedback lines are NOT landing proof — read the file back
+- Lesson (2026-10-22, planner-13): a WRITE reported `+24 line(s)` but the file
+  stayed 253 lines — a long single-call prose payload arrived TRUNCATED and the
+  write silently no-oped.
+- Rule: after any WRITE/REPLACE of >~15 prose lines, read the file back (MEM-0111
+  discipline); repair with a smaller `edit` insert; the `+N line(s)` count + first-line
+  echo are NOT proof.
+- Evidence: memory_inbox 2026-10-22_02-47; the plan13 NAP insert incident.
+- Review when: the tool later validates payload integrity.
+
+## MEM-0123 — block_transfer buffer hygiene: name buffers per artifact; WRITE is the bufferless mode
+- Lesson (2026-10-22, planner-14/17): COPY/CUT/PASTE without bufferName share
+  'default' — a later CUT silently destroys a staged paste buffer mid-chain (the
+  plan17 4a copy died this way and forced a re-COPY).
+- Rule: name buffers per artifact; MAP/PEEK a buffer BEFORE REPLACE (REPLACE
+  consumes whatever sits at that name — the auto `last_write` buffer is NOT
+  assumed content); on an EMPTY-BUFFER error, re-check the MODE list before
+  retrying the same mode (WRITE = direct text → region, bufferless; REPLACE/COPY/
+  APPEND/PASTE need named buffers).
+- The N-regions+1-text hazard is RESOLVED: the REJECT-with-teaching-error end
+  state landed at plan15 (MAIN b713585 / clone 4054a0a) — the entry stays for
+  the buffer-scoping half.
+- Evidence: memory_inbox 2026-10-22_03-26 (×2), 04-38, 07-36.
+- Review when: block_transfer buffer scoping or a mode redesign lands.
+
+## MEM-0124 — Spec pin audits: enumerate by verdict-token grep across EVERY pin file, never by range-recall
+- Rule (2026-10-22, planner-14): before narrowing/grepping a channel, run
+  `rg -n "<verdict-token>"` (e.g. `out-of-sandbox|path-anomaly`) across every
+  pin file (smokes AND the probe) and build the audit from the hit list.
+- Treat the first post-change gate run's FAIL list as the AUTHORITATIVE
+  inventory; a range-recalled audit missed 3 flipping surfaces ((B3), probe
+  checks 303 + 304).
+- Evidence: spec `agent/handover/specs/2026-10-22_142-138-path-field-scan.md`;
+  todo_inbox 2026-10-22_03-17 RESOLVED at plan14.
+- Review when: the pin files are restructured.
+
+## MEM-0125 — Typecheck pins need a NEGATIVE CONTROL — push a deliberate bad literal, confirm RED, then commit
+- Lesson (2026-10-22, unit 3a): a tsgo run printing zero errors is NOT proof a
+  pin is real — a generic `E extends Array<unknown>`-style hook param silently
+  WIDENS and accepts bogus literals (`role:"bogus-role", content:5` passed at
+  first attempt).
+- Scope: any fork-typed v2 plugin work.
+- Evidence: memory_inbox 2026-10-22_05-23; the 3a negative-control proof.
+- Review when: any future typecheck-only pin.
+
+## MEM-0126 — Task-tool "user rejected permission" = the sub-agent NEVER STARTED — re-issue ONCE with a SHORT spec-pointer prompt
+- Rule (2026-10-22): classify as a LAUNCH failure, NOT a context/permission
+  task failure; do NOT compact or resume; the target repo tree + git log stay
+  untouched (verified). Re-issue ONCE with a short prompt that points at the
+  committed spec file — the long spec-echoing prompt is the suspected trigger
+  (hypothesis, medium confidence). Two rejections → stop and report the boundary.
+- Evidence: memory_inbox 2026-10-22_06-52. Completes the MEM-0104/0106/0109
+  signature set: launch vs ran-vs-wall vs compaction-return.
+- Review when: rejections recur with short prompts (then the hypothesis dies).
+
+## MEM-0127 — Before REUSING a worker session via task_id, check its close gauge; cross-compact FIRST at near-cap
+- Rule (2026-10-22, plan18): a resume request at ~89% of window is REJECTED
+  OUTRIGHT (prompt + history > window — "requests are never truncated").
+  Sequence: cross-compact (keepMessages=10, message=new-unit pointer) → verify
+  the `COMPACT <sessionID>` line in `.opencode/temp/ctx.log` → THEN resume
+  via task_id. Saves the rejected-call round-trip.
+- Evidence: memory_inbox 2026-10-22_10-26; the 4b worker (CTX=234727/262k) —
+  the 4c resume landed only after the pre-resume cross-compact.
+- Review when: worker close gauges start landing well below 80%.
+
+## MEM-0128 — Cross-tree port specs: run the twin-freshness check BEFORE committing a design-of-record anchor
+- Rule (2026-10-22, plan19): before committing a spec anchored on a cross-tree
+  file (MAIN vs the clone copy), run `cmp -s` + `wc -l` + a bounded
+  `diff | head -60`; anchor on the MAIN twin when the clone copy lags.
+- A STALE twin silently pins stale behavior; the delta re-surfaces as worker-side
+  "discrepancy" noise.
+- Evidence: memory_inbox 2026-10-22_11-14; the 5c re-baseline (clone
+  `block_transfer.ts` 845 vs MAIN 1034, 333 diff lines); TODO #143.
+- Review when: any future #137 unit spec, or a clone-twin refresh lands.

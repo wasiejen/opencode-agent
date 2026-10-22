@@ -273,7 +273,9 @@ RESOLVED at plan15 (planner-direct, 2026-10-22): MAIN `.opencode/tools/block_tra
 
 ## 2026-10-22_08-18 worker_FlashNext ses_e9de1b381ffeM4308gaIvhBgTk
 Three clone node-dir smokes exit 1 on Windows teardown EBUSY: bun's final `fs.rmSync(fixtureDir,{recursive:true})` in `.opencode/plugin/tests/gauge_core.smoke.mjs` (scratch `gauge_v2_mass`), `context_trim.smoke.mjs` and `auto_resume.smoke.mjs` throw `EBUSY: resource busy or locked` after ZERO check failures. Measured identical at clone baseline 358cba7 (scratchpad worktree) and `context_trim`+`auto_resume` fail the same way in MAIN. Desired: the three exit 0 (`ALL PASS`) — a retry-on-EBUSY teardown or close every sqlite handle before the rm. Acceptance: run all smokes in `.opencode/plugin/tests` → 13/13 exit 0.
+CURATED at plan20 (planner-20, ITER-20 maintenance pass) → TODO #144 (queued behind the #137 units).
 
 ## 2026-10-22_11-01 worker_FlashNext ses_e9d393b49ffey7H784Nv2cXXPD
 TODO #137 unit 5a finding: the clone v1 twin `.opencode/tools/submit.ts` (167 lines, the spec's design-of-record anchor in opencode-agent-v2) PREDATES the 2026-10-21 NEWLINE GUARD carried by the MAIN repo's `.opencode/tools/submit.ts` (189 lines, guard at :149-168); the v2 plugin port carried the MAIN version per the spec's 'newline probe kept' pin. Evidence: diff of the two twins (only divergence). Desired outcome: planner decides — refresh the clone twin to the MAIN version OR log the twin staleness in the port map so later ports resolve from MAIN. Acceptance: the discrepancy is curated into TODO.md with a decision flag.
+CURATED at plan19 (planner-19) → TODO #143 (measured + 5c re-baselined on the MAIN twin).
 

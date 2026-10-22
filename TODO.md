@@ -72,33 +72,8 @@ FST project entries: `projects/Free-Snap-Tap/TODO.md` (moved 2026-09-29, #117 �
   (Commit hash recorded in the planner's follow-up bookkeeping commit —
   no self-reference.)
 
-## #123. (closed 2026-09-30, plan45 maintenance pass — scripted sweep + batch re-point + one-line annotations) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass)
-- **Problem / evidence:** the 2026-09-29 carve (filter-repo rewrite)
-  invalidated every pre-carve commit hash; status lines still cited them.
-  The 4 measured DEAD revisions with known post-carve equivalents:
-  `cbbebf8` (#106) -> `7a9e291`, `0c90abe` (#115) -> `60f031b`,
-  `12e3262` (#114) -> `fea1cbb`, `44c50a2` (R3 import fix) ->
-  `9e91878`. Full sweep over TODO.md + todo_records.md + NAP: 340 unique
-  7-hex citations, 307 dead (the carve rewrote the whole history, not just
-  the 4 measured), 33 alive.
-- **Desired outcome:** every cited hash either re-pointed to the
-  post-carve equivalent or annotated pre-carve — a future `git cat-file -e`
-  never dead-ends.
-- **Acceptance criteria:** a scripted sweep (`git cat-file -e` over every
-  cited hash) reports zero dead revisions, or each dead one carries a
-  one-line annotation; TODO.md + todo_records.md + NAP archive covered.
-- **Suggested scope:** TODO.md, todo_records.md,
-  `agent/handover/handover_planner.md` (compressed archive), loop-folder
-  summaries (read-only annotation if stale).
-- **Status:** CLOSED (2026-09-30, plan45) — the 4 verified pairs re-pointed
-  inline (33 occurrences; each target script-verified on the current
-  branch); the one-line pre-carve annotation landed in the headers of
-  TODO.md, todo_records.md, and the NAP compressed archive, covering the
-  other 303 dead historical citations; the loop-folder summaries carry
-  179 dead citations (historical — not re-pointed per the read-only scope,
-  covered by this entry + the TODO.md header note).
+## #123. (closed 2026-09-30, plan45 maintenance pass — scripted sweep + batch re-point + one-line annotations) stale pre-carve commit hashes in TODO.md / NAP status lines — batch re-point or annotate (maintenance pass); full text in todo_records.md (body retired at the plan20 maintenance pass)
 
-## #121. (closed 2026-09-30, plan40 planner-direct — inline, doc-only) two stale refs in the repo_commands.md parts post-#117/#113 — fixed: (a) `agent/readme/repo_commands.md`'s FST-commands pointer now points at `projects/Free-Snap-Tap/repo/repo_commands.md` (was a self-reference); (b) the FST part's "(#113: the venv's python.exe is currently broken …)" note updated to the 3.12.9 close
 
 ## Loop & coordination (open)
 
@@ -1290,3 +1265,22 @@ All those IDs stay reserved — see the numbering rule in the header.
 - **Acceptance criteria:** decision recorded (refresh-and-repin vs document-per-file). If refreshed: every clone `.opencode/tools/*.ts` BYTE-EQUAL to MAIN + the clone's v1 smokes repinned to the refreshed behavior + the clone gate green (probe + the repinned smoke counts). If documented: the §4 port map (`agent/research/2026-10-15_opencode-v2-impact.md`) or the port-map section names EVERY stale file + its delta, and the affected specs cite the MAIN twin as the baseline (the 5c spec already re-baselined on MAIN by planner-19).
 - **Suggested scope (non-exhaustive):** clone `.opencode/tools/submit.ts` + `block_transfer.ts`, the clone v1 smokes `.opencode/plugin/tests/submit.smoke.mjs` + `block_transfer.smoke.mjs` + `block_transfer.sandbox.smoke.mjs`, `agent/research/2026-10-15_opencode-v2-impact.md` §4, `agent/handover/specs/2026-10-22_137u5c-block-transfer-v2.md`.
 - **Status:** OPEN — decision-needed: refresh-and-repin (clone churn, keeps one design of record) vs document-per-file (cheap, drift-prone). NOT blocking: 5c is already re-baselined on the MAIN twin; the clone's stale twin stays inert + its smokes green either way.
+
+## #144. (OPEN, 2026-10-22, planner-20 — curated from todo_inbox 2026-10-22_08-18) three node-dir smokes exit 1 on the Windows teardown `fs.rmSync` EBUSY flake — 0 FAIL, green on re-run, but every gate run pays the re-run tax
+- **Problem / evidence:** bun's final `fs.rmSync(fixtureDir,{recursive:true})` in
+  `.opencode/plugin/tests/gauge_core.smoke.mjs` (scratch `gauge_v2_mass`),
+  `context_trim.smoke.mjs` and `auto_resume.smoke.mjs` throws
+  `EBUSY: resource busy or locked` AFTER ZERO check failures — measured identical
+  at the clone baseline `358cba7` (scratchpad worktree) and `context_trim` +
+  `auto_resume` fail the same way in MAIN; the open sqlite handles are the
+  suspected holder.
+- **Desired outcome:** the three exit 0 (`ALL PASS`) on EVERY run — no per-session
+  re-run cost (each planner session currently burns a re-run trio at the gate).
+- **Acceptance criteria:** running all smokes in `.opencode/plugin/tests` →
+  13/13 exit 0, in a clean-env AND an env shell, BOTH trees; check counts
+  UNCHANGED (gauge_core 42, context_trim 40, auto_resume 170). Fix class: retry-
+  on-EBUSY teardown OR close every sqlite handle before the rm — worker's call.
+- **Suggested scope (non-exhaustive):** `.opencode/plugin/tests/gauge_core.smoke.mjs`
+  + `context_trim.smoke.mjs` + `auto_resume.smoke.mjs` (MAIN + clone twins).
+- **Status:** OPEN — no decision-needed (pre-approved agent-facing test fix);
+  queue behind the #137 port units.

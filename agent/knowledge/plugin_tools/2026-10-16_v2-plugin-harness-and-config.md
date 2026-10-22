@@ -123,3 +123,51 @@ ANY plugin against the fork or the v2 line, or wiring v2 plugin config.
   prefill kicked the session's model out), not multi-host traffic per se.
 - **Keys:** multi-host, same-model, --model, no eviction, warm-break,
   different-model risk.
+
+## v2 request-draft hook + injectable message shape (2026-10-22, #137 unit 3a; inbox 05-23)
+- **Do:** inject via `ctx.session.hook("context", …)` — fires per PRIMARY
+  model request (`core/src/session/model-request.ts:422-431`); the `messages`
+  mutation is TRANSIENT (never persisted); the injectable entry type is
+  `@opencode/ai` `LLM.Message` (`packages/ai/src/schema/messages.ts:237-244` —
+  `role` user|assistant|system|tool required, `content: Array<ContentPart>`
+  required, `id` optional) — import TYPE-ONLY + a tsconfig `paths` entry
+  for `@opencode/ai`; `ctx.session.synthetic({sessionID,text,delivery:"queue"})`
+  queues as the next turn at idle (types.ts:4592-4610); `execute.after` events
+  carry `sessionID` (per-session reads possible); ONLY `execute.before` may
+  reject (`core/src/plugin/hooks.ts:23`); the v2 delegation tool `subagent`
+  input has `prompt: string` (`core/src/tool/plugin/subagent.ts:35`).
+- **Why (evidence):** clone `plugins/context_family.ts` + tsgo-verified 2026-10-22.
+- **Keys:** session.hook context, model-request, transient messages,
+  LLM.Message, synthetic queue, execute.after sessionID, subagent prompt.
+
+## v2 live DB table pair + sqlite/CLI surface facts (2026-10-22, clone dump twin 4c; inbox 10-24)
+- **Do:** read v2 rows from the `session_v2` ↔ `session_message` pair (the
+  v1 `session`/`message` pair does NOT serve v2 reads — a twin lacking the
+  pair exits 2); `session_v2.model` is a JSON string (unwrap);
+  `session_message.data` carries content INLINE — assistant `content[]`
+  items {type:text|reasoning|tool,…} (NO part table in v2), user rows
+  text+files, compaction rows status/reason/summary/recent. bun 1.4.3
+  `bun:sqlite` exposes prepare/query (NO `db.all` sugar). `execFileSync`
+  failures carry stderr as a Buffer whose message already embeds it —
+  keep `String(buffer)` coercion; ONE-LINE the whole detail for one-line-per-event
+  ctx.log contracts.
+- **Why (evidence):** clone `agent/scripts/db/dump_session_v2.mjs` fixture
+  runs, 2026-10-22 (unit 4c).
+- **Keys:** session_v2, session_message, no part table, model JSON string,
+  bun:sqlite prepare/query, execFileSync stderr Buffer.
+
+## The clone's inert v1 tool twins PREDATE MAIN hardening — anchor ports on the MAIN twin (2026-10-22, planner-19; inbox 11-14)
+- **Do:** before anchoring a v2 port spec on a cross-tree design-of-record
+  file, run the twin check (`cmp -s` + `wc -l` + bounded `diff | head -60`).
+  STALE clone copies measured 2026-10-22: `.opencode/tools/submit.ts` 167
+  lines vs MAIN 189 (the 2026-10-21 NEWLINE GUARD missing), `block_transfer.ts`
+  845 vs MAIN 1034 (333 diff lines; MAIN carries the hardening items incl.
+  the item-10 POSIX temp-root block at MAIN `:121-133`).
+  BYTE-IDENTICAL both trees: `loop_log.ts` 235, `ctx_gauge.ts` 36,
+  `state_snapshot.ts` 206, `dev_get_tool_context_contents.ts` 59,
+  `context_trim.ts` 1168. The clone's v1 smokes (bt 132/132, submit 31/31)
+  pin the STALE behavior.
+- **Why (evidence):** the planner-19 twin sweep (`cmp`/`wc -l`/`diff`);
+  TODO #143 tracks the refresh-vs-document decision.
+- **Keys:** twin freshness, stale clone twin, MAIN-twin anchor, #143,
+  newline guard, POSIX temp-root block.

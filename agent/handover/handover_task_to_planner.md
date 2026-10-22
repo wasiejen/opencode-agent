@@ -1,123 +1,81 @@
-# Worker summary — TODO #137 unit 2: gauge TOKEN-mass legs v2-aware (clone `migration`)
+# Worker summary — planner-15 units: sandbox-smoke env-robustness + block_transfer WRITE regions (BOTH trees)
 
-Status: COMPLETE. Both checkpoint commits are in the CLONE; the clone tree is
-clean; the main repo was NOT touched (its gauge.mjs misfire was reverted,
-git-clean state verified). This file is left UNCOMMITTED in the main-repo
-working tree (the #141 precedent — the planner commits it with its
-bookkeeping).
+Status: COMPLETE
+Assigned: `worker_FlashNext`, session `ses_e9e9f2891ffe2dP7gkx74SGSxH`.
+Work order: MAIN repo (`opencode-agent`, branch `main`) units 1+2, then the clone (`opencode-agent-v2`, branch `migration`) twins. Stayed on each branch; absolute paths used for every clone file edit (relative paths resolve against the session CWD = MAIN).
 
-## Task and scope
+## Files changed
 
-Goal: the gauge's TOKEN-mass read works against the v2 DB shape, so a
-v2-hosted session gets a real `CTX=` readout. Unit-1 table awareness
-(session-row leg) was already in the clone; this unit ported the mass leg
-and the spawn-sqlite3 marker SQL (the production backend), preserving the
-v1 SQL byte-identically.
+MAIN (`C:\Users\Wasiejen\Repos\opencode-agent`) — commit `05df70f`:
+- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — the smoke SELF-SETS `process.env.TEMP`/`TMP` to `<Temp>/bt_sandbox_env_temp` (a fixture dir under `SCRATCHPAD/..`, created at startup, deleted in the exit finally, ambient values restored). `tempRoot` no longer reads the ambient shell env. The 3 byte-exact roots-list pins (REPLACE reject, fixture REJECT, item-3 single-root) now hold because the test-side mirror and the tool's `sandboxCheck` read the SAME env at call time. Tool isolation design untouched.
 
-## The research question — ANSWERED (the v2 usage shape EXISTS)
+MAIN — commit `b713585`:
+- `.opencode/tools/block_transfer.ts` — WRITE gains the regions/text contract guard; the `description` MODES WRITE sentence and the `regions` arg describe gain the N-regions contract line.
+- `.opencode/tools/block_transfer.md` — one new bullet: the WRITE `regions` contract.
+- `.opencode/plugin/tests/block_transfer.smoke.mjs` — the old 2-region fan-out pin replaced by a reject pin; a paired 1-region pin added.
+- `.opencode/plugin/probes/handover_probe.mjs` — check 307 REPINNED (named repin).
 
-`session_message` rows carry a `type` column; the assistant `data` blob
-stores `tokens: {input, output, reasoning, cache:{read, write}}` and
-`time: {created, streamed?, completed?}` + optional `finish`
-(`@opencode/schema/session-message.ts` `Assistant` + `token-usage.ts` at
-fork production @654b79b27e; `database/v1-migration.bun.ts` writes the same
-shape; ONE `mode=ro` live-DB read confirmed real rows, e.g. input 72 /
-output 176 / cache.read 14283 / reasoning 0 / cache.write 0).
-- Mass TOTAL mapped to the fork's OWN `TokenUsage.total()` =
-  input+output+reasoning+cache.read+cache.write — the #103 in+out+cr
-  semantics of v1's `tokens.total` mapped to what v2 actually stores
-  (llama-swap keeps reasoning/cache.write at 0, so the sum lands where v1's
-  total landed).
-- FINISHED-STEP discriminator = the fork's own completed-assistant filter
-  (projector.ts fork-copy): `type='assistant' AND $.time.completed IS NOT
-  NULL AND $.tokens IS NOT NULL` — in-flight assistant rows lack both;
-  the `type` match also keeps `compaction` rows (their REQUEST usage, not
-  the context size) out.
+CLONE (`C:\Users\Wasiejen\Repos\opencode-agent-v2`) — commit `2a3759f`:
+- `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` — same self-set fixture env block (clone twin), same finally restore.
 
-## Files changed (CLONE only, branch `migration`)
+CLONE — commit `4054a0a`:
+- `.opencode/tools/block_transfer.ts`, `.opencode/tools/block_transfer.md`, `.opencode/plugin/tests/block_transfer.smoke.mjs`, `.opencode/plugin/probes/handover_probe.mjs` (check 307 REPINNED) — same contract guard and message, byte-identical reject text; the pins use the CLONE's own older feedback format (`(lines 2..3, first: 'REPL')`, not MAIN's hardening-item-7 form).
 
-1. `.opencode/plugin/scripts/gauge.mjs`
-   - Mass-leg constants: `SQL_STEP_DISCRIMINATOR_V2`, `SQL_TOKEN_TOTAL_V2`
-     (COALESCE'd five-field sum), `SQL_FINISHED_STEP_V2`,
-     `SQL_FINISHED_STEP_SESSION_V2`, `GAUGE_SQL_MARKER_V2`, `SQL_TABLE_PROBE`,
-     `sqlMarkerV2ForSession` (+ `sqlSidLiteral` extraction — v1 builder output
-     unchanged).
-   - `sessionRow` also REPORTS the winning TABLE; `readApiDb` pairs the
-     mass SQL with it (session_v2↔session_message, session↔message).
-   - `readSpawnSqlite3`: probe exec (sqlite_master names) → per-shape marker
-     instantiation; v1-only DBs keep the OLD marker constants BYTE-IDENTICAL;
-     coexisting session tables resolved by a `W`-candidate exec (greater
-     time_updated, tie keeps session_v2) then the marker PINNED to the
-     winner's sid (pairing by construction); target ids resolve by holding
-     table (session_v2 wins). NO session table → throw (db-error shape kept).
-   - v1 SQL constants untouched; header/catch comments updated for unit 2.
-2. `.opencode/plugin/probes/handover_probe.mjs` — pin RELABEL only (check
-   32/33 mock mass keys accept both v1 and v2 mass forms; check-32 step
-   assertion keyed on `session_message`). Precedent: unit 1 relabeled these
-   same pins. TOTAL stays 360/360.
-3. `.opencode/plugin/tests/gauge_core.smoke.mjs` — 10 new pins + header
-   note; the 32 pre-existing pins byte-unchanged (all still green).
+## Behavior changed
 
-NOT changed (verified no adaptation needed): `.opencode/tools/ctx_gauge.ts`,
-`.opencode/plugin/scripts/peek.mjs` (shape-preserving; they call
-`readGauge`/`formatGauge` only), the plugin-unported-v1 shim, the main
-repo, the fork, the live DB (read-only queries only: 3 bounded sqlite3
-`mode=ro` statements).
+- WRITE with a `regions` LIST of more than one region and the single `text` arg now returns, byte-exact:
+  `Error: the 'regions' list has 2 regions but WRITE takes ONE 'text' (it would fan the same text into every region) — use exactly one region in the list, or one WRITE call per region.`
+  (the count tracks the region count). The guard runs AFTER the overlap check — the overlap teaching stays reachable — and BEFORE any write, so no partial state and no `last_write` store on rejection. The single-span form and the ONE-region list form are UNCHANGED (verified byte-exact).
+- Gate hygiene only: the sandbox smoke no longer depends on the ambient `TEMP`/`TMP`; it self-sets them and restores the ambient values.
+- Deviation from the suggested procedure: none in substance. Probe repins exceeded the spec's single check-113 assumption — the regions change forces check 307 in both trees (its byte-exact fan-out pin asserted the old behavior); check 113 did NOT move (no sandbox message shape change).
 
-## Measured verification (clone, run 2026-10-22)
+## Measured verification (exact commands, PASS/FAIL)
 
-- `node .opencode/plugin/tests/gauge_core.smoke.mjs` → `GAUGE_CORE_SMOKE:
-  ALL PASS`, 42 PASS lines (32 pre-existing + 10 new: v2-shaped OK mass 44150
-  (in-flight + compaction rows excluded), newest form, readout line
-  `SESSION=ses_v2s_fx CTX=44150 (36%) REM=75850`, pairing both directions
-  (v2 winner 31000 / v1 winner 11111), spawn-forced v2 per-session, v2 newest,
-  coexisting W-pick both directions, v1-only byte-identical 43210).
-- `node .opencode/plugin/tests/ctx_gauge.smoke.mjs` → `CTX_GAUGE_SMOKE:
-  ALL PASS (3/3)`.
-- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover:
-  360/360 PASS`.
-- All 12 smokes exit 0 (loop over `.opencode/plugin/tests/*.smoke.mjs`),
-  probe 360/360 — gate green in the clone.
-- Exact verify command (clone root):
-  `node .opencode/plugin/tests/gauge_core.smoke.mjs && node
-  .opencode/plugin/tests/ctx_gauge.smoke.mjs && node
-  .opencode/plugin/probes/handover_probe.mjs` → PASS / PASS / PASS.
+MAIN, after unit 1 (commit `05df70f`):
+- `env -u TEMP -u TMP node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → PASS `BT-SANDBOX-SMOKE: ALL PASS (76/76)` (was a startup `TypeError` before: `path.join(undefined)`).
+- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → PASS 76/76.
+- `node .opencode/plugin/tests/block_transfer.smoke.mjs` → PASS 150/150 (baseline intact).
+- `node .opencode/plugin/probes/handover_probe.mjs` → PASS 360/360.
 
-## Commits (CLONE, branch `migration`; code only per #141 precedent)
+MAIN, after unit 2 (commit `b713585`):
+- bt smoke → PASS `BLOCK_TRANSFER_SMOKE: ALL PASS (151/151)` (150 baseline + 1 net new pin).
+- sandbox smoke both forms → PASS 76/76 each.
+- probe → PASS 360/360. Pre-repin run showed exactly one FAIL: `[307] WRITE 'regions' LIST (2 regions...` → the named repin.
 
-- `922f74c` port gauge TOKEN-mass read to v2 (table-paired + spawn marker
-  v2 form + probe mock relabel) — gate green at this commit.
-- `2c1fa23` pin gauge_core v2 unit-2 forms (smoke pins, 42 PASS lines).
+CLONE, after unit 1 (commit `2a3759f`):
+- sandbox smoke env-less → PASS 76/76; with env → PASS 76/76; bt smoke → PASS 131/131; probe → PASS 360/360.
 
-Working tree: clone `clean`; main repo dirty ONLY in the host-written
-loop files (`loop/autorun-2026-10-01_03-27/counter.json`,
-`loop_log.md`) + this uncommitted summary — as the channel table intends.
-Main repo gate: NOT touched (per spec).
+CLONE, after unit 2 (commit `4054a0a`):
+- bt smoke → PASS `BLOCK_TRANSFER_SMOKE: ALL PASS (132/132)` (131 baseline + 1).
+- sandbox smoke env-less and with env → PASS 76/76 each.
+- probe → PASS 360/360 (check 307 repinned to the paired + reject forms).
 
-## TODO / inbox entries
+Working tree: MAIN `clean` after the final commit (branch `main`); CLONE `clean` (branch `migration`). Fixture dir `bt_sandbox_env_temp` removed by the smoke's finally (verified by `ls` of the Temp dir).
 
-- submit: knowledge (v2 usage-shape facts, verified 2026-10-22 — the
-  handover's research answer, for the v2-tools estate port map),
-  feedback (file tools resolve relative paths against the SESSION CWD — the
-  first clone edit misfired into the main repo and was reverted via
-  `git checkout`; cross-repo tasks must always pass absolute paths),
-  memory (worker: same lesson).
-- TODO #137 status line: planner-side bookkeeping (not mine).
+## Commits
 
-## Deliberately omitted / pending
+- MAIN `05df70f` — sandbox smoke self-set fixture TEMP env.
+- MAIN `b713585` — WRITE regions reject + desc/.md lines + smoke + probe 307 repin.
+- CLONE `2a3759f` — clone twin of the smoke env fix.
+- CLONE `4054a0a` — clone twin of the regions contract (smoke + probe 307 repin).
+- MAIN final commit (with this file) — handover + loop-log DONE + inbox writes.
 
-- Live v2-host acceptance: PENDING (maintainer domain) — after this lands
-  and the host restarts, his next v2 session shows a real `CTX=n` readout
-  (no `notAvailable`) from the in-process backend; the spawn marker is
-  pinned end-to-end with the REAL exe.
-- v2 tools estate port (§4 order 3+), ctx line injection, nudge ladder,
-  main-repo dual-support — out of spec (§Deliberately out of scope).
-- Deviations from the suggested procedure: none material; the spawn design
-  uses a probe exec + winner-pinned marker (instead of instantiating one
-  marker blindly) to guarantee DoD 3 pairing — worker's call per spec §3.
+Probe repins named: check 307 in BOTH trees (MAIN `b713585`, CLONE `4054a0a`). Check 113 untouched.
 
-## Lessons
+## Inbox entries submitted (todo channel + others)
 
-One reused: gauge pin suites mock at the PREPARE level, so a SQL-shape
-change must be mirrored in the probe mocks/pins in the SAME commit (unit-1
-precedent made this the accepted pattern).
+- `todo_inbox.md`: MAIN `.opencode/tools/block_transfer.md` staleness (line 7 "creates the file if absent" vs MAIN's "never creates a file"; line 13 omits the config allow roots from TODO #140 unit A) — found while editing the file, not fixed (out of scope, would need a 5th commit).
+- `agent/agent_feedback.md`: the spec's pin audit named only check 113; a contract change forces one named repin per tree in the probe.
+- `agent/knowledge/knowledge_inbox.md`: the smoke self-set fixture env pattern (gate runs must not read ambient TEMP/TMP).
+- `agent/memory/worker/memory_inbox.md`: pin-inventory-before-contract-change + twin message-parity/feedback-format rules.
+
+## Deliberately omitted
+
+- The paired per-region-text alternative end state (the inbox's other option) NOT built, per spec.
+- The clone's older WRITE hardening gaps (no empty-`regions` rejection, no hardening-item-7 feedback form) NOT ported — out of task scope.
+- MAIN `.md` staleness lines NOT fixed (see the inbox entry).
+- The multi-region summary line in the WRITE feedback (`Wrote N regions into ...`) left in place — unreachable while the guard rejects, but it becomes live again if the paired-text alternative is ever chosen; removing it would touch more pin surface than the guard needs.
+
+## Reusable lesson
+
+Pin inventory before a contract change: grep the byte-exact message/feedback strings in EVERY pin file (both smokes and the probe) in BOTH trees; the probe pins what the smokes pin, so each tree needs one named repin. Keep the new error text byte-identical across trees while copying each tree's own feedback-line format.

@@ -16,3 +16,6 @@ Cross-tree diff pitfalls (observed this session, both nearly corrupted a port): 
 ### 2026-10-22_04-07 worker_FlashNext ses_e9ebd604fffeparWJoUxnaC8DA
 Cross-repo clone work (worker): file tools (block_transfer, write, edit) resolve relative paths against the SESSION CWD (main repo), never the task's target clone — always pass absolute paths for clone files; a wrong-path write lands in the forbidden main repo and must be caught by git status before checkpoint (observed 2026-10-22, gauge unit 2; recovered via git checkout).
 
+### 2026-10-22_04-28 worker_FlashNext ses_e9e9f2891ffe2dP7gkx74SGSxH
+Before changing a tool contract, grep the byte-exact message/feedback strings across EVERY pin file (tests/*.smoke.mjs AND probes/handover_probe.mjs) in both trees; probe checks pin the same behavior the smokes do, so a contract change forces one named repin per tree. Twin rule: keep the reject message byte-identical across trees but copy each tree's OWN feedback format (clone WRITE line = `(lines 2..3, first: 'X')`; MAIN = hardening item 7 `(old 2..3 -> new 2..2, file now N lines, first: 'X')`). Type: observed, confidence high, scope: opencode-agent + opencode-agent-v2 tool-contract work, evidence: commits 05df70f/b713585 (MAIN), 2a3759f/4054a0a (clone), probe FAIL list at 307 before repin; review trigger: any tool message or span-format change.
+

@@ -265,3 +265,6 @@ RESOLVED at plan14 (planner-14) curation — all three surfaces were repinned in
 ## 2026-10-22_03-26 planner_FlashNext ses_e9eeb0952ffeP6BY7SnI5j2Yzs
 block_transfer WRITE `regions` contract: passing TWO regions with ONE `text` writes the identical text into BOTH (measured 2026-10-22, planner-14 NAP repair + the worker's TODO.md repair) — desired: either reject N-regions-with-1-text with a teaching error, or accept per-region text; acceptance: `.opencode/tools/block_transfer.ts` behavior + a smoke pin per form (rejected/paired), bt smoke green (baseline 150/150), no change to the single-span form; decision-needed: which end state (pre-approved class, recommend reject-with-teaching-error).
 
+## 2026-10-22_04-28 worker_FlashNext ses_e9e9f2891ffe2dP7gkx74SGSxH
+MAIN `.opencode/tools/block_transfer.md` staleness found while editing it: line 7 says WRITE "creates the file if absent" (MAIN tool desc says "WRITE never creates a file") and line 13's sandbox line omits the config allow roots landed in TODO #140 unit A. Desired: the .md matches the shipped MAIN behavior. Acceptance: doc lines match the .ts desc; not fixed here (out of task scope, would add a 5th commit).
+

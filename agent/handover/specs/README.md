@@ -79,5 +79,11 @@ AGENTS.md (wave spec lists them).
 - `2026-10-22_137u3b-nudge-ladder.md` — extends the SAME plugin: 5-rung nudge ladder at `execute.after` (per-session read, verbatim v1 rungs, dedup, silence rules) delivered via `ctx.session.synthetic(delivery:"queue")` fire-and-forget + the `subagent` handover pre-flight warn. Launch AFTER 3a verifies (same file, additive).
 - Order: 3a then 3b; both clone-only, live v2 acceptance = maintainer (backend slot).
 
+## Wave 2026-10-22 (planner-17, iter 17) — TODO #137 unit 4, the compaction family in the v2 clone
+- `2026-10-22_137u4a-compact-memory-v2.md` — clone `.opencode/plugins/compact_memory.ts` (v2 twin) + `.opencode/plugin/scripts/compaction_core_v2.mjs`: budget-gated manual compaction via `ctx.session.compact` + the U3 marker mode via `session.hook("compaction")` `result` override + native `delivery:"queue"`. Launch channel: copy to `agent/handover/handover_task.md` (LAUNCHING this session).
+- `2026-10-22_137u4b-context-trim-v2.md` — QUEUED (launch AFTER 4a verifies): report over v2 tables + tail = a persistent boundary store enforced by a `session.context`-hook assembly filter (no `tail_start_id` in v2).
+- 4c queued (spec to be written by the next planner): `agent/scripts/db/dump_session.cjs` v2-table twin + the v2 plugin's dump leg (the 4a plugin logs `dump-skipped` until then).
+- Order: 4a → 4b → 4c; all clone-only, live v2 acceptance = maintainer (backend slot).
+
 ## What does NOT go here
 NAP, non-compaction specs.

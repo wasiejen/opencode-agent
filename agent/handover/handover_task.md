@@ -1,177 +1,111 @@
-  `ctx_family.log` carries the evidence lines).
-# Task spec — TODO #137 unit 4a: compact_memory + U3 marker compaction as a v2 plugin (clone `migration`)
+# Task spec — TODO #137 unit 4b: context_trim ported to v2 (clone `migration`) — QUEUED, launch AFTER 4a verifies
 
 ## Goal
-Add the v2-native compaction plugin to the clone: the `compact_memory` agent
-tool (budget-gated manual compaction) + the U3 marker mode, both built on the
-v2 native surfaces (`ctx.session.compact`, `ctx.session.hook("compaction")`
-`result` override, `delivery` queue) instead of the v1 SDK/DB plumbing.
+Port the `context_trim` tool (report + tail) to v2: the report reads the v2
+session tables; the tail rewrite becomes a plugin-side NON-destructive window
+filter (the `session.context` hook + a persistent boundary store) — the v2 analog
+of the host's own `tail_start_id` rewrite, which does NOT exist in v2.
 
 ## Assignment
 - Repo: the v2 clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`, branch `migration`
-  (checked out; clean at `9e069cc`). Stay on the current checkout.
-- Assigned worker: `worker_FlashNext` (same model — the cache rule).
-- TODO entry: `TODO.md` #137 (main repo; the planner records status + hashes).
-- Design of record (READ-ONLY): main `.opencode/plugin/compact_memory.ts`
-  (header 1-90 = the behavior contract) + `.opencode/plugin/compaction_core.ts`
-  (budget/config/cap/line layer).
+  (after unit 4a lands). Stay on the current checkout.
+- Assigned worker: `worker_FlashNext`.
+- TODO entry: `TODO.md` #137. Design of record (READ-ONLY): main
+  `.opencode/tools/context_trim.ts` (1168 lines — read the HEADER contract + the
+  report/tail shapes via grep, NOT the whole file) + the compact_memory v2 twin
+  landed by spec `2026-10-22_137u4a-compact-memory-v2.md` (evidence-file +
+  registration patterns).
 
 ## Definition of done (measurable)
-1. NEW plugin `C:\Users\Wasiejen\Repos\opencode-agent-v2\.opencode\plugins\compact_memory.ts`
-   — v2 shape: DEFAULT export `Plugin.define` form (`{id?, setup(ctx)}`; TYPE-ONLY
-   `@opencode/plugin` import, value imports node: builtins + plain `.mjs` only —
-   the context_family.ts header lines 9-13 state the loader contract). Auto-discovered
-   from `.opencode/plugins/` — NO `opencode.jsonc` change (3a precedent).
-2. TOOL REGISTRATION — inside `setup`, `ctx.tool.transform` with
-   `editor.add({...})`: name `compact_memory`, description mirrors v1, input = a
-   plain JSON schema `{sessionID?: string, emergency?: boolean, message?: string,
-   mode?: "auto"|"marker", summary?: string, boundary?: string}`. `execute(input,
-   toolContext)` is a plain Promise (promise-surface contract).
-3. SELF/CROSS — SELF (no `sessionID`) = the CALLING session, resolved from
-   `toolContext.sessionID` (the ToolContext carries it — no SDK self-trick); CROSS
-   (explicit `sessionID`) = fire-and-forget, NEVER awaited (same-model dispatch rule).
-4. BUDGET LAYER — ported from `compaction_core.ts` into a new paired module
-   `.opencode/plugin/scripts/compaction_core_v2.mjs` (plain JS, node:fs/path only;
-   the v2 plugin VALUE-imports it — the gauge.mjs precedent). Same file
-   `.opencode/temp/compact_budget.json`, same keys, same semantics: cap resolver
-   (bare model id → cap; unlisted/typo → `model_budget.default`, else 1; CPU models
-   cap 0 — the SAFETY INVARIANT, tested first), denial → zero side effects (no
-   increment, no dispatch, no line), at `count == cap` the `emergency` arg consumes
-   the configured emergency 1 (count → cap+1; count > cap = exhausted), CROSS gets
-   effective cap+1 (caller-scoped, #128 ruling), INCREMENT-ON-SUCCESS ONLY, the
-   `ovr` token on the COMPACT line for cross. The v1 core module stays
-   UNIMPORTED by v2 code (inert-dir contract).
-5. DISPATCH — `ctx.session.compact({sessionID})` (POST `/api/session/:id/compact`;
-   body `{id?, delivery?}` — NO keep fields exist on v2; see Verified fact 3).
-   The response is NEVER a success claim. The budget increment + the COMPACT line
-   land ONLY on a verified compaction: subscribe `ctx.event` for the session's
-   compaction lifecycle (`session.compaction.started` / `.failed` / `.ended`
-   types) and increment on the success signal, `.failed` → one `verify=failed`
-   evidence line, no burn. If the event leg proves unreliable at worker time,
-   fall back to the gauge-paired DB read of the durable `compaction` row —
-   record which leg landed in the header + pin it in the smoke either way.
-6. COMPACT LINE — byte-identical v1 format to the shared `.opencode/temp/ctx.log`
-   (`COMPACT <sessionID> ...` + ` ovr` when cross) — the cross-host log stays
-   one format; plugin evidence lines (dispatch/denied/marker/verify) go to
-   `.opencode/temp/compact_v2.log` (capped, never-throws appends, the
-   context_family.log pattern).
-7. U3 MARKER MODE — `ctx.session.hook("compaction", cb)` registered in `setup`:
-   a per-session PENDING-MARKER store (in-memory Map + the queued marker args
-   written by the tool call with `mode:"marker"`, `summary` REQUIRED) → when the
-   hook fires for that session, set `event.result = {summary, metadata:{marker:true}}`
-   → the core uses it and SKIPS the summarizer model request. Deviation (header
-   REQUIRED): v2 gives the plugin NO boundary control — `recent` is core-computed
-   from config `compaction.keep.tokens`; the `boundary` arg is accepted, ignored,
-   and logs ONE `boundary-ignored` evidence line; the durable `compaction` message
-   is written by the core (no direct DB writes — the v1 `markerSet` quartet-write
-   core has NO v2 counterpart).
-8. QUEUE LEG — the `message` arg: v1 stored a temp file + the auto_resume unit-4
-   relay (NOT PORTED in v2 — port map order 2 skipped). v2 native replacement:
-   deliver via `delivery:"queue"` on the prompt/inbox channel AFTER the dispatch
-   (fire-and-forget; capture+evidence on rejection). Header records: relay
-   semantics changed from resume-relay to native queue; NO temp-file queue store
-   needed.
-9. KEEP KEYS — the budget file's `keepMessages`/`keepTokens` DO NOT apply to a
-   v2 dispatch (the compact body has no keep fields). Behavior: read for
-   auditability, one `keep-not-applied` evidence line when present; retention =
-   config `compaction.keep.tokens` (the ONLY v2 control). Do NOT write config
-   values (maintainer domain).
-10. SMOKE — NEW `.opencode/plugins/tests/compact_memory.smoke.mjs` (bun, mock
-    ctx, scratchpad fixture DBs, live DB NEVER read; mirror the context_family.smoke
-    harness): denial zero side effects; cap resolver forms (CPU guard, unlisted
-    default, listed); emergency at count==cap + exhausted above; SELF via toolContext
-    sessionID; CROSS fire-and-forget + effective cap+1 (` ovr` token); increment
-    ONLY on the verified-success signal; `.failed` → no burn + evidence;
-    marker hook → `result` override captured + `boundary-ignored` line; queue
-    delivery captured (`delivery:"queue"`) + rejection evidence; `keep-not-applied`
-    line; compact body carries NO keep fields (pin the captured call). Final line
-    `SMOKE: ALL PASS`.
-11. GATE — clone: probe `PROBE handover: 360/360 PASS` UNCHANGED; all 12 node
-    smokes ALL PASS; ALL v2 plugin smokes ALL PASS (incl. the new one);
-    typecheck `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p
-    .opencode/plugins/tests/tsconfig.json` zero errors (add the plugin to `files`).
-    Clone tree clean; MAIN repo untouched except the handover summary write.
-12. CHECKPOINT COMMITS in the clone (code only; core module BEFORE the plugin
-    import, then plugin+smoke together if a split would be red); worker summary
-    to the MAIN working tree `agent/handover/handover_task_to_planner.md`.
-
-## Suggested scope (non-exhaustive)
-- NEW: clone `.opencode/plugins/compact_memory.ts`,
-  `.opencode/plugin/scripts/compaction_core_v2.mjs`,
-  `.opencode/plugins/tests/compact_memory.smoke.mjs` (+ tests tsconfig `files`).
-- Reference (READ-ONLY): main `.opencode/plugin/compact_memory.ts` (args +
-  dispatch + line semantics), `.opencode/plugin/compaction_core.ts` (budget layer
-  lines ~33-520), clone `.opencode/plugins/context_family.ts` (v2 plugin shape +
-  evidence-file pattern), clone `.opencode/plugins/tests/context_family.smoke.mjs`
-  (harness), clone `.opencode/plugin/scripts/gauge.mjs` (paired-DB reads for the
-  optional verify fallback).
-- Fork READ-ONLY: `packages/plugin/src/promise/tool.ts:34-59` (ToolEditor
-  add/list/update), `:59-100` (ToolDomain transform),
-  `packages/schema/src/tool.ts:14-19` (ToolContext.sessionID), `:92-99`
-  (Tool.Info name/input/description/execute), `:86-90` (Result),
-  `packages/plugin/src/promise/session.ts:43-52` (SessionCompactionResult +
-  SessionCompaction `result?`), `:139-163` (SessionDomain Pick incl. `compact`),
-  `packages/client/src/promise/generated/types.ts:4654-4663` (SessionCompactInput
-  {sessionID,id?,delivery?} + Output), `:1343-1357` + `:2040` (compaction event
-  types), `packages/core/src/session/compaction.ts:402` + `:601-612` (the result
-  override consumption + fromHook), `packages/core/src/config/plugin/compaction.ts:15-24`
-  (config keep → compaction.transform).
+1. NEW plugin `.opencode/plugins/context_trim_v2.ts` (name open — worker may pick
+   `context_trim.ts`; the v1 name in the unported dir is precedent for a same-name
+   twin) exposing the tool via `ctx.tool.transform` `editor.add` (same surface as
+   4a DoD 2): args mirror v1 — `mode:"report"` (`session?`, `target?`) /
+   `mode:"tail"` (`session`, `target?` message id OR `keepMessages=N`).
+2. REPORT — reads the v2 tables (the clone gauge core is ALREADY v2-paired —
+   reuse `readGauge`/its helpers rather than new SQL where possible): the model
+   window = the `session_message` rows after the LAST completed `compaction` row
+   (the v2 window model — the context endpoint's own description states it);
+   per-message token mass = `session_message.data.tokens{input,output,
+   reasoning,cache.read/write}` + the `$.time.completed` discriminator (unit-2
+   finding); the readout forms mirror v1 (numbered rows, `last:`, recommendation
+   block, biggest-droppable) adapted: anchors = v2 message ids; no `part` table,
+   no `tail_start_id`.
+3. TAIL — v2 has NO `tail_start_id` field (measured: the window =
+   after-last-compaction; there is NO host lever to rewrite it). The v2 lane:
+   a persistent per-session BOUNDARY store (`.opencode/temp/context_trim_v2.json`
+   — sessionID → boundary messageID; fail-open) + a `ctx.session.hook("context")`
+   handler in the SAME plugin that, per primary request, DROPS `event.messages`
+   entries strictly before the boundary (assembly-time filter, persisted history
+   UNTOUCHED = the v1 non-destructive + reversible semantics). Validation
+   mirrors v1 fail-closed: boundary exists in the session's rows, sits STRICTLY
+   before the last compaction row? — re-check: in v2 the boundary must sit inside
+   the current window (after the last compaction row) and leave a retained tail of
+   >= 6 messages (the floor carries); rejections = the plain
+   `tail-set= rejected: <cause>` lines. `keep=0` refused.
+4. The tail store's effect must survive compaction: when a new durable `compaction`
+   row lands, the boundary is stale if before it → the hook logs ONE
+   `boundary-stale` line and keeps the whole post-compaction window (fail-open),
+   same discipline as v1 (the DB keeps everything; nothing is lost).
+5. SMOKE — new `.opencode/plugins/tests/context_trim_v2.smoke.mjs` (bun, mock
+   ctx + the hook trigger, scratchpad fixture v2-shaped DBs — reuse the gauge
+   fixture pair): report row forms + mass sums over a v2-shaped fixture; tail
+   set/clear; floor-6 refusal; unknown-session refusal; the hook filter drops
+   exactly the pre-boundary entries and appends NOTHING; stale-boundary fail-open
+   + the ONE line. Final line `SMOKE: ALL PASS`.
+6. GATE — clone probe `360/360` UNCHANGED; all node smokes ALL PASS; all v2
+   plugin smokes ALL PASS; tsgo zero errors (add the plugin to the tests tsconfig
+   `files`); clone tree clean; MAIN repo untouched except the summary write.
+7. Checkpoint commits in the clone (code only); worker summary to the MAIN
+   working tree `agent/handover/handover_task_to_planner.md`.
 
 ## Verified facts (measured at spec-authoring, 2026-10-22, fork @ current checkout)
-- `ctx.session.compact` EXISTS in the plugin SessionDomain Pick; the generated
-  client maps it to POST `/api/session/:sessionID/compact` with body
-  `{id, delivery}` only — NO keep/summary fields on the request
-  (types.ts:4654-4663, client.ts:799-810). Output = an inbox item (manual compaction
-  is an inbox item per compaction.ts trigger reasons).
-- The compaction draft hook: `SessionCompaction extends SessionContext` with
-  `result?: SessionCompactionResult {summary; providerState?; metadata?; tokens?}`
-  — doc: "Set to use this compaction and skip the model request"
-  (promise/session.ts:43-52). Core consumption: compaction.ts:402 `if
-  (prepared.event.result) return yield* fromHook(...)`; fromHook (compaction.ts:
-  601-612) wraps `supplied.summary` + the CORE-computed `recent` into the durable
-  result → NO plugin-side boundary control. The durable message renders as
-  `<conversation-checkpoint>` `<summary>`/`<recent-context>`
-  (runner/to-llm-message.ts:306-325).
-- Kind hook firing: `SessionModelRequest.compaction = prepare("compaction", …,
-  agentHook("compaction"))` — model-request.ts:428; primary fires `context`
-  only, so the marker hook handler never runs on primary requests.
-- Events: `session.compaction.started` (data {sessionID, reason auto|manual,
-  recent, inputID?}) and `session.compaction.failed` exist (types.ts:1343/1357);
-  an `ended` type exists at :2040 — verify the exact success signal at worker
-  time before wiring the increment.
-- `ToolContext` (schema/src/tool.ts:14-19) carries `sessionID` → SELF resolution
-  is local; `Tool.Info` = {name, input, description, execute, output?, options?}.
-- v1 U3 writes the marker quartet THROUGH `context_trim.ts`'s `markerSet`
-  (compact_memory.ts:80 import) — in v2 that whole DB-write lane is REPLACED by
-  the hook `result` override + the core's durable message (biggest deviation;
-  header REQUIRED).
-- v2 auto_resume is NOT ported (port map order 2 skipped; clone plugins/ =
-  intercept_observer.ts + context_family.ts only) → the v1 resume-relay has no
-  v2 counterpart; `delivery:"queue"` is the native fit (3b precedent: the nudge
-  delivery already uses it).
+- NO `tail_start_id` anywhere in v2: the context endpoint = "all messages after
+  the last compaction" (`packages/protocol/src/groups/session.ts:569-579`
+  annotation + handler `server/src/handlers/session.ts:512`); window selection =
+  the durable `compaction` row (compaction.ts `previousCompaction` ~690-694:
+  the FIRST row of the window, if type compaction + status completed).
+- `session.context` domain method = GET `/api/session/:id/context` →
+  `Array<SessionMessageInfo>` (client.ts:858-868; types SessionContextInput/
+  Output ~4685) — a ready report source for the CURRENT window.
+- The `session.context` HOOK (`ctx.session.hook("context", …)`) fires per PRIMARY
+  request with MUTABLE `messages` (model-request.ts:427-428 +
+  `:422-431`; the 3a context_family plugin already uses this hook — the trim
+  plugin registers its OWN handler; handler order independent, the filter mutates
+  the same draft the injection appends to — APPEND-only discipline of 3a stays
+  intact by context_family; the trim handler runs on its own draft copy semantics
+  = verify at worker time that both plugins' mutations compose (both mutate
+  `event.messages` on the SAME draft — pin the composition in the smoke).
+- v2 revert lane (`session.revert.stage/clear/commit`, protocol
+  `groups/session.ts:560-566`) is a DIFFERENT feature (rewind work), NOT a trim —
+  do NOT map tail to revert.
+- v2 message rows carry `data.tokens` per message (unit 2:
+  `session_message.data.tokens{input,output,reasoning,cache.read/write}` +
+  `$.time.completed`).
+
+## Suggested scope (non-exhaustive)
+- NEW: clone `.opencode/plugins/context_trim_v2.ts` + its smoke + tsconfig entry.
+- Reference READ-ONLY: main `.opencode/tools/context_trim.ts` (header +
+  readBudget/floor/validation greps, ~lines 1-120 + the rejection strings), the
+  4a plugin + `compaction_core_v2.mjs` (patterns), clone
+  `.opencode/plugins/context_family.ts` (the `context`-hook mutation pattern),
+  clone `.opencode/plugin/scripts/gauge.mjs` (paired table reads).
 
 ## Approval boundary
-Pre-approved class: agent-facing compaction machinery; no maintainer-visible
-behavior change; live firing waits for the maintainer's v2 host runs (backend
-slot). DO NOT touch: the MAIN repo (except the handover summary write);
-`maintainer/**`; the fork (READ-ONLY); clone `.opencode/plugin-unported-v1/**`,
-`.opencode/plugins/intercept_observer.ts`, `.opencode/plugins/context_family.ts`,
-`opencode.jsonc`; the live DB (fixture DBs only, `mode=ro`); spec/prompt files.
+Pre-approved class (agent-facing; live acceptance = maintainer's v2 hosts).
+DO NOT touch: MAIN repo (except summary); `maintainer/**`; clone
+`.opencode/plugin-unported-v1/**`, `plugins/intercept_observer.ts`,
+`plugins/context_family.ts`, `plugins/compact_memory.ts` (4a's file — its
+composition pins live in the NEW smoke only); `opencode.jsonc`; live DB.
 
-## Procedure (guidance, not protocol)
-1. Read this spec + the v1 headers (compact_memory.ts 1-90, compaction_core.ts
-   budget section ~33-120 + cap resolver 209-260).
-2. Port the budget layer to `compaction_core_v2.mjs`; commit it (green alone).
-3. Write the plugin: tool registration + dispatch + verify-increment + marker
-   hook + queue; wire the evidence files.
-4. Smoke + typecheck + full clone gate; checkpoint commit (plugin+smoke if a
-   split is red — record the reason like 3b did).
-5. Worker summary to the MAIN working tree; final message points at
-   `agent/handover/handover_task_to_planner.md`.
+## Procedure (guidance)
+1. Grep the v1 tool for the arg surface + rejection strings (do NOT read all
+   1168 lines); read 4a's plugin header.
+2. Implement report (fixture-backed), then the tail store + hook handler.
+3. Smoke (incl. the composition pin with a simulated context_family append),
+   typecheck, full clone gate; checkpoint commits; summary to MAIN.
 
 ## Deliberately out of scope
-- The pre-compaction DUMP leg (#152): `agent/scripts/db/dump_session.cjs` is v1-table
-  shaped; a v2-table twin rides follow-up spec `2026-10-22_137u4c-dump-twin.md`
-  (queued, next planner). The v2 plugin logs `dump-skipped` ONCE per dispatch.
-- Unit 4b (context_trim v2 report) — same wave, separate spec, launch AFTER 4a verifies.
-- auto_resume v2 (order 2), the small tools (order 5-8), live v2 acceptance
+- The destructive-lane question (row deletion) — v1 never had it, v2 stays out.
+- 4c (dump twin) and the small tools (order 5-8) — separate specs.
+- Live v2 acceptance (maintainer domain).

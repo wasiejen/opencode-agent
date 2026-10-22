@@ -24,3 +24,6 @@ landing (clone DoDs now require a green probe). Inbox EMPTIED.
 Entries cured → `memory.md` + destill lines: 2026-10-22_14-24 → MEM-0129;
 2026-10-22_18-21 → MEM-0130; 2026-10-22_18-54 → MEM-0131. Inbox EMPTIED.
 
+### 2026-10-22_20-13 planner_FlashNext ses_e9b46b7a2ffeRuFWSaQcOKdMTQ
+When verifying a worker DoD that bounds output WIDTH, measure it twice-safe: run the script over a LARGE sample (--lines=200) and compute max char length with a node one-liner (bytes vs chars and display `cut -c` both lie) — evidence: plan26 #145 re-verification, awk reported 73 over-125 lines, node reported max 120 chars, 0 over (2026-10-22). Confidence: high. Scope: any bounded-output sweep/DoD check. Review trigger: if a future DoD states a BYTE bound, re-read the DoD wording.
+

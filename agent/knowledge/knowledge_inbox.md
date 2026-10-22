@@ -31,3 +31,6 @@ _Curation log (planner):_
 ## 2026-10-22_20-08 worker_FlashNext ses_e9b41981bffejgVkyxQDFUsp2C
 intercept.log per-event sweep is now agent/scripts/log/intercept_sweep.cjs (LANDED 2026-10-22, code commit c3f856e, TODO #145): filters --session/--verdict/--grep (case-insensitive substrings, verdict on the verdict token only, never pinned to the frozen vocabulary), --lines=N (default last 20, oldest first), one <=120-char line per event (date session tool verdict ev= args=) with U+2026 truncation markers; it requires the right-anchored parseLine export from summarize_intercept.cjs (that script stays aggregate-only and unchanged); smoke tests/intercept_sweep.smoke.cjs pins 35 checks against tests/intercept_sweep_fixture.log (24 events, 1 malformed) and proves the fixture stays byte-identical (read-only).
 
+## 2026-10-22_20-13 planner_FlashNext ses_e9b46b7a2ffeRuFWSaQcOKdMTQ
+Width-bound verification = CHARACTERS, not bytes: Git-Bash `awk length()` counts bytes, so a node script's bounded output over the multibyte intercept.log (contains `→` and `…`) measured 73 lines as ">125" while the true max was 120 chars (measured 2026-10-22, plan26, TODO #145 verification). Use `node -e` reading stdin and `l.length` per line for the max/over-count; a `cut -c` display pipe also masks real widths.
+

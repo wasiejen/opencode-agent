@@ -1283,5 +1283,4 @@ All those IDs stay reserved — see the numbering rule in the header.
   on-EBUSY teardown OR close every sqlite handle before the rm — worker's call.
 - **Suggested scope (non-exhaustive):** `.opencode/plugin/tests/gauge_core.smoke.mjs`
   + `context_trim.smoke.mjs` + `auto_resume.smoke.mjs` (MAIN + clone twins).
-- **Status:** OPEN — no decision-needed (pre-approved agent-facing test fix);
-  queue behind the #137 port units.
+- **Status: CLOSED 2026-10-22 (planner-22 direct, no worker — small test-side fix).** Fix class chosen: RETRY-ON-BUSY teardown — `rmTear` exported from `.opencode/plugin/tests/_smoke_base.mjs` (bounded backoff: `Atomics.wait` sleeps 25–175ms over 8 attempts on `EBUSY|EPERM|ENOTEMPTY`, non-busy errors rethrow; `freshSandbox` pre-clean uses it too); converted all `fs.rmSync` teardown calls in the three smokes (gauge_core 2 MAIN/3 clone incl. the clone's extra `d` site, context_trim 1 — its node:fs `rmSync` import dropped, auto_resume 14 both trees). Check counts UNCHANGED (gauge_core ALL PASS, context_trim 40/40, auto_resume 170/170); trio ran green ×3 BOTH trees; full v1 gate MAIN 12/12 + clone 12/12 exit 0. MAIN commit with this status line; clone `4045331`. Note: the entry said "13/13"; the folder holds 12 `*.smoke.mjs` — 12/12 is the real full-suite count.

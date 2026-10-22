@@ -1,57 +1,118 @@
-# Worker summary — TODO #137 unit 3b: nudge ladder + handover pre-flight (v2 clone `migration`)
+# Worker summary — TODO #137 unit 4a: compact_memory + U3 marker compaction as a v2 plugin
 
-Status: COMPLETE
+Status: COMPLETE (all DoD items landed; the full clone gate green)
+Assigned: worker_FlashNext · Repo: `C:/Users/Wasiejen/Repos/opencode-agent-v2` branch `migration`
 
-## Task and scope
-Spec `agent/handover/handover_task.md` (3b): extend the clone plugin
-`C:\Users\Wasiejen\Repos\opencode-agent-v2\.opencode\plugins\context_family.ts`
-with the 5-rung nudge ladder (`tool.execute.after`, v1 v2.6 rungs/texts VERBATIM,
-per-session gauge read, per-rung dedup, delivery via `ctx.session.synthetic({sessionID,
-text, delivery:"queue"})` fire-and-forget, `kind:"nudge"` evidence {session,rung,readout}
-+ `delivery-threw`/`delivery-rejected` reason lines) and the handover-delegation
-pre-flight (`tool.execute.before`: tool `subagent` + input object `prompt` containing
-`agent/handover/handover_task.md` → missing/EMPTY spec file → ONE warn line kind
-`handover-preflight`; observation only, `event.input` never mutated, never throws).
-DoD 5: extend the plugin smoke. DoD 6: clone gate green UNCHANGED.
+## Change summary
 
-## Files changed (all in the clone; MAIN repo untouched except this summary)
-- `.opencode/plugins/context_family.ts` — extended; 3a regions (1)-(5) intact byte-wise around the additions; header gains §(6)/(7) blocks (ladder semantics, synthetic channel, P02 not-re-ported note, pre-flight).
-- `.opencode/plugins/tests/context_family.smoke.mjs` — 24 → 46 pins; rung fixture sessions (name-marker windows 120K/80K: pct 50 / REM 30000 / REM 20000 / REM 10000 / REM 4000 + rej/throw), budget caps 6/4 for the rung models, `SYNTH` synthetic-recorder mock (ok/reject/throw modes), tool-domain mock hooks, NB/N1-N8 + P1-P7 pins, INV kinds widened to {ctxmsg,gauge,nudge,handover-preflight} + per-kind shape pin.
-- `.opencode/plugins/tests/README.md` — context-family section refreshed (46 checks, 3b legs described).
+Three new files in the clone, no existing plugin touched:
 
-## Behavior changed (agent-facing, pre-approved class)
-- After-hook fires one gauge read per tool call for the event's OWN sessionID; rung table `1 pct>=50 | 2 pct>=70|REM<=30k | 3 pct>=80|REM<=20k | 4 pct>=90|REM<=10k | 5 REM<5k`, highest met fires, once per rung per session; unknown-window/no-total/db-error SILENT (no gauge line on this channel).
-- Delivery: `delivery:"queue"` (next turn at idle); never awaited; sync throws + rejections evidence-logged; tool call never failed.
-- Pre-flight warn on missing/whitespace-empty spec file for handover delegations only (`task` v1 name deliberately NOT matched — v2 gate is `subagent`).
-- NOT ported (per spec): the v2.7 P02 summary mirror; the v2.8 busy-check/setImmediate race block (native `delivery:"queue"` replaces it — deviation recorded in the plugin header).
+1. `.opencode/plugin/scripts/compaction_core_v2.mjs` — the budget layer ported
+   from v1 `compaction_core.ts` (plain JS, node:fs/path only, the gauge.mjs
+   sibling contract). Same `.opencode/temp/compact_budget.json`, same keys,
+   same semantics: fail-open config reader, cap resolver (CPU guard cap 0 FIRST,
+   bare model id, unlisted → `model_budget.default`, else 1), budget-store v2
+   schema + the #119 additive-rewrite invariant, `budgetCount`, `recordSuccess`
+   (INCREMENT-ON-SUCCESS), `localStamp`, `appendCompactLine` (byte-identical v1
+   COMPACT line incl. ` emergency` / ` ovr` tokens), plus a NEW pure
+   `budgetGate` (the v1 arithmetic incl. the emergency-1 and the caller-scoped
+   CROSS cap+1 override, TODO #128) so the plugin stays thin and the smoke pins
+   the forms directly. `hasKeepKeys` added (the keep-not-applied audit read).
+2. `.opencode/plugins/compact_memory.ts` — the v2 plugin (`{id, setup}` DEFAULT
+   export; TYPE-ONLY `@opencode/plugin`; VALUE import of the paired `.mjs`
+   core). Registers `ctx.tool.transform` → `editor.add` (name
+   `compact_memory`, plain JSON-schema input
+   `{sessionID?, emergency?, message?, mode?, summary?, boundary?}`,
+   `output:{type:"string"}`, promise `execute`), `ctx.session.hook("compaction",
+   …)` (U3 marker `result` override), and consumes `ctx.event.subscribe()`.
+   Dispatch = `ctx.session.compact({sessionID})` fire-and-forget; the
+   increment + COMPACT line land ONLY on the `session.compaction.ended` event
+   for a session with a PENDING dispatch record (`.failed` → one evidence line,
+   NO burn; auto/maintainer compactions WITHOUT a pending record are silent,
+   no burn). Evidence lines → `.opencode/temp/compact_v2.log` (the context
+   family capped-log shape: kinds `dispatch/marker/verify/keep/dump/queue`).
+3. `.opencode/plugins/tests/compact_memory.smoke.mjs` (+ the tests
+   `tsconfig.json` `files` entry) — 41 pins, mock ctx, scratchpad fixtures.
 
-## Deviations from suggested procedure
-- One combined clone commit instead of split checkpoints: the new `setup` registers tool hooks, so the 3a smoke RED-fails without the mock and vice-versa; any split commit would be red (rule: never commit red). The plugin+smoke+README pair is the smallest green unit.
-- Smoke-constant fix during work: nudge readout is the BARE `formatGauge` line (no Part 2 `ITER=` suffix — that rides only the 3a injected `ctx:` line); first draft's expected constants included it and were corrected before commit.
+## Deviations landed (all recorded in the plugin header)
 
-## Measured verification (run after the edits, at the committed tree)
-- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS` (unchanged) — PASS
-- 12 node smokes `.opencode/plugin/tests/*.smoke.mjs` → all `ALL PASS` (auto_resume 170/170, block_transfer.sandbox 76/76, block_transfer 132/132, compact_memory 110/110, context_recovery 17/17, context_trim 40/40, ctx_gauge 3/3, gauge_core ALL, intercept_observer 85/85, loop_log 69/69, state_snapshot 20/20, submit 31/31) — PASS
-- `bun run smoke.mjs` (v2 intercept smoke, unchanged) → `SMOKE: ALL PASS` — PASS
-- `bun run context_family.smoke.mjs` → 46 PASS lines, 0 FAIL, `SMOKE: ALL PASS`, exit 0 — PASS
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p tsconfig.json` → exit 0, zero output (zero errors) — PASS
-- Exact gate command: the five lines above, run from `C:\Users\Wasiejen\Repos\opencode-agent-v2` (probe) / `...\.opencode\plugins\tests` (smokes, tsgo).
+- VERIFY leg = the EVENT leg (pinned in the smoke); the gauge-paired DB-read
+  fallback was NOT needed.
+- U3 marker: NO boundary control in v2 → `boundary` accepted, ignored, ONE
+  `boundary-ignored` line; the plugin sets `event.result =
+  {summary, metadata:{marker:true}}`; the durable compaction message is
+  written by the CORE (the v1 `markerSet` quartet DB-write lane has NO v2
+  counterpart).
+- QUEUE leg = native `session.prompt({…, delivery:"queue"})`, delivered AFTER
+  VERIFIED SUCCESS (keeps the v1 zombie-guard guarantee: queue present ⇒ the
+  compaction happened); NO temp-file queue store (auto_resume is not ported).
+- KEEP keys: not applied (the compact body has NO keep fields) — read for
+  auditability + ONE `keep-not-applied` line; retention = config
+  `compaction.keep.tokens`; no config written.
+- DUMP leg (#152): skipped, ONE `dump-skipped` line per dispatch (the v2 dump
+  twin rides spec 2026-10-22_137u4c-dump-twin).
+- The v1 core module stays UNIMPORTED by v2 code (inert-dir contract).
+
+## Measured verification (exact commands, all run from the clone root)
+
+| command | result |
+|---|---|
+| `node .opencode/plugin/probes/handover_probe.mjs` | `PROBE handover: 360/360 PASS` — PASS (unchanged) |
+| `bun run .opencode/plugins/tests/compact_memory.smoke.mjs` | 41 PASS lines, final `SMOKE: ALL PASS`, exit 0 — PASS |
+| `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/plugins/tests/tsconfig.json` | exit 0, zero error lines — PASS (the plugin added to `files`) |
+| `bun run .opencode/plugins/tests/smoke.mjs` (v2 intercept) | 52 PASS, `SMOKE: ALL PASS` — PASS |
+| `bun run .opencode/plugins/tests/context_family.smoke.mjs` | 46 PASS, `SMOKE: ALL PASS` — PASS |
+| `node .opencode/plugin/tests/<each>.smoke.mjs` × 12 | ALL PASS (auto_resume 170/170, block_transfer.sandbox 76/76, block_transfer 132/132, compact_memory(v1 dir) 110/110, context_recovery 17/17, context_trim 40/40, ctx_gauge 3/3, gauge_core, intercept_observer 85/85, loop_log 69/69, state_snapshot 20/20, submit 31/31) |
+
+Note: three node smokes (`auto_resume`, `context_trim`, `gauge_core`) print a
+bun banner as their last line when run under `bun` (they need `node`); under
+`node` they read ALL PASS. Recorded as an observation, NOT a failure — no file
+was changed for it.
+
+Live firing: NONE. No request was made to the backend inference server; the
+live opencode DB was never opened (scratchpad fixture budget file + logs only).
+
+## Clone commits (tree CLEAN)
+
+- `afd6b26` Port the compaction budget layer to v2 (compaction_core_v2.mjs)
+- `ae2f36f` Add the v2 compact_memory plugin: tool dispatch, verify-gated
+  budget, U3 marker hook, native queue (TODO #137 unit 4a) — plugin+smoke
+  bundled (a plugin-only commit would be unverified: the 41-pin smoke is its
+  DoD evidence)
+- `358cba7` Document the compact_memory v2 smoke in the plugins tests README
 
 ## Working-tree status
-- Clone `opencode-agent-v2` (branch `migration`): clean.
-- Main repo `opencode-agent`: this summary is the only write (uncommitted — planner commits it per spec DoD 7).
 
-## Clone commit
-- `9e069cc` "Add the 3b nudge ladder + handover pre-flight to the v2 context_family plugin (TODO #137)" (3 files, +527/−31). Baseline before: `f149745`.
+- Clone `opencode-agent-v2` @ `migration`: CLEAN.
+- Main `opencode-agent` tree: DIRTY by design — this file + the loop-log
+  DONE line are uncommitted (this task's instruction: no commits in the main
+  repo; the planner lands the bookkeeping).
 
-## TODO / inbox entries
-- None. Main-repo `TODO.md` #137 status + hash recording is planner-owned; the approval boundary forbids touching MAIN beyond this summary, so no `submit`/`todo_inbox`/loop-log/feedback writes were made.
+## TODO / inbox items
 
-## Deliberately omitted (per spec)
-- Port map §4 order 4+ (compact_memory/context_trim/U3 + small tools); `compact_budget.json` v2 wiring (gauge core already reads it); live v2-host acceptance (maintainer restart); the v1 event-observer `plugin.log` role (retired in v2); the v2.8 readout-append/minimal-readout consumers (v2.8-specific, not in 3b scope).
+- No new `TODO.md` entries; #137 unit 4a is DONE (the planner records status
+  + hashes).
+- `submit` (feedback channel, 2 lines) sent: (a) `block_transfer` REPLACE/WRITE
+  with `bufferName:"last_write"` silently pasted a STALE foreign buffer and
+  corrupted my file (repaired by rewrite; the buffer is session-persistent,
+  never request it by name unless you just wrote it); (b) a ~4.5 KB single
+  bash heredoc append was TRUNCATED mid-line (append ≤ ~4 KB per call, or
+  use the write/edit tools).
+- Deferred by spec: #152 dump twin (spec 2026-10-22_137u4c-dump-twin), unit
+  4b (context_trim v2 report), auto_resume v2 (port order 2), live v2
+  acceptance.
 
-## Blockers
-- None.
+## Deliberately omitted
 
-## Lessons
-- The nudge readout is the bare `formatGauge` line — the Part 2 `ITER=` suffix rides only the injected `ctx:` line; pin smoke readouts against the channel, not the sibling line.
+- The pre-compaction DUMP leg (queued follow-up spec) — `dump-skipped` lines
+  only.
+- No config writes (maintainer domain); no `opencode.jsonc` change (auto
+  discovery).
+- No live host activation (waits for the maintainer's v2 runs).
+
+## Lessons (reusable)
+
+Pin the verification leg you actually wire: the v2 event leg
+(`session.compaction.ended` / `.failed`) is deterministic under a mock
+AsyncIterable, so the DB-read fallback was unnecessary and stays unported —
+the smoke pins the leg that landed.

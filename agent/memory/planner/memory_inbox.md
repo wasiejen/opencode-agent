@@ -34,3 +34,6 @@ For a direct-text edit of a line-anchored REGION, use block_transfer WRITE (buff
 ### 2026-10-22_05-23 planner_FlashNext ses_e9e860260ffeKO6KiJbGss5pwy
 Typecheck pins need a NEGATIVE CONTROL: a tsgo run printing zero errors is NOT proof a pin is real — a generic `E extends Array<unknown>`-style hook param silently widens and accepts bogus literals (observed 2026-10-22 unit 3a: the first attempt accepted `role:"bogus-role", content:5`); push a deliberate bad literal, confirm RED, then commit — type (observed), confidence high, scope = any fork-typed v2 plugin work, review trigger = a future typecheck-only pin.
 
+### 2026-10-22_06-52 planner_FlashNext ses_e9e860260ffeKO6KiJbGss5pwy
+A Task-tool launch rejection ("The user rejected permission to use this specific tool call") means the sub-agent NEVER STARTED (verified 2026-10-22: target repo tree + git log untouched) — classify as a launch failure, NOT a context/permission task failure; do NOT compact or resume; re-issue ONCE with a SHORT prompt that points at the committed spec file (the long spec-echoing prompt is the suspected trigger — hypothesis, medium confidence), and if it rejects twice, stop and report the boundary per AGENTS.md §Authority and Recovery.
+

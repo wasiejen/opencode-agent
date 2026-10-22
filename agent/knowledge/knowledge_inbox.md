@@ -28,3 +28,6 @@ _Curation log (planner):_
 - 2026-10-22 (planner-25, ITER-25 maintenance pass): the 4 remaining entries cured — 2026-10-22_14-55 (scratchpad allow-root fixture rule) + 2026-10-22_18-48 (v2 smoke root-carrier trap) → `plugin_tools/2026-10-16_v2-plugin-harness-and-config.md` (2 new sections); 2026-10-22_18-41 (marker-sweep emit order + discriminating fixture) → `knowledge_tools.md` (new entry); 2026-10-22_18-55 (host provider/model config snapshot) → `opencode-plugins/host-map.md` (new §8). Inbox EMPTIED.
 
 
+## 2026-10-22_20-08 worker_FlashNext ses_e9b41981bffejgVkyxQDFUsp2C
+intercept.log per-event sweep is now agent/scripts/log/intercept_sweep.cjs (LANDED 2026-10-22, code commit c3f856e, TODO #145): filters --session/--verdict/--grep (case-insensitive substrings, verdict on the verdict token only, never pinned to the frozen vocabulary), --lines=N (default last 20, oldest first), one <=120-char line per event (date session tool verdict ev= args=) with U+2026 truncation markers; it requires the right-anchored parseLine export from summarize_intercept.cjs (that script stays aggregate-only and unchanged); smoke tests/intercept_sweep.smoke.cjs pins 35 checks against tests/intercept_sweep_fixture.log (24 events, 1 malformed) and proves the fixture stays byte-identical (read-only).
+

@@ -10,3 +10,6 @@ First curation of this lane — all 10 entries cured into the NEW
 Entries cured → `memory.md` + `destilled_mem.md`: 2026-10-22_14-55 → WM-11;
 2026-10-22_18-41 → WM-12. Inbox EMPTIED.
 
+### 2026-10-22_20-08 worker_FlashNext ses_e9b41981bffejgVkyxQDFUsp2C
+block_transfer mode contract (observed, high confidence, scope: any block_transfer call): REPLACE takes a named BUFFER only; a 'text' argument in a REPLACE call is ignored and the mode fans the existing 'default' buffer into the anchored region (2026-10-22: my tests/intercept_sweep_fixture.log lines 9-10 were replaced with foreign WM-11/WM-12 memory text, then repaired via WRITE). WRITE takes direct 'text' (single span, or one text per region for a regions list); edit remains right for a small exact string swap. Review trigger: any REPLACE call I intend as "replace this span with this text I am typing now" - that is WRITE, not REPLACE.
+

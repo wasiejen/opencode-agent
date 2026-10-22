@@ -1,137 +1,56 @@
-# Worker summary — state_snapshot digest: LIVE-class marker hits sort first
+# Worker summary — TODO #145: intercept_sweep.cjs per-event filter view
 
-Status: LANDED (both units verified + committed; the clone-side commit hash
-is recorded below after the clone commit landed).
-Session: `ses_e9b8ed378ffewWRy0cDWYNTkQA` (`worker_FlashNext`), looprun
-`autorun-2026-10-01_03-27`. Spec: `agent/handover/specs/2026-10-22_state-
-snapshot-marker-order.md` (= `agent/handover/handover_task.md`).
+Status: LANDED (one code unit + one doc/state unit, both verified and committed)
 
 ## Task and scope
 
-`markersSection` in the `state_snapshot` planner init digest partitions the
-marker-sweep hits into LIVE-CLASS (`maintainer/` prefix, `.opencode/` prefix,
-or exactly `TODO.md` / `README.md` / `WIKI.md`) and DOC-CLASS (everything
-else), sorts each group by the line string, and emits LIVE first, then DOC.
-The 20-line cap + `… (+<k> more)` steer, the sweep command, the tool
-description and args are untouched. No new output line shape, no new header
-or steer text.
-
-## Files changed
-
-MAIN (commit `97714b5`):
-- `.opencode/tools/state_snapshot.ts` — new `isLiveHit` helper + the
-  partition/sort in `markersSection` + the two header comments (206 → 234 lines).
-- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — the FX1 marker fixture is
-  now `WIKI.md` (`--main`, LIVE-CLASS) alongside `loop/notes.md` (`--now`,
-  DOC-CLASS); new pin 21 asserts the LIVE hit prints BEFORE the `loop/notes.md`
-  DOC hit. Pins 20 → 21. FX3 + its fixture marker-line count untouched.
-- `agent/readme/repo_commands.md` §Marker sweep — the note: the digest re-
-  orders the sweep OUTPUT only; the ready-made command unchanged.
-
-Clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`):
-- `.opencode/tools/state_snapshot.ts` — copied from MAIN (byte-identical, 234
-  lines, `cmp -s` PASS after the change).
-- `.opencode/plugins/state_snapshot.ts` (v2) — the twin edit in the file's
-  semicolon style: `isLiveHit` + the partition/sort + the markers header
-  comment + a header note in the CARRIED block (265 → 293 lines).
-- `.opencode/plugins/tests/state_snapshot.smoke.mjs` — FX1 `WIKI.md` fixture
-  + the ordering pin + pin (12) FX1 digest line count 46 → 47 (the fixture
-  adds one sweep hit) + the header-comment line for the pinned contract.
-- `agent/readme/repo_commands.md` — the twin §Marker sweep note (identical text).
+Per-event FILTER VIEW of `.opencode/temp/intercept.log` (planner-26 spec, TODO #145, pre-approved class — agent-usage friction). Files: `agent/scripts/log/intercept_sweep.cjs` (new), `agent/scripts/log/tests/intercept_sweep_fixture.log` (new), `agent/scripts/log/tests/intercept_sweep.smoke.cjs` (new), `agent/scripts/log/README.md`, `TODO.md` #145 status. DO-NOT-touch list respected: `summarize_intercept.cjs` + its fixture + its smoke byte-unchanged (only `README.md` shows as modified under `agent/scripts/log/`); no `.opencode/**`, `opencode.jsonc`, `AGENTS.md`, `agent/prompts/**`, `maintainer/**` change (the maintainer's own dirty `maintainer/SCRATCH_PAD.md` + `opencode.jsonc` were left unstaged, untouched).
 
 ## Behavior changed
 
-The `## markers` window is LIVE-first, so live maintainer/TODO markers can
-no longer be crowded out by the DOC-heavy `agent/` hits. MAIN sweep measured
-143 hits = 18 LIVE + 125 DOC; the old 20-line window carried ZERO live hits.
+New read-only script, stdout only. Default: last 20 events, printed oldest-first. Filters: `--session=`, `--verdict=`, `--grep=` (case-insensitive substrings; verdict matches the verdict token only, so `--verdict=edit` catches `edit-hint`/`edit-ambiguous`/`fuzzy-edit` and never a line whose TOOL is `edit`; `--verdict=nosuchkind` is accepted — no frozen-vocabulary pin), `--lines=N` (0 = header + match count), optional positional logfile (default `.opencode/temp/intercept.log`).
 
-## Deviation from the suggested scope (measured — planner to curate)
+One line per event, ≤120 chars: `date_time session tool verdict ev=<evidence> args=<args-json>`; evidence and args are truncated with the U+2026 marker, the free budget splits evidence-first with an args floor (`ARGS_SHARE=0.4`), so short args (`intercept-error`) buy the evidence room. Head fields carry safety caps (`block_transfer` renders as `block_trans…`). Omitted by design: `model` and `scope`. Grammar reuse: `require("./summarize_intercept.cjs")` → `parseLine` keeps the right-anchored split (an args value containing ` | ` merges into the args region; verified). Malformed lines (<8 fields) render as `MALFORMED(5f)`, filter by session/grep but never by verdict, and their count rides the header (`malformed 1`). Exit: 0 = view printed (0 matches still 0), 1 = unreadable log, 2 = bad flag.
 
-The spec suggested the FX1 fixture `maintainer/live_note.md`. That fixture
-cannot pin the ordering: `grep -rn` emits hits in its path ARGUMENT order, so
-a `maintainer/` hit already precedes the `loop/notes.md` DOC line pre-change.
-Measured: the pin written with that fixture passed `ALL PASS (21/21)` against
-the UNCHANGED tool (vacuous pin). The worker used a `WIKI.md` fixture instead
-(LIVE-CLASS per the spec's own list, prints AFTER `loop/` raw), which yields
-the FAIL→PASS sequence that pins the behavior. Logged to `todo_inbox.md`
-(2026-10-22_18-41); the spec text still names the weaker fixture.
+## Measured verification (all PASS)
 
-Clone-side pin placement: label `(23)` sits inside the FX1 block (after pin
-(10)) so the existing `(11)`..`(22)` labels — incl. the FX3 pins the spec
-forbade touching — stay intact; the label is append-only, not positional.
+- `node agent/scripts/log/tests/intercept_sweep.smoke.cjs` → 35 `PASS`, 0 `FAIL`, final line `SMOKE intercept_sweep: all checks passed`, exit 0 (fixture 24 events: 1 malformed, 3 new-verdict kinds, ` | `-in-args line, 16 filler lines; pins include the last-20 window, every-line ≤120, the marker on both long fields, two byte-exact event lines, filter semantics, exit codes, and a fixture-bytes-unchanged read-only proof).
+- `node agent/scripts/log/tests/summarize_intercept.smoke.cjs` → `SMOKE summarize_intercept: all checks passed`, exit 0 (UNCHANGED file, confirmed by `git status --short agent/scripts/log/`).
+- Live log (5693 events, 0 malformed) — 5 forms, all exit 0, max line length 120, no line over 120:
+  - `node agent/scripts/log/intercept_sweep.cjs` → header `events 5693/5693 showing last 20`, 20 event lines, first `2026-10-22_19-49 …`
+  - `node agent/scripts/log/intercept_sweep.cjs --session=ses_e9b46b7a2ffeRuFWSaQcOKdMTQ` → `events 10/5693 showing last 10`
+  - `node agent/scripts/log/intercept_sweep.cjs --verdict=edit-hint --lines=8` → `events 7/5693 showing last 7`
+  - `node agent/scripts/log/intercept_sweep.cjs --verdict=fuzzy-rejected --lines=6` → `events 37/5693 showing last 6`
+  - `node agent/scripts/log/intercept_sweep.cjs --verdict=error` → `events 2/5693 showing last 2`
+- Gate, run ONCE: `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS`, exit 0 (the 14 lines matching `FAIL` in the output are prose inside `PASS` lines — `CLEAN FAIL` / `FAIL-CLOSED`; zero failures).
 
-## Measured verification
+## Commits and working tree
 
-MAIN:
-- Baseline (pre-edit): smoke `ALL PASS (20/20)`; probe `PROBE handover:
-  360/360 PASS`, exit 0.
-- Fixture+pin before the tool edit: exit 1 —
-  `FAIL  markers: the LIVE-class WIKI.md hit prints BEFORE the DOC-class
-  loop/notes.md hit  [{"live":1,"doc":0}]` (the pin discriminates).
-- `node .opencode/plugin/tests/state_snapshot.smoke.mjs` after the tool edit
-  → `STATE_SNAPSHOT_SMOKE: ALL PASS (21/21)`, exit 0 — PASS.
-- `node .opencode/plugin/tests/*.smoke.mjs` (12 files) → 12/12 `ALL PASS`,
-  the other suites' counts unchanged (auto_resume 170/170, block_transfer
-  151/151, sandbox 76/76, compact_memory 110/110, context_recovery 17/17,
-  context_trim 40/40, ctx_gauge 3/3, gauge_core ALL PASS,
-  intercept_observer 96/96, loop_log 69/69, submit 32/32) — PASS.
-- `node .opencode/plugin/probes/handover_probe.mjs` after the edit →
-  `PROBE handover: 360/360 PASS`, exit 0 — count IDENTICAL to the pre-edit
-  capture — PASS.
-
-Clone (`C:/Users/Wasiejen/Repos/opencode-agent-v2`, branch `migration`):
-- Pre-change plugin + the edited smoke (`bun run
-  .opencode/plugins/tests/state_snapshot.smoke.mjs`) → exit 1 —
-  `FAIL  (23) markers ordering ... [[2,0]]` (raw order: DOC at 0, LIVE at 2),
-  26 PASS — the pin discriminates.
-- Edited v2 plugin → `SMOKE: ALL PASS`, exit 0, 27 PASS lines (pins 26 → 27)
-  — PASS.
-- Every `*.mjs` in `.opencode/plugins/tests` (11 files) run with `bun run` →
-  all `SMOKE: ALL PASS`, loop exit 0 — PASS.
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p
-  .opencode/plugins/tests/tsconfig.json` from the clone root → exit 0,
-  0 output lines — PASS.
-- `cmp -s .opencode/tools/state_snapshot.ts
-  ../opencode-agent/.opencode/tools/state_snapshot.ts` → identical (234 lines
-  each) — PASS.
-- `git status` of the clone before its commit: only the 4 task files dirty.
-
-Working tree: MAIN clean except the maintainer's own
-`maintainer/SCRATCH_PAD.md` + `opencode.jsonc` (never staged, never committed
-— the SCRATCH_PAD is a maintainer file). Clone clean except its 4 task files
-before the clone commit.
-
-Commits: MAIN unit `97714b5` (branch `main`); clone unit `aabc705` (branch
-`migration`); this summary + the loop-log DONE line ride the MAIN
-bookkeeping commit that follows.
+- `c3f856e` — the code unit (script + fixture + smoke), verified green before commit.
+- Final commit (this file + `README.md` + `TODO.md` #145 + the inbox/loop-log bookkeeping) carries `c3f856e`; a commit cannot contain its own hash — the planner's follow-up commit records it on the TODO line if desired.
+- Working tree after the final commit: clean except the maintainer's own `maintainer/SCRATCH_PAD.md` and `opencode.jsonc` (pre-existing, not mine).
 
 ## TODO / inbox entries
 
-- No `TODO.md` entry added (the unit is idea-driven, no TODO id; `TODO.md`
-  unchanged in both trees).
-- `todo_inbox.md` 2026-10-22_18-41 — the spec-fixture gap (above), for the
-  planner to correct the spec text + the clone twin suggestion.
-- `agent/knowledge/knowledge_inbox.md` 2026-10-22_18-41 — the sweep's raw
-  path ARGUMENT order fact (measured both trees).
-- `agent/memory/worker/memory_inbox.md` 2026-10-22_18-41 — prove a new pin
-  FAILS on the unchanged tool before implementing.
-- `agent/agent_feedback.md` 2026-10-22_18-48 — the vacuous-pin friction (the
-  spec-suggested fixture) + the action (require the pin to FAIL pre-change).
-- `agent/knowledge/knowledge_inbox.md` 2026-10-22_18-48 — the v2 smoke root-
-  carrier trap (`dir` = the LAST setup's capture → an appended FX1 pin read
-  the fx3 root, `[-1,-1]`).
+- `TODO.md` #145: status bullet → `LANDED 2026-10-22 …` with the decision taken (new file) and the measured verification; entry header marker flipped `OPEN` → `LANDED 2026-10-22` for consistency (repo convention: the header carries the status marker, cf. #88). No other TODO entry touched. No new TODO entry needed (no open decision left, no blocker).
+- Submitted: 1 feedback line (the two tool/scratch friction points) and 1 worker memory line (the block_transfer buffer-vs-text rule).
 
 ## Deliberately omitted
 
-- No `doc-quotes: N` counter line (the spec's deliberate non-change).
-- No change to the tool description or args (the probe pins the SURFACE; the
-  probe count stayed 360).
-- FX3 fixtures and their marker-line counts untouched in both trees.
-- No live acceptance: `.opencode/tools/*.ts` registers at the NEXT host start;
-  the digest behavior is smoke-pinned (no host restart in this unit).
-- No push (agents never push).
+- `agent/readme/repo_commands.md` pointer (spec: optional, only with a natural home). No natural home: its sections are gates/smokes/marker-sweep/handover-paths; adding a script pointer would mean restructuring the file. The README row + the script's own usage header carry it.
+- No byte-exact whole-view pin file (e.g. `expected_sweep_view.txt`): the caps are dynamic by design, so the smoke pins structure + two short-field byte-exact event lines instead. Marked deviation from the summarize smoke's snapshot style.
+- `model` and `scope` fields, and log line numbers, left out of the event line (the 120-char budget).
 
-## Lesson (one line)
+## Lessons
 
-A new pin must be proven DISCRIMINATING — run it against the unchanged tool
-and require the FAIL — before the implementation lands.
+- `block_transfer` `REPLACE` takes a named BUFFER, never a direct `text`; passing `text` to REPLACE silently fanned a stale `default` buffer into the target region — my new fixture file got two foreign lines and needed a `WRITE` repair. Use `WRITE` for direct text, or `edit` for a small exact swap.
+- Two real defects were caught by the smoke before commit (both fixed in the code unit, no red commit): a malformed line matched any non-verdict filter unconditionally, and the header path cap (44) truncated the fixture path the CLI pin checks.
+
+## Blockers
+
+None.
+
+## Friction
+
+1. `block_transfer` REPLACE-with-`text` corruption (above) — the mode error surfaced as a wrong-content write, not as a rejection.
+2. `AGENTS.md` §Command Output names `$TMP/opencode` as the Git Bash scratch path, but `$TMP`/`$OLDPWD` are unset in this host shell: `> "$OLDPWD/s.txt"` resolved to `/s.txt` (Permission denied). Use the literal `C:/Users/Wasiejen/AppData/Local/Temp/opencode`.

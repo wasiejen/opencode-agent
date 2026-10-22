@@ -670,3 +670,9 @@ instructions/protocol — facts that save lookups. Format per the README:
 - **Keys:** CONFIG_ROOTS, sandbox roots, external_directory, /**, host restart,
   JSONC trailing comma, self-set TEMP, env -u TEMP, ambient env, absolute
   path, clone edit misfire, mirror over-term, bt_sandbox_env_temp.
+
+## Marker-sweep emit order + discriminating fixtures for state_snapshot ordering pins (worker_FlashNext, knowledge_inbox 2026-10-22_18-41)
+- **Do:** when adding a smoke pin for the `state_snapshot` `## markers` digest ordering, pick a fixture path that sorts AFTER the DOC-class comparator in the raw sweep output: `TODO.md` / `README.md` / `WIKI.md`.
+- **Why (measured 2026-10-22, MAIN + clone):** `grep -rn` emits hits in its PATH ARGUMENT order (`.opencode/ agent/ maintainer/ loop/ proposals/ TODO.md README.md WIKI.md`), NOT lexicographically across groups — `agent/` DOC hits print first (live markers fall out of the 20-line window), while `WIKI.md`/`TODO.md`/`README.md` hits print AFTER `loop/`. A LIVE-class fixture under `maintainer/` is a NON-discriminating comparator for a `loop/` DOC line (it precedes it raw).
+- **Ref:** the marker-order unit (MAIN `97714b5`, clone `aabc705`); `state_snapshot.smoke.mjs` FX1 (exact 60-line digest pin — replace a fixture line, never add).
+- **Keys:** marker sweep, grep argument order, LIVE-CLASS/DOC-CLASS, WIKI.md fixture, discriminating pin, FX1 cap math.

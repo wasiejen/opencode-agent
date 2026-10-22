@@ -171,3 +171,23 @@ ANY plugin against the fork or the v2 line, or wiring v2 plugin config.
   TODO #143 tracks the refresh-vs-document decision.
 - **Keys:** twin freshness, stale clone twin, MAIN-twin anchor, #143,
   newline guard, POSIX temp-root block.
+
+## v2 plugin sandbox smokes: the scratchpad IS a live ALLOW ROOT — fixture repos sit OUTSIDE it (worker_FlashNext, knowledge_inbox 2026-10-22_14-55)
+- **Do:** put deny-matrix fixture configs and plugin-copy fixture repos in the
+  DIRECT CHILDREN of the parent Temp dir (outside `C:/Users/Wasiejen/AppData/Local/Temp/opencode`), never inside the scratchpad root itself.
+- **Why (measured, unit 5c clone sandbox smoke):** the scratchpad is an allow
+  root of the live `opencode.jsonc`, so a fixture inside it can never
+  demonstrate DENY; the SELF-set TEMP/TMP fixture-env mechanism makes
+  `os.tmpdir()==TEMP` dedupe to ONE temp root on Windows.
+- **Keys:** allow root, scratchpad, deny-matrix, fixture repo, TEMP dedupe, 5c.
+
+## v2 smoke root-carrier trap — the setup-captured repo root is MODULE-level and re-assigned (worker_FlashNext, knowledge_inbox 2026-10-22_18-48)
+- **Do:** keep each fixture's pins INSIDE its own fixture block (before any
+  later `plugin.setup(...)`), or re-setup that fixture before its `execute`
+  (which then breaks the smoke's `DISPOSED` count pin).
+- **Why (measured, clone `migration`):** `.opencode/plugins/state_snapshot.ts`
+  captures the repo root in a MODULE-level `let dir = ctx.location.directory`
+  reassigned at EVERY setup — after a later setup(ROOT2/ROOT3), an `execute`
+  of the FIRST fixture's registered tool reads the LAST setup's root
+  (an FX1 pin appended after FX2/FX3 saw fx3's markers `[-1,-1]`).
+- **Keys:** root carrier, setup reassignment, fixture block order, DISPOSED pin.

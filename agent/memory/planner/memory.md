@@ -578,3 +578,35 @@ knowledge / NAP) is re-stated.
 - Evidence: memory_inbox 2026-10-22_11-14; the 5c re-baseline (clone
   `block_transfer.ts` 845 vs MAIN 1034, 333 diff lines); TODO #143.
 - Review when: any future #137 unit spec, or a clone-twin refresh lands.
+
+## MEM-0129 — File-surgery span anchors: a section span ends at the NEXT ANY `^## ` header, never at the next ID-pattern header
+- Rule (2026-10-22, plan20): re-grep the exact line spans IMMEDIATELY before
+  EVERY multi-op block_transfer surgery (MOVE/DELETE/WRITE with line numbers);
+  an entry/section span runs to the next `^## ` of ANY shape, not the next
+  `## #<id>`-pattern match.
+- Observed: anchoring a TODO-retire MOVE on an id-grep's "next header" carried
+  38 unintended lines (2 section headers + entries 53/56) into
+  `todo_records.md`; repair = verbatim MOVE-back + narrow redo (4 extra calls).
+- Evidence: memory_inbox 2026-10-22_14-24. Extends MEM-0112 to intra-file surgery.
+- Review when: block_transfer re-validates spans before cutting (then anchors may stay cached).
+
+## MEM-0130 — Planner-direct units (≤~50 diff lines, ≤4 files): close inline with per-file grep-back; the `edit` hint line is not authority even for replaceAll
+- Rule (2026-10-22, #144 unit): small test/doc-side fixes land in the planner
+  session without delegation; after every edit or bulk `replaceAll`, read the
+  touched file back (grep the changed tokens) before concluding — the
+  `hint rejected lines=` line fired while two 14/14-class replaceAlls LANDED.
+- Evidence: memory_inbox 2026-10-22_18-21; extends MEM-0111 to the replaceAll form.
+- Review when: the edit tool's hint-line semantics change.
+
+## MEM-0131 — Spec fixtures for ordering/behavior pins must be proven DISCRIMINATING at spec-authoring time
+- Rule (2026-10-22, marker-order unit): when a spec suggests a smoke fixture
+  pinning a reordering/behavior change, state the raw emit order (note: `grep
+  -rn` emits hits in its PATH ARGUMENT order, NOT lexicographic) and require
+  the pin to FAIL against the UNCHANGED code; pick a fixture that sorts AFTER
+  the comparator (TODO.md/README.md/WIKI.md for the marker sweep).
+- Also re-check the fixture's line-count math before adding to cap-pinned
+  fixtures (the state_snapshot FX1 digest is pinned at the EXACT 60-line cap —
+  replace a fixture line, never add one).
+- Evidence: memory_inbox 2026-10-22_18-54; the suggested `maintainer/live_note.md`
+  fixture passed 21/21 pre-change; worker switched to a `WIKI.md` fixture.
+- Review when: a tool changes how pins run (e.g. block_transfer re-validation).

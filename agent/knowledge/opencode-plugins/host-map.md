@@ -507,3 +507,22 @@ worker need the same model to allow fast switching from cache). The
 context-trim proposal's "model toggling" item is CLOSED on this basis —
 the intended use is a **STATIC** switch to a faster model (whole
 session), not per-step toggling.
+
+## 8. Host provider/model config snapshot — as of 2026-10-22 (planner-24, knowledge_inbox 2026-10-22_18-55)
+- The `strata` provider block is COMMENTED OUT in the live `opencode.jsonc`
+  working tree — its ids (`qwen3.8-flash-next-coder-iq1_m`,
+  `qwen3.8-flash-next-gyro-gyro-s`) are INACTIVE; stop citing them in
+  budgets or session labels.
+- Every model id now sits under provider `llama-swap-v2`
+  (baseURL `http://192.168.178.20:8033/v1`), incl. `Qwen3.8-NEXT-Coder`
+  (name `Qwen3.8-Flash-Next (local)`, limits context 262144 / input 258048 /
+  output 20480).
+- The three active role models `planner_FlashNext` / `worker_FlashNext` /
+  `explorer_FlashNext` all = `llama-swap/Qwen3.8-NEXT-Coder` →
+  same-model delegation is currently satisfied for all roles.
+- Compaction budget resolution keys on the BARE model id — the
+  `model_budget` map in `compact_budget.json` may need re-keying if it
+  still lists an old id; watch the `N compactions left` suffix for the
+  ` (unlisted)` marker.
+- **Keys:** llama-swap-v2, strata retired, Qwen3.8-NEXT-Coder, role models,
+  budget re-key, unlisted marker.

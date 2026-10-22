@@ -106,3 +106,25 @@ Cured from `memory_inbox.md` by the planner's maintenance passes. Format per
   context_family.smoke.mjs:114-117 precedent.
 - Review when: the gauge core gains a per-plugin path override.
 
+## WM-11 — Byte-exact smoke pinning: derive expected strings from the code's format functions; fixtures must satisfy the tool's own anchor-uniqueness rule
+- Type: observed; confidence: high; scope: writing any new byte-exact smoke.
+- Memory: read the tool's format functions FIRST and compose the expected
+  feedback strings from them (never hand-copy a guess); design fixture lines
+  to satisfy the tool's anchor-uniqueness rule (a short prefix anchor like
+  `X` matches the longer twins `X1..X5`); remember new-file writes have NO
+  trailing newline while existing files keep their own EOL.
+- Evidence: memory_inbox 2026-10-22_14-55; unit 5c — both legs mispinned 4
+  times before re-running (clone `.opencode/plugins/tests/block_transfer.smoke.mjs`).
+- Review when: a smoke harness change lands (e.g. the EBUSY teardown fix).
+
+## WM-12 — An ordering/behavior pin must be proven DISCRIMINATING before the implementation lands
+- Type: learned; confidence: high; scope: any worker adding a pin for a reordering/behavior change.
+- Memory: run the new pin against the UNCHANGED tool FIRST and require it to
+  FAIL; a fixture whose raw emit order already matches the post-change order
+  gives a VACUOUS pin that passes pre-change.
+- Evidence: memory_inbox 2026-10-22_18-41; the spec-suggested
+  `maintainer/live_note.md` state_snapshot fixture passed 21/21 pre-change
+  (grep emits in path-argument order); switching to a `WIKI.md` fixture gave
+  the measured FAIL-then-PASS sequence.
+- Review when: pin-run mechanics change (see planner MEM-0131 for the spec side).
+

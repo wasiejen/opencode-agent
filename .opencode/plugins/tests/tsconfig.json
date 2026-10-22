@@ -13,8 +13,9 @@
     ],
     "types": ["node"],
     "paths": {
-      "@opencode/plugin": ["C:/Users/Wasiejen/Repos/opencode/packages/plugin/src/promise/index.ts"]
+      "@opencode/plugin": ["C:/Users/Wasiejen/Repos/opencode/packages/plugin/src/promise/index.ts"],
+      "@opencode/ai": ["C:/Users/Wasiejen/Repos/opencode/packages/ai/src/index.ts"]
     }
   },
-  "files": ["typecheck.ts"]
+  "files": ["typecheck.ts", "../context_family.ts"]
 }

@@ -57,9 +57,14 @@ never crowded out by the 20-line cap. Nothing else changes.
 
 - `.opencode/tools/state_snapshot.ts` — `markersSection` + its header comment
   (the `grep -v` filter note near line 12).
-- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — add a FX1 fixture file
-  `maintainer/live_note.md` carrying a `--main` line (safe: `maintainerSection`
-  reads only `maintainer/inbox_planner/` and `maintainer/priority.md`), + 1 pin.
+- `.opencode/plugin/tests/state_snapshot.smoke.mjs` — add a FX1 `WIKI.md`
+  fixture carrying a `--main` line + 1 ordering pin. `WIKI.md` is LIVE-CLASS
+  AND a DISCRIMINATING comparator: the sweep prints `WIKI.md` AFTER `loop/`
+  in its raw path ARGUMENT order, so the pin FAILS pre-change. A `maintainer/`
+  fixture does NOT work — it already precedes `loop/` raw (measured 2026-10-22:
+  such a pin passed 21/21 against the UNCHANGED tool). Replace an existing
+  FX1 marker-line fixture rather than adding one: FX1's digest line count is
+  pinned at the EXACT 60-line cap.
 - `agent/readme/repo_commands.md` §Marker sweep — one note: the digest orders
   LIVE-CLASS paths first; the ready-made command itself is unchanged.
 - Clone: `.opencode/plugins/state_snapshot.ts`, `.opencode/tools/state_snapshot.ts`

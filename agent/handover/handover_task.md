@@ -1,64 +1,67 @@
-# Spec — TODO #141: make the v2 clone's standard gate green (clone gate unit)
+# Spec — TODO #142 + #138: scope the observation path channels to the tool's PATH FIELDS
+
+Assigned worker: `worker_FlashNext` (root `opencode.jsonc` agents block, line 364).
+Branch state: stay on the current checkout (main repo `main`; clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` branch `migration`).
 
 ## Goal
-The v2 clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`) gains a green
-standard gate: `node .opencode/plugin/probes/handover_probe.mjs` prints
-`PROBE handover: <t>/<t> PASS` with the header annotation agreeing with the section sums,
-and every smoke under `.opencode/plugin/tests/` reports its real check count (no 0-PASS suite).
 
-## Verified facts (measured at spec authoring, 2026-10-22, planner-13)
-- Clone baseline: `node .opencode/plugin/probes/handover_probe.mjs` → exit 1, `ERR_MODULE_NOT_FOUND`
-  on `file:///…/.opencode/plugin/ctx_watchdog.ts` (0 checks run). The 11 node smokes in
-  `.opencode/plugin/tests/` each report 0 PASS at baseline (same class: they import v1 plugin
-  modules from `.opencode/plugin/<name>.ts`, which does NOT exist in the clone).
-- Clone layout (measured): the v1 plugin modules are INTACT under `.opencode/plugin-unported-v1/`
-  (`auto_resume.ts`, `compact_memory.ts`, `compaction_core.ts`, `context_recovery.ts`,
-  `ctx_watchdog.ts`, `intercept_observer.ts`, `intercept_observer_core.ts` + `.md` docs);
-  `.opencode/plugins/` = the v2 port (`intercept_observer.ts` + `tests/`, smoke 49/49 green);
-  `.opencode/tools/` = present with `block_transfer.ts`, `context_trim.ts`, `ctx_gauge.ts`,
-  `loop_log.ts`, `session_info.ts`, `state_snapshot.ts`, `submit.ts`, `dev_get_tool_context_contents.ts`,
-  `deactivated/`; `.opencode/plugin/scripts/gauge.mjs` + `peek.mjs` present.
-- Probe module-path constants (grep anchors in `.opencode/plugin/probes/handover_probe.mjs`):
-  `PLUGIN_TS = join(REPO_ROOT, ".opencode", "plugin", "ctx_watchdog.ts")`;
-  `TOOL_TS = …"plugin","deactivated","compact_memory_v1.ts"`; `RC_TS = …"plugin","context_recovery.ts"`;
-  `QC_PLUGIN_TS = …"plugin","compact_memory.ts"`; `OBS_TS` / `OBS_CORE_TS = …"plugin","intercept_observer(.core).ts"`;
-  the `.opencode/tools/*` constants (`CG_TOOL_TS`, `BT_TOOL_TS`, `LL_TOOL_TS`, …) already match the clone.
-- The smokes embed the same pattern inline, e.g. `.opencode/plugin/tests/auto_resume.smoke.mjs` lines
-  2185/2283: `'const mod = await import(pathToFileURL(path.join(REPO, ".opencode/plugin/auto_resume.ts")).href);'`
-  (grep `".opencode/plugin/` per smoke file to find every site; string forms vary — some use
-  `path.join(REPO, ".opencode", "plugin", …)`, some a single joined string).
-- The clone's v2 intercept smoke (`plugins/tests/smoke.mjs`, 49/49) is OUT of this unit — untouched.
+The observation log's path channels (`out-of-sandbox` note, `path-anomaly`) classify ONLY the tool's path-FIELD values, and the allow-list roots join the note check.
+
+- #142: an `out-of-sandbox` note must NOT fire for a path under a config-`allow`ed root (the live cross-repo probe logged a false note on 2026-10-22).
+- #138: path-looking substrings inside FREE TEXT (bash `command`, edit `newString`, `write` `content`) must produce NO `out-of-sandbox` / `path-anomaly` lines.
+
+One unit, both findings — same two call sites.
 
 ## Definition of done
-1. Probe: every v1-plugin module constant resolves to the clone's actual location
-   (`.opencode/plugin-unported-v1/<file>.ts` for the inert v1 set; v2 twin under `.opencode/plugins/`
-   where one exists and the section's subject is the v2 port; `.opencode/deactivated` paths kept if the file exists).
-   Any import that has NO clone subject is removed/excluded WITH a one-line comment naming the reason.
-2. `node .opencode/plugin/probes/handover_probe.mjs` in the clone prints `PROBE handover: <t>/<t> PASS` (t > 0),
-   header annotation = section sums, zero FAIL.
-3. Each of the 12 smokes under `.opencode/plugin/tests/` runs green with real counts (run each; record the
-   readout line per suite in the handover).
-4. Checkpoint commits per verified unit (probe green / smokes green may be separate commits);
-   the FINAL commit carries `TODO.md` status (main repo) + `agent/handover/handover_task_to_planner.md` (main repo).
 
-## Approval boundary
-Pre-approved: test/gate infrastructure in the clone (the maintainer allowed clone edits on `migration`;
-the clone gate is agent-facing). No product/plugin/tool SOURCE changes: the v1 modules under
-`.opencode/plugin-unported-v1/` and `.opencode/tools/*.ts` and `.opencode/plugins/**` stay byte-untouched
-(exceptions only if a check itself embeds a stale path constant that must move — keep semantics identical).
-DO NOT touch: main-repo `.opencode/**`, `maintainer/**`, `opencode.jsonc` (either repo), the clone
-`plugins/` port + its tests, git history (no rebase/amend), never `git add -A` (named paths only).
+1. Main plugin: the observation-channel note + anomaly scan run over the joined string values of the tool's path fields (the `REDIRECT_PATH_FIELDS` table) instead of the full args string, and pass the allow-list roots; the redirect recompute site uses the same field text + allow-list.
+2. Clone twin: the same change in the clone's v2 plugin.
+3. Pin surfaces repurposed/added (see Pin audit) — new pin per false form + per genuine form.
+4. Gates green in BOTH trees (counts below); checkpoint commit per verified unit (main, then clone); `TODO.md` status lines for #142 and #138 + `agent/handover/handover_task_to_planner.md` in the FINAL commit. Status `LANDED` — the hash lands in the planner's bookkeeping commit.
+5. A new discrepancy may be filed; do not promise there is none.
+
+## Verified facts (measured at spec-authoring, 2026-10-22)
+
+- `.opencode/plugin/intercept_observer_core.ts:648` `observeArg(arg, map, workspaceRoot, skipPairs)`; line 659 `...observeSandbox(s, workspaceRoot)` — no `extraRoots`; `observePathAnomaly(s)` same full string.
+- `.opencode/plugin/intercept_observer_core.ts:551` `observeSandbox(arg, workspaceRoot, extraRoots = [])` — the 3rd param EXISTS and is documented additive (line 545).
+- `.opencode/plugin/intercept_observer.ts:1433` — the ONLY `observeArg` call site, `argStr` = the full args string.
+- `.opencode/plugin/intercept_observer.ts:1474` — redirect recompute site: `observeSandbox(argsToString(output?.args), dir || null, allowedRoots)` — full string again.
+- `.opencode/plugin/intercept_observer.ts:587` `REDIRECT_PATH_FIELDS`: read/write/edit `filePath` + block_transfer `srcFile`/`dstFile`; `runRedirectCommand` (bash `command` POSIX spans, #102) is a SEPARATE pass — do NOT change it.
+- B' hard-stop site `.opencode/plugin/intercept_observer.ts` ~1503-1513 (write/edit `filePath`, `allowedRoots.some(...)`) — already field-scoped; do NOT change.
+- Clone: `.opencode/plugins/intercept_observer.ts` line 923 observation build (`observePathAnomaly(argStr)` + `observeSandbox(argStr, dir || null)` — no roots), line 928 recompute (`allowedRoots` already), table `REDIRECT_PATH_FIELDS` at line 810 (read/write/edit `path` — the v2 field name).
+- The clone's `.opencode/plugin-unported-v1/**` files are FROZEN v1 twins (precedent: TODO #140 unit B did not touch them) — leave untouched.
+- Baselines: MAIN probe 360/360, intercept_observer smoke 93/93, bt 150/150, sandbox 76/76, SUBMIT_SMOKE 32/32, gauge_core 32/32. CLONE (`migration`) probe 360/360, `plugins/tests/smoke.mjs` 49/49.
 
 ## Suggested scope (non-exhaustive)
-- clone `.opencode/plugin/probes/handover_probe.mjs` (module constants + the header section-sum annotation)
-- clone `.opencode/plugin/tests/*.smoke.mjs` (11 files + `_smoke_base.mjs` if it holds the path shape)
-- main `TODO.md` (#141 status line, LANDED form: hash recorded by the planner later)
-- main `agent/handover/handover_task_to_planner.md`
 
-## Known traps
-- A probe section whose fixture writes/reads `.opencode/temp/` paths is fine (the clone has its own temp).
-- Section sums: if a check is excluded (no subject), the header tally line must move with it — never leave a
-  stale annotation (the probe self-checks agreement).
-- The clone repo's `git status` must stay clean apart from this unit's files; the unit runs on branch `migration`.
-- Do NOT run the clone's opencode host (backend-slot rule); node-only verification.
-- Do NOT self-compact at task close (worker §Context budget guard: only on a live nudge / 80% / stop line).
+- `.opencode/plugin/intercept_observer_core.ts` — `observeArg` gains optional trailing params (allow-list roots + a scan-text override). DEFAULTS keep the direct-call behavior byte-identical (the probe's direct `observeArg`/`observeSandbox` checks stay green).
+- `.opencode/plugin/intercept_observer.ts` — a small helper joining `REDIRECT_PATH_FIELDS[tool]` values; pass it + `allowedRoots` at 1433 and the same text at 1474.
+- `.opencode/plugin/tests/intercept_observer.smoke.mjs` — pins per Pin audit.
+- CLONE `.opencode/plugins/intercept_observer.ts` + `.opencode/plugins/tests/smoke.mjs` — the same change (the v2 field names).
+
+## Pin audit (behaviour-pinning tests that flip — repurposing is IN SCOPE)
+
+MAIN `.opencode/plugin/tests/intercept_observer.smoke.mjs`:
+- (2b) lines 140-147: a BASH string arg firing mismatch + path-anomaly + out-of-sandbox under the 3-line cap. Free-text path classes DISAPPEAR → retarget the fixture to a TYPED call (e.g. `write` with an out-of-sandbox doubled `filePath`) so the cap pin still yields mismatch → path-anomaly → out-of-sandbox.
+- (12n) lines 906-916: bash `cat /etc/hostname` — "the out-of-sandbox NOTE fires (as today)" is now FALSE: bash free text fires nothing. Keep the mutation-identity + no-kind=redirect half; flip the note expectation.
+- Lines 619-835 (`R8`/`R8 config` hook pins) and the (7) read pin at 185-190: TYPED fields — expected UNCHANGED; verify.
+- NEW pins: (i) #142 — a `read`/`write` with a path NESTED under a config-`allow`ed root (reuse the `proj2` fixture config block at 754-802, e.g. `rA + "/nested/deep/x.txt"`) → NO `out-of-sandbox` line and no kind=redirect; (ii) #138 — a `write`/`edit` with an in-root path whose `content`/`newString` carries path-looking text (`/tmp-redirect`, `/^## #120/`, `c:\users\users\x`) → ZERO path verdicts; (iii) a bash command with quoted doubled example paths → ZERO path verdicts.
+- MAIN probe `.opencode/plugin/probes/handover_probe.mjs`: direct-call checks (4729-4798 observeArg/observeSandbox unit forms, S19 5276-5302, S28 6913-7006 hook e2e) are expected UNCHANGED by the defaults; the probe run is the verification — a hook-level pin that flips IS in scope. Baseline 360/360.
+
+CLONE `.opencode/plugins/tests/smoke.mjs`:
+- C9 (239-247), C10 (252-259), C11 (270-293), C12 (297-…), C13 (311-323), C14 (327-344), C-B1/C-B2 (380-400): typed `path` fields — expected UNCHANGED; verify.
+- NEW pins: (i) a `write` with `path` NESTED under an allowed root from the fixture config written at line 60 → NO out-of-sandbox line; (ii) an `edit`/`write` with an in-root `path` + path-looking text in `content`/`newString`/`oldString` → ZERO path verdicts.
+
+## DO NOT touch
+
+- `maintainer/**`, root `opencode.jsonc`, `AGENTS.md`, `agent/prompts/**`.
+- `runRedirectCommand` (the bash `command` redirect pass, #102) and `resolveRedirect` semantics.
+- The B' hard-stop site, the 8-field log line shape, `MAX_FIELD_CHARS` / `MAX_PATH_FIELD_CHARS`, the pair/numword channel grammars.
+- `.opencode/tools/**`, `.opencode/plugin-unported-v1/**` (clone), the FST repo, the main repo's `.opencode/plugin/intercept_observer.ts` channels other than the two call sites + the helper.
+
+## Procedure suggestion (guidance, not protocol)
+
+1. Read `TODO.md` entries #142 and #138, then the two call sites and the tables named above (line ranges given — do not read the whole probe).
+2. Main edit + smoke pins; run: `node .opencode/plugin/tests/intercept_observer.smoke.mjs` then `node .opencode/plugin/probes/handover_probe.mjs`; checkpoint commit.
+3. Clone twin + clone smoke pins; run in the clone: `node .opencode/plugins/tests/smoke.mjs` and `node .opencode/plugin/probes/handover_probe.mjs` (bash tool access to the clone path is allow-listed); checkpoint commit.
+4. `TODO.md` status lines + `agent/handover/handover_task_to_planner.md`; final commit.

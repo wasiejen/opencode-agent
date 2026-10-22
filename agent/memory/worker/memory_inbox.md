@@ -25,3 +25,6 @@ Type: observed, confidence high, scope: any ported report/readout with byte-exac
 ### 2026-10-22_11-01 worker_FlashNext ses_e9d393b49ffey7H784Nv2cXXPD
 Observed (high confidence, scope: v2 plugin smokes in the opencode-agent-v2 clone): the plugin's repo-root carrier is captured at setup (`dir = ctx.location.directory`), so EVERY fixture workspace in one smoke run needs its OWN `plugin.setup(makeCtx(dir))` call before its calls (the imported module is shared; dir retargets per setup), and each teardown disposes only its own registration — count dispose deltas per teardown call, not globally. Evidence: .opencode/plugins/tests/loop_log.smoke.mjs + submit.smoke.mjs (unit 5a, commits be5a278/a5da17b). Review trigger: any future v2 smoke (5b/5c ports).
 
+### 2026-10-22_14-03 worker_FlashNext ses_e9d19c62fffeWnNuPGQpxwVMOa
+Observed (high confidence, scope: clone v2 plugin smokes): a smoke can steer the shared gauge core via gaugeMod.setDbPath/setBudgetFileForTest because the plugin's relative ".mjs" import and the smoke's pathToFileURL import resolve to ONE module instance — no plugin-side test hook needed; evidence: .opencode/plugins/tests/ctx_gauge.smoke.mjs 11 pins + context_family.smoke.mjs:114-117 precedent, review trigger: gauge core gains a per-plugin path override.
+

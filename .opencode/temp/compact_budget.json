@@ -86,6 +86,11 @@
       "count": 1,
       "updated": "2026-10-22T07:37:11.265Z",
       "model": "qwen3.8-flash-next-coder-iq1_m"
+    },
+    "ses_e9b75d138ffepge05jIQDjcRnU": {
+      "count": 1,
+      "updated": "2026-10-22T17:34:26.803Z",
+      "model": "Qwen3.8-NEXT-Coder"
     }
   },
   "version": 2

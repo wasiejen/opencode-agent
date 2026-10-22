@@ -634,3 +634,39 @@ instructions/protocol — facts that save lookups. Format per the README:
   + `block_transfer.sandbox.smoke.mjs`; commits ca3c710 / a137b07.
 - **Keys:** block_transfer, return lines, inserted after line, last_move_source,
   same-file MOVE, detectEol, joinLines, PEEK digit-string, mode required.
+
+## block_transfer sandbox roots are CONFIG-DRIVEN + the smoke self-sets its TEMP env (2026-10-22, TODO #140 unit A + the plan15 small-fixes unit)
+- **Do:** expect `.opencode/tools/block_transfer.ts` to resolve its sandbox
+  roots as `[cwd, ...CONFIG_ROOTS, TEMP ?? TMP, os.tmpdir()]` where
+  `CONFIG_ROOTS` = the root `opencode.jsonc` `permission.external_directory`
+  allow-entries (stripped of trailing `/**`, deduped, fail-open), loaded ONCE
+  at tool start resolved from the tool's OWN repo root via `import.meta.url`
+  — a NEW allow-root needs a HOST RESTART (both the tool file and the roots
+  list load at process start). The JSONC loader needs BOTH comment-strip AND
+  trailing-comma removal (the live config has a trailing comma ~line 77 —
+  strict `JSON.parse` fails). Do NOT read ambient `TEMP`/`TMP` in smokes:
+  `block_transfer.sandbox.smoke.mjs` (both trees) now SELF-SETS
+  `process.env.TEMP`/`TMP` to `<Temp>/bt_sandbox_env_temp` (self-cleaned,
+  ambient values restored in the exit finally) and derives the byte-exact
+  roots-list expectations from the tool's live message/env at call time —
+  run the gate with `env -u TEMP -u TMP node …` and WITH env set; both land
+  76/76. A mirror of a tool's roots expression must mirror THAT tree's
+  expression exactly (the clone tool lacks the `os.tmpdir()`/dedupe terms —
+  an extra-term mirror is the classic false-fail; clone commit 8d6bbd5 fixed
+  that). Cross-repo file access: `edit`/`write` reach allow-listed siblings
+  (e.g. the v2 clone); ALWAYS pass ABSOLUTE paths to file tools — a RELATIVE
+  path resolves against the SESSION CWD (a clone-targeted edit misfired into
+  the main repo 2026-10-22; reverted via `git checkout`).
+- **Why (evidence):** worker-12 (2026-10-22, knowledge_inbox 01-34/01-40
+  pair — the 01-40 CORRECTION holds: the clone-run bash DID export TEMP; the
+  3 byte-pin fails were the smoke MIRROR over-mirroring the main tool's
+  expression) + worker-14 (`05df70f` MAIN / `2a3759f` clone — env-free gate
+  runs green 76/76 BOTH forms, planner re-ran both forms both trees) +
+  worker-13 live acceptance 2026-10-22 (config roots work end-to-end;
+  no `C:\Users\*` ask).
+- **Ref:** `.opencode/tools/block_transfer.ts` (`CONFIG_ROOTS` + JSONC loader);
+  `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` (both trees);
+  commits 5ce85b3 (main), 8d6bbd5 (clone), 05df70f + 2a3759f; TODO #140.
+- **Keys:** CONFIG_ROOTS, sandbox roots, external_directory, /**, host restart,
+  JSONC trailing comma, self-set TEMP, env -u TEMP, ambient env, absolute
+  path, clone edit misfire, mirror over-term, bt_sandbox_env_temp.

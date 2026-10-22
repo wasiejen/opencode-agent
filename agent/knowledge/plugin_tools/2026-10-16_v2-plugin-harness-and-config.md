@@ -74,3 +74,52 @@ ANY plugin against the fork or the v2 line, or wiring v2 plugin config.
   `agent/scripts/v2_intercept_acceptance.sh` (fixed d63d53a).
 - **Keys:** opencode run, --model, flint-40b-free, fake tool calls,
   OPENCODE_DB, filename data dir, zero tool parts.
+
+## Clone `migration` module layout + the gauge.mjs re-export shim (2026-10-22, TODO #141 clone-gate unit, worker-14)
+- **Do:** navigate the clone as: frozen v1 plugin modules under
+  `.opencode/plugin-unported-v1/` (relative imports intact —
+  `./scripts/gauge.mjs` resolves via a 7-line RE-EXPORT SHIM at
+  `.opencode/plugin-unported-v1/scripts/gauge.mjs` → the clone gauge core at
+  `.opencode/plugin/scripts/gauge.mjs`; ONE implementation, edit the core
+  only); `.opencode/plugin/` still holds probes/tests/scripts/deactivated
+  (the `compact_memory_v1.ts` probe path EXISTS — left as-is);
+  `.opencode/plugins/intercept_observer.ts` (the v2 plugin) exports the
+  DEFAULT factory ONLY — named-core pins always load the
+  plugin-unported-v1 pair. The clone standard gate (probe + 12 node smokes)
+  is GREEN against this layout (TODO #141 CLOSED).
+- **Why (evidence):** clone `migration` `652ee6f` + `47aa082` (2026-10-22,
+  planner-13 verified: probe 360/360, 12 smokes ALL PASS — 170/76/131/110/17/
+  40/3/32/85/69/20/31; baseline correction: only the 4 plugin-module smokes
+  were red).
+- **Keys:** plugin-unported-v1, gauge.mjs shim, re-export, named-core pins,
+  default factory only, clone gate green, 12 smokes.
+
+## v2 per-message token usage storage — the gauge mass + tools-estate fact (2026-10-22, TODO #137 unit 2 research, worker ses_e9ebd604…)
+- **Do:** read v2 message usage as: `session_message` rows carry a `type`
+  column; the assistant `data` JSON = `{type:"assistant", finish?, rawFinish?,
+  cost?, tokens?: {input, output, reasoning, cache:{read, write}}, time:
+  {created, streamed?, completed?}}` (`@opencode/schema/session-message.ts`
+  `Assistant` + `token-usage.ts`); FINISHED-STEP filter = the fork's own:
+  `type='assistant' AND json_extract(data,'$.time.completed') IS NOT NULL
+  AND json_extract(data,'$.tokens') IS NOT NULL`; per-message total =
+  `TokenUsage.total()` = input+output+reasoning+cache.read+cache.write
+  (llama-swap keeps reasoning/cache.write at 0); compaction rows ALSO carry
+  tokens (the REQUEST usage, not the context size) — exclude by `type`. A
+  migrated live DB keeps ALL FOUR tables side by side
+  (`session_v2`+`session`+`session_message`+`message`) and the v1.19.0 host
+  runs fine on it.
+- **Why (evidence):** fork production @654b79b27e schema + migration source +
+  ONE `mode=ro` live-DB read (real row: input 72 / output 176 / cache.read
+  14283); pinned by the clone gauge unit-2 forms (`922f74c`/`2c1fa23`,
+  gauge_core 42 pins incl. v2-shaped OK mass 44150).
+- **Keys:** session_message, tokens.input/reasoning/cache, time.completed,
+  TokenUsage.total, compaction-rows-excluded, four-table coexist, mass leg.
+
+## Same-model MULTI-HOST coexist at the single llama-swap slot (2026-10-22, measured direct ses_ea02d3559…, inbox 03-26)
+- **Do:** treat a second opencode host pointed at the same slot with a
+  MATCHING `--model` id as SAFE — no eviction, no warm-break (the running
+  session kept generating normally through the clone v2 host run); the
+  eviction risk is DIFFERENT-MODEL traffic (the measured 80k different-purpose
+  prefill kicked the session's model out), not multi-host traffic per se.
+- **Keys:** multi-host, same-model, --model, no eviction, warm-break,
+  different-model risk.

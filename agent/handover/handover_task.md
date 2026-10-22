@@ -1,124 +1,116 @@
-# Task spec — TODO #137 unit 3a: the v2 context-family plugin core (clone `migration`)
+# Task spec — TODO #137 unit 3b: nudge ladder + handover pre-flight in the v2 context-family plugin (clone `migration`)
 
 ## Goal
-Port the context-family core of the v1 `.opencode/plugin/ctx_watchdog.ts` into ONE
-new v2 plugin in the clone: the gauge readout through the shared (already v2-paired)
-gauge core + the per-request `ctx:` line injection at the v2 `session.context` hook
-with cache discipline + evidence log lines. The nudge ladder and the handover
-pre-flight ride spec 3b (same file, next launch).
+Extend the clone plugin `C:\Users\Wasiejen\Repos\opencode-agent-v2\.opencode\plugins\context_family.ts`
+(landed by spec `2026-10-22_137u3a-context-family-core.md`) with the two
+remaining watchdog legs, mirroring the v1 `.opencode/plugin/ctx_watchdog.ts` v2.6
+semantics: (A) the 5-rung nudge ladder fired per completed tool call, delivered
+through the v2 synthetic channel; (B) the handover-delegation pre-flight warn.
 
 ## Assignment
 - Repo: the v2 clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`, branch `migration`
-  (checked out — stay on it). Main repo = only the handover summary write (below).
-- Assigned worker: `worker_FlashNext` (same model — the cache rule; 262k window).
-- TODO entry: `TODO.md` #137 (main repo). Status line recorded by the PLANNER's
-  bookkeeping commit; the worker writes its own handover only.
+  (checked out — stay on it; the tree is clean after unit 3a).
+- Assigned worker: `worker_FlashNext` (same model — the cache rule).
+- TODO entry: `TODO.md` #137 (main repo; the planner records status + hashes).
 
 ## Definition of done (measurable)
-1. New file `C:\Users\Wasiejen\Repos\opencode-agent-v2\.opencode\plugins\context_family.ts`
-   exports the DEFAULT plugin object ONLY (`{ id: "context_family", setup }` — the
-   v2 loader contract; see Verified facts).
-2. Every PRIMARY model request gets exactly ONE injected text piece whose text starts
-   `ctx: ` and equals the gauge readout line (same shape the v1 ctx line and the
-   `ctx_gauge` tool print: `SESSION=… CTX=n (p%) REM=m | N compactions left`,
-   or `CTX=notAvailable`).
-3. Cache discipline: the injection is APPEND-ONLY AT THE TAIL of
-   `event.messages` — the bytes of every entry BEFORE the injection point are
-   UNCHANGED (a smoke pin byte-compares the untouched prefix).
-4. Own-session gate: the gauge read runs with the request's own `sessionID`;
-   the core returns a different `sid` → SILENT skip (no post, no line) — v1 v2.5
-   semantics. An honest own-session readout (incl. `CTX=notAvailable`) IS posted.
-5. `db-error` → no injection + ONE evidence line (reason `db-error`, capped
-   preview) — v1 vocabulary; other readout kinds post normally.
-6. New smoke `C:\Users\Wasiejen\Repos\opencode-agent-v2\.opencode\plugins\tests\context_family.smoke.mjs`
-   (bun, mock ctx — no opencode process; fixtures in the scratchpad
-   `C:/Users/Wasiejen/AppData/Local/Temp/opencode/ctx-family-smoke-v2`, NEVER the
-   live DB; gauge steered at a fixture DB like the existing v2 smoke does) pins
-   DoD 2-5 + the prefix-unchanged pin; final line `SMOKE: ALL PASS`.
-7. Typecheck green: extend `.opencode/plugins/tests/tsconfig.json` `files` to
-   include `../context_family.ts`; `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p C:/Users/Wasiejen/Repos/opencode-agent-v2/.opencode/plugins/tests/tsconfig.json` → zero errors.
-8. Clone gate green UNCHANGED: `node .opencode/plugin/probes/handover_probe.mjs` →
-   `PROBE handover: 360/360 PASS`; the 12 node smokes ALL PASS; the existing
-   v2 intercept smoke `bun .opencode/plugins/tests/smoke.mjs` unchanged
-   (`SMOKE: ALL PASS`); the new smoke ALL PASS.
-9. Checkpoint commits per verified unit IN THE CLONE (code only — the #141
-   precedent); clone tree clean after. Write the worker summary to the MAIN
-   repo working tree at `C:\Users\Wasiejen\Repos\opencode-agent\agent\handover\handover_task_to_planner.md`
-   (uncommitted; the planner commits it with its bookkeeping).
+1. NUDGE LADDER — registered on the v2 tool AFTER-hook
+   (`ctx.tool.hook("execute.after", …)`):
+   - per fire: ONE gauge read for the event's OWN `sessionID` (per-session read —
+     the v1 per-session ruling stays: a newest-session read would blind-spot
+     concurrent sessions);
+   - rungs VERBATIM from v1: 1 `pct>=50` | 2 `pct>=70 or REM<=30k` | 3 `pct>=80 or REM<=20k`
+     | 4 `pct>=90 or REM<=10k` | 5 `REM<5k`; condition = pct OR REM whichever hits first;
+     the HIGHEST rung met fires; at most ONE nudge PER RUNG PER SESSION (in-memory
+     map keyed by session id);
+   - unknown window / `no-total` / `db-error` reads NEVER fire (silent);
+   - the rung texts mirror v1 (rung 5 carries the VERBATIM gauge readout +
+     "stop line reached" phrasing; rung 3 wind-down, rung 4 commit+NAP-now).
+2. DELIVERY — `ctx.session.synthetic({ sessionID, text, delivery: "queue" })`,
+   FIRE-AND-FORGET: NEVER awaited in the hook; sync throws + rejections caught and
+   evidence-logged (`kind:"nudge"`, reason `delivery-*`); a rejection NEVER fails
+   the tool call.
+3. EVIDENCE — `kind:"nudge"` lines ONLY when a nudge fires: `{session, rung, readout}`
+   shape (capped JSON, the v1 volume discipline — NO line for a non-fire).
+4. HANDOVER PRE-FLIGHT — on `ctx.tool.hook("execute.before", …)`: when
+   `event.tool === "subagent"` and `event.input` is an object whose `prompt`
+   string contains `agent/handover/handover_task.md`: the file MISSING or EMPTY
+   (in the repo the delegation targets — resolve relative to the plugin's own
+   repo root, `.opencode/plugins/` parent) → ONE warn line (kind
+   `handover-preflight`). OBSERVATION ONLY: never blocks, never mutates
+   `event.input`.
+5. SMOKE — extend `.opencode/plugins/tests/context_family.smoke.mjs` with pins:
+   each rung boundary (50/70+REM30k/80+20k/90+10k/REM<5k — fixture DBs), the
+   highest-rung-met rule, the per-rung dedup (second fire same rung → no line),
+   unknown-window/db-error silence, the synthetic delivery call captured on the
+   mock ctx (`delivery:"queue"`, text carries the readout), a mock rejection →
+   evidence line + call not failed, the pre-flight missing/empty warn + the
+   non-handover silence. Final line `SMOKE: ALL PASS`.
+6. Clone gate green UNCHANGED: probe `PROBE handover: 360/360 PASS`; 12 node
+   smokes ALL PASS; the v2 intercept smoke unchanged; BOTH v2 plugin smokes
+   ALL PASS; typecheck (`tsgo -p .opencode/plugins/tests/tsconfig.json`) zero
+   errors.
+7. Checkpoint commits per verified unit IN THE CLONE (code only); clone tree
+   clean; worker summary to the MAIN repo working tree
+   `C:\Users\Wasiejen\Repos\opencode-agent\agent\handover\handover_task_to_planner.md`
+   (planner commits it).
 
 ## Suggested scope (non-exhaustive)
-- NEW: clone `.opencode/plugins/context_family.ts` + `.opencode/plugins/tests/context_family.smoke.mjs` (+ tsconfig `files` line).
-- Reference (READ-ONLY): clone `.opencode/plugins/intercept_observer.ts` (the
-  v2 plugin shape + the fixture-DB gauge steering pattern in
-  `.opencode/plugins/tests/smoke.mjs`); main
-  `C:\Users\Wasiejen\Repos\opencode-agent\.opencode\plugin\ctx_watchdog.ts`
-  header lines 96-140 (v2.4 / v2.4.1 / v2.5 injection + gate + evidence vocabulary);
-  clone `.opencode/plugin/scripts/gauge.mjs` (the `readGauge` export + fixture
-  setters); fork `C:\Users\Wasiejen\Repos\opencode` `packages/plugin/src/promise/session.ts`,
-  `packages/core/src/session/model-request.ts:422-431`; research
-  `C:\Users\Wasiejen\Repos\opencode-agent\agent\research\2026-10-15_opencode-v2-impact.md`
-  §3 lines 247-275 (the hook + "filter at assembly ≠ persisted history").
+- Clone `.opencode/plugins/context_family.ts` (extend; 3a's regions stay intact)
+  + `.opencode/plugins/tests/context_family.smoke.mjs` (+ fixture DB helpers).
+- Reference (READ-ONLY): main `.opencode/plugin/ctx_watchdog.ts` header lines 96-135
+  (v2.6 rung table + delivery + evidence) and lines 128-140 (v2.7 P02 removal —
+  the summary-mirror must NOT be re-ported); fork
+  `packages/plugin/src/promise/tool.ts:36-70` (hook shapes),
+  `packages/client/src/promise/generated/types.ts:4592-4610`
+  (`SessionSyntheticInput`), `packages/core/src/tool/plugin/subagent.ts:35`
+  (`prompt: Schema.String`); the clone v1 twin
+  `.opencode/plugin-unported-v1/ctx_watchdog.ts` (the rung TEXTS verbatim —
+  grep the nudge strings there).
 
-## Verified facts (measured at spec-authoring, 2026-10-22, clone @4054a0a)
-- v2 plugin surface (`promise/plugin.ts:26-55`): `ctx.session`, `ctx.tool`,
-  `ctx.event` (`subscribe` only — `promise/event.ts:3`), `ctx.storage`, etc.
-  `Plugin.define` = `{id, setup(context)}` (`promise/plugin.ts:59-66`); the
-  loader reads the DEFAULT export only (the clone intercept plugin's header
-  states the rule + the TYPE-ONLY `@opencode/plugin` import requirement).
-- `SessionDomain` (`promise/session.ts:139-163`) = Pick<SessionApi, create|get|
-  remove|switchAgent|switchModel|prompt|generate|command|compact|synthetic|
-  interrupt|update|move|wait|context> & `{ hook: ModelHooks<SessionHooks> }`.
-- `SessionHooks` keys (:157-170): `prompt, context, compaction, generate, title,
-  "model.request", "http.request", "http.response", experimental.ws.*, retry`.
-- `SessionContext` (:36-40) extends `SessionRequest` (:20-27):
-  `{sessionID, model, system, messages, options}` + `agent, tools`;
-  `system`/`messages`/`options` are mutable (`Types.DeepMutable` on the
-  prompt entry; the arrays mutable) — hook fires per PRIMARY request at
-  `core/src/session/model-request.ts:422-431`; kinds register separately.
-- The clone gauge core is ALREADY v2-paired (unit 2: clone `922f74c`+`2c1fa23`,
-  gauge_core smoke 42 pins ALL PASS): `readGauge(undefined, sessionID?)` →
-  `{ok, kind, ctx, pct, rem, sid, window…}`; the budget suffix reads
-  `.opencode/temp/compact_budget.json` relative to the clone.
-- v1 injection vocabulary (main ctx_watchdog.ts): one text piece `ctx: <readout>`,
-  append-only onto the NEWEST message (v2.3 REJECTED: anything BEFORE the
-  newest message = prompt-cache invalidation — recorded ruling, keep it),
-  session-gated match-only post (v2.5), evidence kind per fire with a `sess`
-  field, failure reasons `db-error` / `parts-not-array` / `invalid-messageID`.
-  v2 lands the injection at the request DRAFT instead of the stored message —
-  transient, never persisted (research §3).
-- Clone baselines NOW: probe 360/360; 12 smokes ALL PASS; `.opencode/plugins/tests/smoke.mjs`
-  47 checks `SMOKE: ALL PASS`; `tsconfig.json` has `"files": ["typecheck.ts"]`;
-  bun on PATH (`C:/Users/Wasiejen/AppData/Roaming/npm/bun`).
-- The v2 `Message` entry shape inside `event.messages` comes from `@opencode/ai`
-  (union per type) — the exact shape of the injectable entry is the worker's
-  bounded question: tsgo + ONE grep in fork `packages/ai/src/**` for the
-  message/part types; pick an append form tsgo accepts, fail-closed otherwise.
+## Verified facts (measured at spec-authoring, 2026-10-22, clone @4054a0a + 3a landed)
+- `execute.after` event (`promise/tool.ts:47-63`): `{tool, sessionID, agent,
+  messageID, id, input}` + `status:"completed"|"error"` with `result`|`error` —
+  the sessionID is present → per-session read is possible (v1 ruling carries).
+- `execute.before` event: same shape, `input` MUTABLE; ONLY `execute.before`
+  may reject a call (`core/src/plugin/hooks.ts:23`) — the pre-flight NEVER
+  throws.
+- v2 delegation tool = `subagent` (v1 `task` → v2 rename, port map §4); its
+  input object has `prompt: string` (fork `tool/plugin/subagent.ts:35`).
+- `ctx.session` domain INCLUDES `synthetic` (the Pick list
+  `promise/session.ts:139-163`); `SessionSyntheticInput` =
+  `{sessionID, id?, text, description?, metadata?, delivery?: "steer"|"queue",
+  resume?}` (generated client types :4592) — `delivery:"queue"` queues as the
+  next turn at idle (the v1 synthetic-part semantics); POST path
+  `/api/session/:id/synthetic`.
+- v1 v2.6 rungs + fire-and-forget + dedup + silence rules: main ctx_watchdog.ts
+  header lines 101-128 (verbatim above in DoD 1).
+- v2.7 lesson (lines 128-140): the `tool.execute.after` SUMMARY MIRROR was
+  REMOVED (P02, 7 collisions) — do NOT port it.
+- 3a landed the plugin file + its smoke; baseline = re-run the gate
+  (probe 360/360, 12 smokes, both v2 smokes) — the worker measures the fresh
+  counts; expect NO probe changes (the probe pins the v1 module estate +
+  hygiene; it has no `.opencode/plugins/` inventory check — grep-verified).
 
 ## Approval boundary
-Pre-approved class (agent-facing tooling; no maintainer-visible behavior change;
-the live v2 host activation stays maintainer restart domain). DO NOT touch: the
-MAIN repo except the handover summary write; `maintainer/**`; the fork repo
-(read-only); clone `.opencode/plugin-unported-v1/**` (frozen v1 twins);
-clone `.opencode/plugins/intercept_observer.ts`; the live DB except `mode=ro`;
-`opencode.jsonc` anywhere (registration/config = maintainer domain).
+Pre-approved class (agent-facing context machinery; no maintainer-visible
+behavior change; live firing waits for the maintainer's v2 host runs). DO NOT
+touch: the MAIN repo except the handover summary write; `maintainer/**`; the
+fork (read-only); clone `.opencode/plugin-unported-v1/**`; `.opencode/plugins/intercept_observer.ts`;
+`opencode.jsonc`; the live DB except `mode=ro`; the worker-prompt/spec files.
 
 ## Procedure (guidance, not protocol)
-1. Read this spec + clone intercept plugin header + `.opencode/plugins/tests/README.md`
-   + the main ctx_watchdog.ts header lines 96-140.
-2. Answer the bounded shape question (tsgo + one fork grep).
-3. Implement `context_family.ts` (hook registration + readout + append-tail
-   injection + evidence lines to `.opencode/temp/ctx_family.log` — the
-   v1 plugin.log role moves to this file's own log; keep lines capped JSON).
-4. Write the smoke; run: new smoke → `SMOKE: ALL PASS`, typecheck, the full
-   clone gate (probe + 12 smokes + the v2 intercept smoke).
-5. Checkpoint commits per verified unit (clone); write the worker summary into the
-   MAIN repo working tree; clone tree clean; final message points at
-   `agent/handover/handover_task_to_planner.md`.
+1. Read this spec + 3a's plugin file + the v1 v2.6/v2.7 header block (96-140).
+2. Port the rung table + texts verbatim; wire the after-hook + delivery.
+3. Wire the pre-flight on the before-hook.
+4. Extend the smoke; run the new smoke + typecheck + the full clone gate.
+5. Checkpoint commits (clone, code only); worker summary to the MAIN working
+   tree; final message points at `agent/handover/handover_task_to_planner.md`.
 
 ## Deliberately out of scope
-- The nudge ladder + watchdog handover pre-flight (spec
-  `agent/handover/specs/2026-10-22_137u3b-nudge-ladder.md`, same file, NEXT
-  launch); compact_memory/context_trim/U3 (port map §4 order 4); the small
-  tools (order 5-8); live v2-host acceptance of the ctx line (backend slot
-  = maintainer domain; state PENDING in the handover); the v1-side event
-  observer log (no v2 role — note it as retired-in-v2 if asked).
+- Port map §4 order 4+ (compact_memory/context_trim/U3 + the small tools).
+- The budget store (`compact_budget.json`) v2 wiring — the gauge core already
+  reads it; nothing new here.
+- Live acceptance of nudges on the v2 host (backend slot = maintainer domain).
+- The v1 event-observer plugin.log role (retired in v2 — the plugin's own
+  `ctx_family.log` carries the evidence lines).

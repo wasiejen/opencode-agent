@@ -79,3 +79,4 @@
 2026-10-22_02-08 DONE<--- worker-13 ses_e9f24eaf0ffeBCobIEf3PWPc0z worker_FlashNext SESSION=ses_e9f24eaf0ffeBCobIEf3PWPc0z CTX=126041 | 6 compactions left
 2026-10-22_02-10 -RETURN- planner-12 ses_e9fb4e611ffeQmrH3PkDK6r4Ct planner_FlashNext worker-13 ses_e9f24eaf0ffeBCobIEf3PWPc0z planner_FlashNext — spec B unit B LANDED, main a46ca9b + close 3889c42, clone bdbf663; my re-run: intercept smoke 93/93, probe 360/360, clone plugins smoke 49 PASS + tree clean
 2026-10-22_02-12 DONE<--- planner-12 ses_e9fb4e611ffeQmrH3PkDK6r4Ct planner_FlashNext CTX=87029 | 5 compactions left — units A+B verified from files, summary in plan12_summary.md
+2026-10-22_02-16 -->START planner_FlashNext ses_e9f0c2d53ffeYo5to2gs6Gb1W1 planner_FlashNext planner-13 iter 13 — live acceptance sweep (TODO #140 units A+B cross-repo probe) after maintainer host restart, then #141 clone gate unit

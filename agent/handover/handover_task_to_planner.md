@@ -1,122 +1,123 @@
-# Worker summary — TODO #142 + #138: the observation path channels are FIELD-SCOPED
+# Worker summary — TODO #137 unit 2: gauge TOKEN-mass legs v2-aware (clone `migration`)
 
-Status: COMPLETE (both units landed; the FINAL commit carries this file + the TODO status lines).
+Status: COMPLETE. Both checkpoint commits are in the CLONE; the clone tree is
+clean; the main repo was NOT touched (its gauge.mjs misfire was reverted,
+git-clean state verified). This file is left UNCOMMITTED in the main-repo
+working tree (the #141 precedent — the planner commits it with its
+bookkeeping).
 
 ## Task and scope
 
-One spec, two findings, one unit pair. The observation log's path channels
-(`out-of-sandbox` note, `path-anomaly`) classify ONLY the tool's PATH-FIELD
-values, and the config allow-list roots join the note check.
+Goal: the gauge's TOKEN-mass read works against the v2 DB shape, so a
+v2-hosted session gets a real `CTX=` readout. Unit-1 table awareness
+(session-row leg) was already in the clone; this unit ported the mass leg
+and the spawn-sqlite3 marker SQL (the production backend), preserving the
+v1 SQL byte-identically.
 
-- #142: no `out-of-sandbox` note for a path under a config-`allow`ed root.
-- #138: NO path verdicts for path-looking substrings inside FREE TEXT
-  (bash `command`, `write` `content`, `edit` `oldString`/`newString`).
+## The research question — ANSWERED (the v2 usage shape EXISTS)
 
-Branch state: main repo `main`; clone `C:/Users/Wasiejen/Repos/opencode-agent-v2`
-branch `migration`. The `plugin-unported-v1/**` frozen twins, `runRedirectCommand`,
-the B' hard-stop site, the 8-field line shape, the caps and the channel grammars
-stayed untouched.
+`session_message` rows carry a `type` column; the assistant `data` blob
+stores `tokens: {input, output, reasoning, cache:{read, write}}` and
+`time: {created, streamed?, completed?}` + optional `finish`
+(`@opencode/schema/session-message.ts` `Assistant` + `token-usage.ts` at
+fork production @654b79b27e; `database/v1-migration.bun.ts` writes the same
+shape; ONE `mode=ro` live-DB read confirmed real rows, e.g. input 72 /
+output 176 / cache.read 14283 / reasoning 0 / cache.write 0).
+- Mass TOTAL mapped to the fork's OWN `TokenUsage.total()` =
+  input+output+reasoning+cache.read+cache.write — the #103 in+out+cr
+  semantics of v1's `tokens.total` mapped to what v2 actually stores
+  (llama-swap keeps reasoning/cache.write at 0, so the sum lands where v1's
+  total landed).
+- FINISHED-STEP discriminator = the fork's own completed-assistant filter
+  (projector.ts fork-copy): `type='assistant' AND $.time.completed IS NOT
+  NULL AND $.tokens IS NOT NULL` — in-flight assistant rows lack both;
+  the `type` match also keeps `compaction` rows (their REQUEST usage, not
+  the context size) out.
 
-## Files changed
+## Files changed (CLONE only, branch `migration`)
 
-MAIN (`main`, commit `dd5b63b`):
-- `.opencode/plugin/intercept_observer_core.ts` — `observeArg` (was line 648)
-  gains two trailing params: `extraRoots: string[] = []` and `pathScanText:
-  string | null = null`; the (d) anomaly + (e) note calls scan `pt` (the
-  override or the full string) and `observeSandbox(pt, workspaceRoot,
-  extraRoots)`; pairs/dense/numword still scan the full arg string. Defaults
-  keep every direct-call form byte-identical.
-- `.opencode/plugin/intercept_observer.ts` — new helper `pathFieldText(toolName, args)`
-  after `REDIRECT_PATH_FIELDS` (~line 592, joins the table's string field
-  values with ONE space); `pathText` captured in the hook right after
-  `argStr` (the ORIGINAL args, before any channel mutation); observation site
-  (was 1433) passes `allowedRoots` + `pathText`; redirect recompute site
-  (was 1474) now `observeSandbox(pathFieldText(tool, output?.args), dir ||
-  null, allowedRoots)` (the EFFECTIVE field text); the R8 hook comment notes
-  the field-scoped note.
-- `.opencode/plugin/tests/intercept_observer.smoke.mjs` — pins (2b), (12n), (B3)
-  repurposed; 3 new pins (16a/16b/16e).
-- `.opencode/plugin/probes/handover_probe.mjs` — checks 303 + 304 note halves
-  repinned; the S29 header comment corrected.
+1. `.opencode/plugin/scripts/gauge.mjs`
+   - Mass-leg constants: `SQL_STEP_DISCRIMINATOR_V2`, `SQL_TOKEN_TOTAL_V2`
+     (COALESCE'd five-field sum), `SQL_FINISHED_STEP_V2`,
+     `SQL_FINISHED_STEP_SESSION_V2`, `GAUGE_SQL_MARKER_V2`, `SQL_TABLE_PROBE`,
+     `sqlMarkerV2ForSession` (+ `sqlSidLiteral` extraction — v1 builder output
+     unchanged).
+   - `sessionRow` also REPORTS the winning TABLE; `readApiDb` pairs the
+     mass SQL with it (session_v2↔session_message, session↔message).
+   - `readSpawnSqlite3`: probe exec (sqlite_master names) → per-shape marker
+     instantiation; v1-only DBs keep the OLD marker constants BYTE-IDENTICAL;
+     coexisting session tables resolved by a `W`-candidate exec (greater
+     time_updated, tie keeps session_v2) then the marker PINNED to the
+     winner's sid (pairing by construction); target ids resolve by holding
+     table (session_v2 wins). NO session table → throw (db-error shape kept).
+   - v1 SQL constants untouched; header/catch comments updated for unit 2.
+2. `.opencode/plugin/probes/handover_probe.mjs` — pin RELABEL only (check
+   32/33 mock mass keys accept both v1 and v2 mass forms; check-32 step
+   assertion keyed on `session_message`). Precedent: unit 1 relabeled these
+   same pins. TOTAL stays 360/360.
+3. `.opencode/plugin/tests/gauge_core.smoke.mjs` — 10 new pins + header
+   note; the 32 pre-existing pins byte-unchanged (all still green).
 
-CLONE (`migration`, commit `622e75e`):
-- `.opencode/plugins/intercept_observer.ts` — the same change (v2 `path` field
-  names): helper after `REDIRECT_PATH_FIELDS` (~line 814), `pathText` capture
-  after `argStr` (~line 912), observation build (~line 923) scans `pathText` +
-  `allowedRoots`, recompute (~line 929) uses the EFFECTIVE field text.
-- `.opencode/plugins/tests/smoke.mjs` — 3 new pins, inserted AFTER the whole-
-  log invariants (like the v2unit1 pin, so the INV journal counts
-  C8/C11/C15/C16 + C6/C7/C14 stay valid).
+NOT changed (verified no adaptation needed): `.opencode/tools/ctx_gauge.ts`,
+`.opencode/plugin/scripts/peek.mjs` (shape-preserving; they call
+`readGauge`/`formatGauge` only), the plugin-unported-v1 shim, the main
+repo, the fork, the live DB (read-only queries only: 3 bounded sqlite3
+`mode=ro` statements).
 
-## Behavior changed
+## Measured verification (clone, run 2026-10-22)
 
-- A typed path under ANY allowed root (workspace + scratchpad + config allow
-  + references) logs NO note; a genuinely un-allowed path STILL logs it.
-- A bash `command`, a `content`, or an `oldString`/`newString` carrying path-
-  looking text logs NO path verdict at all. Consequence: an UNmapped POSIX
-  span inside a bash command no longer produces the fail-closed note (#102's
-  substitution pass itself is unchanged, still one `kind=redirect` line).
-- The initial scan uses the ORIGINAL typed fields (so the doubled-segment
-  collapse pins still fire); the redirect recompute re-reads the EFFECTIVE
-  fields (so a redirected target still suppresses the note).
-- No gate-side behavior changed: the B' hard-stop, the permission gate, the
-  8-field line shape and the caps are untouched.
+- `node .opencode/plugin/tests/gauge_core.smoke.mjs` → `GAUGE_CORE_SMOKE:
+  ALL PASS`, 42 PASS lines (32 pre-existing + 10 new: v2-shaped OK mass 44150
+  (in-flight + compaction rows excluded), newest form, readout line
+  `SESSION=ses_v2s_fx CTX=44150 (36%) REM=75850`, pairing both directions
+  (v2 winner 31000 / v1 winner 11111), spawn-forced v2 per-session, v2 newest,
+  coexisting W-pick both directions, v1-only byte-identical 43210).
+- `node .opencode/plugin/tests/ctx_gauge.smoke.mjs` → `CTX_GAUGE_SMOKE:
+  ALL PASS (3/3)`.
+- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover:
+  360/360 PASS`.
+- All 12 smokes exit 0 (loop over `.opencode/plugin/tests/*.smoke.mjs`),
+  probe 360/360 — gate green in the clone.
+- Exact verify command (clone root):
+  `node .opencode/plugin/tests/gauge_core.smoke.mjs && node
+  .opencode/plugin/tests/ctx_gauge.smoke.mjs && node
+  .opencode/plugin/probes/handover_probe.mjs` → PASS / PASS / PASS.
 
-## Measured verification (all runs after the edits)
+## Commits (CLONE, branch `migration`; code only per #141 precedent)
 
-Main repo:
-- `node .opencode/plugin/tests/intercept_observer.smoke.mjs` → PASS,
-  `INTERCEPT_OBSERVER_SMOKE: ALL PASS (96/96)` (baseline 93 → 3 new pins).
-- `node .opencode/plugin/probes/handover_probe.mjs` → PASS,
-  `PROBE handover: 360/360 PASS` (first run after the code change, before
-  repinning 303/304: 358/360 — the two named bash checks failed, nothing else).
-- `node .opencode/plugin/tests/block_transfer.smoke.mjs` → PASS, 150/150.
-- `node .opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` → PASS, 76/76.
+- `922f74c` port gauge TOKEN-mass read to v2 (table-paired + spawn marker
+  v2 form + probe mock relabel) — gate green at this commit.
+- `2c1fa23` pin gauge_core v2 unit-2 forms (smoke pins, 42 PASS lines).
 
-Clone (`C:/Users/Wasiejen/Repos/opencode-agent-v2`):
-- `node .opencode/plugins/tests/smoke.mjs` → PASS, `SMOKE: ALL PASS`, 52
-  `PASS` lines (baseline 49 → 3 new pins).
-- `node .opencode/plugin/probes/handover_probe.mjs` → PASS, `PROBE handover:
-  360/360 PASS` (the probe's observer sections run on the frozen
-  `plugin-unported-v1` pair — untouched, so the counts stayed 360).
+Working tree: clone `clean`; main repo dirty ONLY in the host-written
+loop files (`loop/autorun-2026-10-01_03-27/counter.json`,
+`loop_log.md`) + this uncommitted summary — as the channel table intends.
+Main repo gate: NOT touched (per spec).
 
-Working tree: main `clean` except the untracked
-`archive/sessions/compaction_dumps/*` (never committed by rule); clone `clean`.
+## TODO / inbox entries
 
-## Commits
+- submit: knowledge (v2 usage-shape facts, verified 2026-10-22 — the
+  handover's research answer, for the v2-tools estate port map),
+  feedback (file tools resolve relative paths against the SESSION CWD — the
+  first clone edit misfired into the main repo and was reverted via
+  `git checkout`; cross-repo tasks must always pass absolute paths),
+  memory (worker: same lesson).
+- TODO #137 status line: planner-side bookkeeping (not mine).
 
-- main `dd5b63b` — "Scope observation path channels to typed path fields +
-  allow-list roots (#142 #138)" (plugin + core + smoke + probe pins).
-- clone `622e75e` — same subject, "(#142 #138 clone twin)".
-- main FINAL (this file + the #142/#138 `LANDED` status lines) — hash reported
-  after commit; NO hash inside the TODO status lines (planner stamps them).
+## Deliberately omitted / pending
 
-## TODO / inbox
+- Live v2-host acceptance: PENDING (maintainer domain) — after this lands
+  and the host restarts, his next v2 session shows a real `CTX=n` readout
+  (no `notAvailable`) from the in-process backend; the spawn marker is
+  pinned end-to-end with the REAL exe.
+- v2 tools estate port (§4 order 3+), ctx line injection, nudge ladder,
+  main-repo dual-support — out of spec (§Deliberately out of scope).
+- Deviations from the suggested procedure: none material; the spawn design
+  uses a probe exec + winner-pinned marker (instead of instantiating one
+  marker blindly) to guarantee DoD 3 pairing — worker's call per spec §3.
 
-- `TODO.md` #138 → `LANDED 2026-10-22 (worker_FlashNext, ses_e9ee3329)` (line
-  1243); #142 → same form (line 1276). No hashes in either line.
-- `todo_inbox` (submitted): the spec's Pin audit missed three flipping
-  surfaces — smoke `(B3)` (bash `command` long-doubled path pin), probe check
-  303 and probe check 304 (the bash `/etc/` note halves). Repinning them was
-  in scope; the audit line range list was incomplete.
-- `agent_feedback` (submitted): `block_transfer WRITE` with TWO `regions` and
-  ONE `text` writes the SAME text into EVERY region — the duplicated TODO.md
-  pair it produced needed a repair script; the parameter contract should either
-  reject N-regions-with-1-text or take per-region text.
+## Lessons
 
-## Deliberately omitted
-
-- New probe pins for the #142/#138 forms: the spec puts the NEW pins in the
-  two smoke files; the probe keeps 360 checks (repin only), so its section
-  sums and annotations stay valid.
-- #140's entry-level close ("the NOTE still fires on the allowed clone paths")
-  — the planner owns that stamp.
-- Any `.opencode/plugin-unported-v1/**` twin change (frozen v1 precedent, #140).
-
-## Reusable lesson
-
-`AGENTS.md` §Pin audit: a "expected UNCHANGED" list is only as good as its
-line-range enumeration. Grep the pin files for the verdict tokens
-(`grep -n "out-of-sandbox|path-anomaly" <smoke/probe>`) BEFORE editing the
-channel, and treat the first gate run's FAIL list as the authoritative pin
-inventory — it named exactly the three pins the audit missed.
+One reused: gauge pin suites mock at the PREPARE level, so a SQL-shape
+change must be mirrored in the probe mocks/pins in the SAME commit (unit-1
+precedent made this the accepted pattern).

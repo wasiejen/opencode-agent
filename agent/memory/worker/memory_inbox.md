@@ -13,3 +13,6 @@ Worker tooling, observed: on this host the tool-call JSON payload fails to parse
 ### 2026-10-22_01-34 worker_FlashNext ses_e9f4b2fceffeutBMvp16FEv4Pr
 Cross-tree diff pitfalls (observed this session, both nearly corrupted a port): (1) `git show HEAD~1:path` runs against the CURRENT tree's HEAD — for another repo use `git -C <other-repo> show <ref>:path` into a temp file; (2) `cmp -s file <(cmd)` process-substitution in git-bash on Windows yields unreliable results (false DIFFERS) — compare real files after writing both to disk. Review trigger: any clone/second-tree port task.
 
+### 2026-10-22_04-07 worker_FlashNext ses_e9ebd604fffeparWJoUxnaC8DA
+Cross-repo clone work (worker): file tools (block_transfer, write, edit) resolve relative paths against the SESSION CWD (main repo), never the task's target clone — always pass absolute paths for clone files; a wrong-path write lands in the forbidden main repo and must be caught by git status before checkpoint (observed 2026-10-22, gauge unit 2; recovered via git checkout).
+

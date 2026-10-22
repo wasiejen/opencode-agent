@@ -1,117 +1,97 @@
-# Task spec — TODO #137 unit 2: gauge TOKEN-mass legs v2-aware (clone `migration`)
+# Task spec — two small pre-approved fixes: sandbox-smoke env-robustness + block_transfer WRITE regions (BOTH trees)
 
 ## Goal
-Make the gauge's token-mass read work against the v2 DB shape, so a v2-hosted
-session gets a real `CTX=` readout instead of `CTX=notAvailable`. The session-row
-leg is already table-aware (unit 1); the mass leg still reads v1 `message`/`session`
-only.
+1. `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` stops depending
+   on the ambient shell `TEMP`/`TMP` env (an env-free gate run crashes before
+   pins / fails byte-exact pins).
+2. `block_transfer` WRITE with a `regions` LIST + ONE `text` REJECTS with a
+   teaching error instead of writing the identical text into every region.
 
 ## Assignment
-- Repo: the v2 clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`, branch
-  `migration` (checked out; stay on it). Main repo = NOT touched.
-- Assigned worker: `worker_FlashNext` (same model as the launching planner —
-  the cache rule; 262k window).
-- TODO entry: `TODO.md` #137 (main repo — status line rides the bookkeeping
-  commit by the planner; the worker writes its own handover only).
+- Worker: `worker_FlashNext`. Work order: MAIN repo
+  `C:\Users\Wasiejen\Repos\opencode-agent` (branch `main`, checked out — stay
+  on it) = unit 1; then the clone `C:\Users\Wasiejen\Repos\opencode-agent-v2`
+  (branch `migration` — stay on it) = unit 2 twins. Both units in BOTH trees.
+- Sources: `TODO.md`-adjacent findings — todo_inbox entries
+  `## 2026-10-22_01-34` (env-robust) and `## 2026-10-22_03-26` (regions;
+  `todo_inbox.md` lines 258-266; decision-needed line names the recommended
+  end state: REJECT with a teaching error).
 
 ## Definition of done (measurable)
-1. A v2-shaped fixture DB (tables `session_v2` + `session_message`, shaped
-   like real migrated rows — see Verified facts) yields an OK gauge read:
-   `total`/`output` resolve from the v2 mass form; the readout line shows
-   `CTX=<n> (<p>%) REM=<m>` (with the compactions suffix as today).
-2. A v1-only DB keeps ALL existing gauge_core pins byte-identical
-   (all 32 PASS lines green, unchanged).
-3. A coexisting DB: the newest-session mass comes from the SAME table that
-   won the session-row pick (`session_v2` FIRST / tie rule — unit 1 semantics
-   preserved; no cross-table mass pairing).
-4. The per-session form (non-empty sessionID targeting a v2 session) works
-   (scoped `session_message` read; the spawn backend's marker SQL variant
-   covers the v2 tables too).
-5. All backends in the chain handle the v2-aware read — the in-process
-   backends AND the spawn-sqlite3 marker SQL (the production backend live).
-6. Gate green in the clone: `node .opencode/plugin/probes/handover_probe.mjs`
-   prints `PROBE handover: 360/360 PASS`; `node
-   .opencode/plugin/tests/gauge_core.smoke.mjs` ALL PASS (32 pins + the new
-   pins per form); the other 11 smokes ALL PASS unchanged.
-7. Checkpoint commits per verified unit IN THE CLONE (code only — the
-   precedent: #141 clone commits carried no handover); write the worker
-   summary to the MAIN repo working tree at
-   `C:\Users\Wasiejen\Repos\opencode-agent\agent\handover\handover_task_to_planner.md`
-   (uncommitted — the planner commits it with its bookkeeping; the #141
-   precedent). Clone tree clean after.
+Unit 1 (env-robust, smoke file only):
+- The 3 byte-exact sandbox-roots-list pins (REPLACE reject message, fixture
+  REJECT message, item-3 single-root form) derive their expected roots from
+  the tool's OWN live message shape or from a fixture env the smoke sets
+  itself — never the ambient shell env.
+- Acceptance: `env -u TEMP -u TMP node .opencode/plugin/tests/block_transfer.
+  sandbox.smoke.mjs` → ALL PASS in MAIN and in the clone; WITH env set: still
+  ALL PASS (both trees).
+
+Unit 2 (regions reject, tool + smokes + doc):
+- `WRITE` with a `regions` LIST and a single `text` (1 text, N>1 regions)
+  returns a teaching error naming the mismatch (per-region `text` per
+  region, or exactly one region per text — reject, do not silently fan one
+  text across regions). The single-span form (markers + one text) is
+  UNCHANGED.
+- Smoke gains pins: (a) N-regions+1-text → rejection (error text shape),
+  (b) a correctly paired form if supported, else a second rejection form,
+  (c) single-span form still writes (existing pin stays green).
+- Tool description (`tool()` desc in the .ts + `.opencode/tools/block_transfer.md`)
+  gains one line: N regions require per-region `text`.
+
+## Baselines (measured fresh, 2026-10-22)
+- MAIN: bt smoke 150/150; sandbox smoke 76/76 (73/76 under env-less bash —
+  3 byte-exact roots-list pins fail; worker-14 measured, planner re-run
+  76/76 with env); probe 360/360.
+- CLONE: bt smoke 131/131; sandbox smoke 76/76; probe 360/360 (GREEN —
+  TODO #141 landed).
 
 ## Suggested scope (non-exhaustive)
-- Clone `.opencode/plugin/scripts/gauge.mjs` (841 lines) — the mass-leg SQL
-  constants + the per-session forms + the backend read paths.
-- Clone `.opencode/plugin/tests/gauge_core.smoke.mjs` — new pins per form
-  (v2-only OK read; coexisting pick pairing; per-session v2; v1-only
-  unchanged stays pinned).
-- Clone `.opencode/tools/ctx_gauge.ts` twin + `.opencode/plugin/scripts/peek.mjs`
-  ONLY if the result shape needs adapting (they call `readGauge`; likely no
-  change).
-- Reference (READ-ONLY): `agent/research/2026-10-15_opencode-v2-impact.md`
-  lines 156-219 (§2 DB v1→v2, §2 recommendation block); the fork
-  `C:\Users\Wasiejen\Repos\opencode` branch `production` (v2 line),
-  `packages/core/src/database/schema.gen.ts` (session_v2 columns ~202-208:
-  `cost`, `tokens_input/output/reasoning/cache_read/cache_write` —
-  session-CUMULATIVE counters, NOT the mass) + `packages/core/src/session/**`
-  (where the message `data` blob is written — find the per-message usage shape).
+- MAIN `.opencode/tools/block_transfer.ts` (WRITE regions handling + the
+  `sandboxCheck` roots message + the tool description) ;
+  `.opencode/plugin/tests/block_transfer.smoke.mjs` ;
+  `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` ;
+  `.opencode/tools/block_transfer.md` (WRITE section line).
+- CLONE twins: `.opencode/tools/block_transfer.ts`,
+  `.opencode/plugin/tests/block_transfer.smoke.mjs`,
+  `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs`,
+  `.opencode/tools/block_transfer.md`.
 
-## Verified facts (measured at spec-authoring, 2026-10-22)
-- Clone gauge twin: `.opencode/plugin/scripts/gauge.mjs` — session-row leg
-  table-aware via `sessionTablesIn`/`sessionRow` (:588-629, `session_v2` FIRST,
-  tie keeps `session_v2`); the MASS leg constants are v1-only: `SQL_FINISHED_STEP`
-  (:531-537), `GAUGE_SQL_MARKER` (:542-547), `SQL_FINISHED_STEP_SESSION`
-  (:555-561), `sqlMarkerForSession` (:562-570) — all `FROM message m JOIN
-  session s ... json_extract(m.data,'$.tokens.total'/'$.tokens.output') ...
-  LIKE '%"finish"%'`. Header comment :526 says "The TOKEN-mass leg ...
-  UNTOUCHED — unit 2."
-- `gaugeFromRaw` (:781-805): NaN total → `{ok:false,kind:"no-total",sid,
-  modelId,window}` (unit 1 shape); OK → `ctx = total` (#103: in+out+cr at
-  the start of the NEXT turn; `output` kept as evidence, NOT subtracted).
-- Fork `production` @654b79b27e: `grep -c session_v2 packages/core/src/
-  database/schema.gen.ts` = 11; `session_message` = `id, session_id, type,
-  seq, time_created, time_updated, data` (research §2:160-165); NO `part`
-  table; data blob = message-level JSON (research §2:180-182).
-- Clone baselines measured now: `gauge_core.smoke.mjs` → `GAUGE_CORE_SMOKE:
-  ALL PASS` (32 PASS lines); `ctx_gauge.smoke.mjs` → 3/3; probe 360/360
-  (TODO #141 clone gate landed GREEN); unit-1 smoke forms 4/5 exist (coexisting
-  newest + NEITHER-table db-error form preserved).
-- The v2 per-message usage storage path in `session_message.data` is NOT yet
-  verified — the ONE research question of this task: grep the fork's
-  `packages/core/src/session/**` (or `history.ts`/`info.ts`/execution write
-  path) for the usage/tokens shape written into the message `data`; optionally
-  ONE `mode=ro` sqlite3 SELECT on the live migrated DB (same pattern as the
-  spawn backend) to see a real v2 row. Bounded — one question.
+## Verified facts (measured at spec-authoring)
+- MAIN `block_transfer` WRITE `regions` = LIST of `{start,end}`; passing TWO
+  regions with ONE `text` writes the identical text into BOTH (measured 2026-
+  10-22: the planner-14 NAP repair + the worker's TODO.md repair both hit it
+  unnoticed at first — todo_inbox `2026-10-22_03-26`).
+- The sandbox smoke reads `TEMP`/`TMP` at startup (line ~13) — env-free run
+  crashes before pins (todo_inbox `2026-10-22_01-34`; measured 73/76 env-less
+  in the clone after unit A).
+- The tool already loads config allow-roots (`CONFIG_ROOTS`) — unit A of
+  TODO #140 (MAIN 5ce85b3 / clone 8d6bbd5); sandbox smoke 64→76 pins there
+  (fixture config under the scratchpad, TEMP-override isolation — the env
+  dependency rides that design; do NOT change the isolation, make the smoke
+  SELF-SET its fixture env or derive the expected strings from the tool's
+  output).
+- Probe check 113 (MAIN) / clone twin pin the config-roots sandbox form —
+  probe sections NOT expected to move (tool message shape for the CONFIG
+  roots line stays; if a message text changes, repin 113 + the clone twin
+  IN SCOPE, name it in the handover).
 
 ## Approval boundary
-Pre-approved class (agent-usage tool fix, no maintainer-visible behavior
-change). DO NOT touch: the MAIN repo (any file), `maintainer/**`, the live
-DB file except mode=ro reads, the fork repo, `.opencode/plugin-unported-v1/**`
-in the clone (frozen v1 twins — the gauge.mjs shim re-exports the clone core;
-that is intended, do not edit the shim unless a check requires it).
+Pre-approved class (tool fixes + test robustness, agent-facing only). DO
+NOT touch: `maintainer/**`, probe code beyond a named repin (if any), the
+WRITE single-span behavior, other tool modes, `.opencode/plugin-unported-v1/**`.
 
-## Procedure (guidance, not protocol)
-1. Read this spec + the unit-1 area of clone gauge.mjs (:505-640, :780-841)
-   + the gauge_core smoke's v2unit1 pins.
-2. Answer the research question (fork grep; one optional mode=ro query).
-3. Implement: mass leg table-aware (mirror the session-row pattern; keep the
-   v1 SQL constants byte-identical for v1-only DBs; spawn variant per form).
-   Keep the `#103` semantics: ctx = total = in+out+cr of the latest FINISHED
-   step; map the v2 usage shape to that total (compute in SQL json_extract
-   arithmetic or JS post-map — worker's call; a v2 `finish`/in-flight
-   discriminator: use what v2 actually stores, verify, do not guess).
-4. Pin smoke forms per DoD 1-4 (fixture DB builder — extend the existing
-   fixture helpers); run: gauge_core smoke, ctx_gauge smoke, the full clone
-   gate (12 smokes + probe).
-5. Checkpoint commits per verified unit (clone, code only); write the worker
-   summary into the MAIN repo `agent/handover/handover_task_to_planner.md`
-   working tree (planner commits it); clone tree clean.
-6. Final message points at `agent/handover/handover_task_to_planner.md`
-   (in the clone).
+## Procedure (guidance)
+1. MAIN unit 1: fix the sandbox smoke (self-set env or message-derived
+   expectations); run both acceptance forms (env / env-less).
+2. MAIN unit 2: regions reject + smoke pins + description lines; bt smoke
+   150/150 → ALL PASS with new pins; probe stays 360/360.
+3. Clone twins of both units; run the clone smokes + clone probe 360/360.
+4. Checkpoint commits per unit per tree (4 commits max; code only); FINAL
+   commit carries `agent/handover/handover_task_to_planner.md`; trees clean.
 
-## Deliberately out of scope
-- The v2 tools estate (port map §4 order 3+), ctx line injection, nudge
-  ladder, the MAIN repo v1-side dual-support, live v2-host acceptance
-  (maintainer domain — after this lands, his next v2 session shows `CTX=n`;
-  state that as PENDING in the handover).
+## Out of scope
+- The reject-vs-paired-text decision alternative (REJECT is the recommended
+  end state per the inbox line; if the worker finds paired-text already
+  half-implemented, say so in the handover — do NOT build it).
+- TODO status lines (planner records them in its bookkeeping commit).

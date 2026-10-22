@@ -1,118 +1,151 @@
-# Worker summary — TODO #137 unit 4a: compact_memory + U3 marker compaction as a v2 plugin
+# Worker summary — TODO #137 unit 4b: context_trim ported to v2 (clone `migration`)
 
-Status: COMPLETE (all DoD items landed; the full clone gate green)
-Assigned: worker_FlashNext · Repo: `C:/Users/Wasiejen/Repos/opencode-agent-v2` branch `migration`
+Status: COMPLETE. Both DoD units landed as clone checkpoints; the gate is green.
 
-## Change summary
+## Task and scope
 
-Three new files in the clone, no existing plugin touched:
+Ported the v1 `.opencode/tools/context_trim.ts` (report + tail) to v2 as a plugin
+in the CLONE `C:\Users\Wasiejen\Repos\opencode-agent-v2` (branch `migration`,
+started at 358cba7 = the post-4a state). Stayed on the current checkout; no
+branch switch. MAIN repo: only this summary file written (plus two inbox appends,
+listed below).
 
-1. `.opencode/plugin/scripts/compaction_core_v2.mjs` — the budget layer ported
-   from v1 `compaction_core.ts` (plain JS, node:fs/path only, the gauge.mjs
-   sibling contract). Same `.opencode/temp/compact_budget.json`, same keys,
-   same semantics: fail-open config reader, cap resolver (CPU guard cap 0 FIRST,
-   bare model id, unlisted → `model_budget.default`, else 1), budget-store v2
-   schema + the #119 additive-rewrite invariant, `budgetCount`, `recordSuccess`
-   (INCREMENT-ON-SUCCESS), `localStamp`, `appendCompactLine` (byte-identical v1
-   COMPACT line incl. ` emergency` / ` ovr` tokens), plus a NEW pure
-   `budgetGate` (the v1 arithmetic incl. the emergency-1 and the caller-scoped
-   CROSS cap+1 override, TODO #128) so the plugin stays thin and the smoke pins
-   the forms directly. `hasKeepKeys` added (the keep-not-applied audit read).
-2. `.opencode/plugins/compact_memory.ts` — the v2 plugin (`{id, setup}` DEFAULT
-   export; TYPE-ONLY `@opencode/plugin`; VALUE import of the paired `.mjs`
-   core). Registers `ctx.tool.transform` → `editor.add` (name
-   `compact_memory`, plain JSON-schema input
-   `{sessionID?, emergency?, message?, mode?, summary?, boundary?}`,
-   `output:{type:"string"}`, promise `execute`), `ctx.session.hook("compaction",
-   …)` (U3 marker `result` override), and consumes `ctx.event.subscribe()`.
-   Dispatch = `ctx.session.compact({sessionID})` fire-and-forget; the
-   increment + COMPACT line land ONLY on the `session.compaction.ended` event
-   for a session with a PENDING dispatch record (`.failed` → one evidence line,
-   NO burn; auto/maintainer compactions WITHOUT a pending record are silent,
-   no burn). Evidence lines → `.opencode/temp/compact_v2.log` (the context
-   family capped-log shape: kinds `dispatch/marker/verify/keep/dump/queue`).
-3. `.opencode/plugins/tests/compact_memory.smoke.mjs` (+ the tests
-   `tsconfig.json` `files` entry) — 41 pins, mock ctx, scratchpad fixtures.
+## Files changed
 
-## Deviations landed (all recorded in the plugin header)
+CLONE (branch `migration`):
+- NEW `.opencode/plugins/context_trim_v2.ts` (804 lines) — the v2 plugin: the
+  `context_trim` tool via `ctx.tool.transform` + `editor.add`, and ONE
+  `ctx.session.hook("context")` handler (the trim's effect).
+- NEW `.opencode/plugins/tests/context_trim_v2.smoke.mjs` (65 checks).
+- EDIT `.opencode/plugins/tests/tsconfig.json` — the plugin added to `files`.
+- EDIT `.opencode/plugins/tests/README.md` — the new smoke's section.
 
-- VERIFY leg = the EVENT leg (pinned in the smoke); the gauge-paired DB-read
-  fallback was NOT needed.
-- U3 marker: NO boundary control in v2 → `boundary` accepted, ignored, ONE
-  `boundary-ignored` line; the plugin sets `event.result =
-  {summary, metadata:{marker:true}}`; the durable compaction message is
-  written by the CORE (the v1 `markerSet` quartet DB-write lane has NO v2
-  counterpart).
-- QUEUE leg = native `session.prompt({…, delivery:"queue"})`, delivered AFTER
-  VERIFIED SUCCESS (keeps the v1 zombie-guard guarantee: queue present ⇒ the
-  compaction happened); NO temp-file queue store (auto_resume is not ported).
-- KEEP keys: not applied (the compact body has NO keep fields) — read for
-  auditability + ONE `keep-not-applied` line; retention = config
-  `compaction.keep.tokens`; no config written.
-- DUMP leg (#152): skipped, ONE `dump-skipped` line per dispatch (the v2 dump
-  twin rides spec 2026-10-22_137u4c-dump-twin).
-- The v1 core module stays UNIMPORTED by v2 code (inert-dir contract).
+MAIN (working tree only, NOT committed):
+- `agent/handover/handover_task_to_planner.md` (this file).
+- `todo_inbox.md` + `agent/agent_feedback.md` + `agent/memory/worker/memory_inbox.md`
+  appended via the `submit` tool (3 entries — content summarized below; the MAIN
+  tree stays UNCOMMITTED, the planner curates).
 
-## Measured verification (exact commands, all run from the clone root)
+Untouched as required: `maintainer/**`, clone `.opencode/plugin-unported-v1/**`,
+clone `plugins/intercept_observer.ts` / `context_family.ts` / `compact_memory.ts`,
+`opencode.jsonc`, the live DB, all MAIN code/docs.
 
-| command | result |
-|---|---|
-| `node .opencode/plugin/probes/handover_probe.mjs` | `PROBE handover: 360/360 PASS` — PASS (unchanged) |
-| `bun run .opencode/plugins/tests/compact_memory.smoke.mjs` | 41 PASS lines, final `SMOKE: ALL PASS`, exit 0 — PASS |
-| `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/plugins/tests/tsconfig.json` | exit 0, zero error lines — PASS (the plugin added to `files`) |
-| `bun run .opencode/plugins/tests/smoke.mjs` (v2 intercept) | 52 PASS, `SMOKE: ALL PASS` — PASS |
-| `bun run .opencode/plugins/tests/context_family.smoke.mjs` | 46 PASS, `SMOKE: ALL PASS` — PASS |
-| `node .opencode/plugin/tests/<each>.smoke.mjs` × 12 | ALL PASS (auto_resume 170/170, block_transfer.sandbox 76/76, block_transfer 132/132, compact_memory(v1 dir) 110/110, context_recovery 17/17, context_trim 40/40, ctx_gauge 3/3, gauge_core, intercept_observer 85/85, loop_log 69/69, state_snapshot 20/20, submit 31/31) |
+## Behavior changed (v2 semantics)
 
-Note: three node smokes (`auto_resume`, `context_trim`, `gauge_core`) print a
-bun banner as their last line when run under `bun` (they need `node`); under
-`node` they read ALL PASS. Recorded as an observation, NOT a failure — no file
-was changed for it.
+1. WINDOW = the v2 model window: the `session_message` rows from the LAST
+   COMPLETED `compaction` row onward — the head row IS included (fork
+   `packages/core/src/session/history.ts` `latestCompaction` + `seq >=` load;
+   `compaction.ts:690-694 previousCompaction`). No `tail_start_id` exists in v2,
+   so the DB-write lane is GONE.
+2. REPORT reads the window rows through the v2 service (`sessionApi.context`
+   = GET `/api/session/:id/context` — the spec's "ready report source") and
+   reuses the clone gauge core (`readGauge`/`formatGauge`) for the ctx figure —
+   the gauge core stays the ONLY DB read; NO new SQL, NO backend chain duplicated.
+   Row masses: `tokens=` = the fork's TokenUsage.total() sum
+   (input+output+reasoning+cache.read+cache.write) gated on the completed-
+   assistant discriminator (`$.time.completed` + `$.tokens` — the unit-2 finding);
+   everything else `bytes4=` (utf8 bytes/4 over the row's text fields). Forms
+   mirror v1: `header: head=… boundary=… boundary-state=… retained=…`,
+   `row: N <type> <kind>=<mass> [tool=… target=…]`, `last: N`, the option
+   block (v2 = the trim RANGE: low = floor-6 retention, high = earliest legal
+   boundary), `biggest:` top-5, and the `target` dry-run.
+3. TAIL = the persistent per-session BOUNDARY store
+   `.opencode/temp/context_trim_v2.json` (`{sessions:{sid:{boundary,keep,
+   set_at}}}`, fail-open read, additive write — the #119 discipline) + the
+   `context`-hook filter: per PRIMARY request it drops the draft
+   `event.messages` entries whose `id` matches a window row STRICTLY before
+   the boundary — assembly-time only, persisted history UNTOUCHED. Entries
+   without an `id` (the system/effort/tool-result projections) SURVIVE.
+4. Fail-closed validation (a rejection writes NOTHING): `session-not-found`,
+   `target-not-found`, `target-at-window-head` (the v2 rename of v1's
+   target-not-before-compaction — the head row is never a boundary),
+   `retained-tail-below-floor <n>` (the floor 6 carries), and for the keep form
+   `keep-invalid <keep>` / `keep-exceeds-history <keep>` / `keep-at-window-
+   head <keep>`; keep=0 refused. Success line keeps v1's shape:
+   `tail-set= <old> -> <new> keep=<count>`; clear → `tail-set= <old> -> none`.
+   Read failures print `context-read-failed: <preview>`.
+5. STALE boundary (a new completed compaction row buries it): the hook logs
+   ONE `boundary-stale` line (deduped per session+boundary id) and keeps the
+   WHOLE post-compaction window (fail-open); the report prints
+   `boundary-state=stale retained=<window rows>`.
+6. `clear` is a NEW arg (v2-only addition) — v1 un-set by re-pointing its own
+   compaction part field; a JSON store needs an explicit un-set lane.
 
-Live firing: NONE. No request was made to the backend inference server; the
-live opencode DB was never opened (scratchpad fixture budget file + logs only).
+## Measured verification (all commands run from the clone)
 
-## Clone commits (tree CLEAN)
+- `node .opencode/plugin/probes/handover_probe.mjs` → `PROBE handover: 360/360 PASS`
+  → PASS (UNCHANGED vs the 358cba7 baseline; also re-measured at baseline in a
+  scratchpad worktree: 360/360).
+- `bun run context_trim_v2.smoke.mjs` (`.opencode/plugins/tests`) → exit 0,
+  65 PASS / 0 FAIL, final line `SMOKE: ALL PASS` → PASS.
+- `bun run smoke.mjs` / `context_family.smoke.mjs` / `compact_memory.smoke.mjs`
+  (same dir) → all exit 0, 0 FAIL, `SMOKE: ALL PASS` → PASS (unchanged).
+- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p tsconfig.json`
+  (in `.opencode/plugins/tests`) → exit 0, ZERO output lines → PASS.
+- Clone node-dir smokes (`.opencode/plugin/tests`): 10/13 exit 0 with `ALL
+  PASS`; `gauge_core.smoke.mjs`, `context_trim.smoke.mjs`, `auto_resume.smoke.mjs`
+  exit 1 with ZERO `FAIL` lines — the crash is bun's teardown
+  `fs.rmSync(...)`: `EBUSY: resource busy or locked, rm '…<scratch dir>'`. MEASURED
+  IDENTICAL at the 358cba7 baseline (scratchpad worktree @ 358cba7: same three
+  exit 1, 0 FAIL) and `context_trim` + `auto_resume` fail the same way in the
+  untouched MAIN repo → PRE-EXISTING Windows teardown flake, NOT this unit
+  (this unit changed no file those smokes read — `git diff --stat 358cba7..HEAD`
+  = the plugin, the smoke, the tsconfig, the tests README).
 
-- `afd6b26` Port the compaction budget layer to v2 (compaction_core_v2.mjs)
-- `ae2f36f` Add the v2 compact_memory plugin: tool dispatch, verify-gated
-  budget, U3 marker hook, native queue (TODO #137 unit 4a) — plugin+smoke
-  bundled (a plugin-only commit would be unverified: the 41-pin smoke is its
-  DoD evidence)
-- `358cba7` Document the compact_memory v2 smoke in the plugins tests README
+Working tree: clone `clean` (0 dirty entries); MAIN dirty = the summary file +
+the 3 inbox appends only.
 
-## Working-tree status
+## Clone commits
 
-- Clone `opencode-agent-v2` @ `migration`: CLEAN.
-- Main `opencode-agent` tree: DIRTY by design — this file + the loop-log
-  DONE line are uncommitted (this task's instruction: no commits in the main
-  repo; the planner lands the bookkeeping).
+- `471dce7` — "Add the v2 context_trim plugin: report + boundary store +
+  context-hook window filter (TODO #137 unit 4b)" (plugin + tsconfig entry).
+- `b5ccc0e` — "Add the context_trim_v2 smoke: 65 pins for the v2 window-map +
+  boundary-store contract (TODO #137 unit 4b)" (smoke + README section + the
+  dry-run `verdict=` fix — the printed line had a hardcoded `ok`).
+Not pushed (agents never push).
 
-## TODO / inbox items
+## Inbox entries submitted (MAIN, via `submit`; no TODO IDs assigned)
 
-- No new `TODO.md` entries; #137 unit 4a is DONE (the planner records status
-  + hashes).
-- `submit` (feedback channel, 2 lines) sent: (a) `block_transfer` REPLACE/WRITE
-  with `bufferName:"last_write"` silently pasted a STALE foreign buffer and
-  corrupted my file (repaired by rewrite; the buffer is session-persistent,
-  never request it by name unless you just wrote it); (b) a ~4.5 KB single
-  bash heredoc append was TRUNCATED mid-line (append ≤ ~4 KB per call, or
-  use the write/edit tools).
-- Deferred by spec: #152 dump twin (spec 2026-10-22_137u4c-dump-twin), unit
-  4b (context_trim v2 report), auto_resume v2 (port order 2), live v2
-  acceptance.
+1. todo: the three clone node-dir smokes exit 1 on Windows teardown EBUSY
+   (`fs.rmSync` of the scratch fixture dir) with zero check failures — baseline-
+   reproducible, needs a teardown retry/close-the-handle fix or a scratch-dir
+   change.
+2. feedback: the block_transfer tool's REPLACE mode silently substituted a stale
+   `default` buffer for the supplied `text` (twice corrupted the new files);
+   WRITE needs BOTH start AND end markers.
+3. memory (worker_FlashNext): byte-pin a report's masses by DERIVING them from
+   the documented rule, not by copying measured output; a hardcoded verdict
+   string in a report template was caught only by an expectation mismatch.
 
-## Deliberately omitted
+## Deliberately omitted / deviations (all recorded in the plugin header)
 
-- The pre-compaction DUMP leg (queued follow-up spec) — `dump-skipped` lines
-  only.
-- No config writes (maintainer domain); no `opencode.jsonc` change (auto
-  discovery).
-- No live host activation (waits for the maintainer's v2 runs).
+- The v1 FULL report form (id+time per row) and `recommendationOneLiner` (U4)
+  are NOT ported — the CUT-DOWN form is the only form; the auto_resume nudge
+  channel it served is skipped in v2.
+- v1's own SQL/backend chain (node/bun:sqlite → spawn-sqlite3, the marker SQL)
+  is NOT re-implemented: the window read rides the v2 service; the gauge core
+  stays the only DB reader. The v1 `part`-table shapes have no v2 counterpart.
+- The `no-completed-compaction` rejection is GONE (the store lever has no
+  compaction dependency). The recommendation block lists the trim RANGE rather
+  than v1's low=current-tail-head/high=index-0.
+- The v1 `marker` mode lives in 4a's compact_memory plugin — not duplicated.
+- No loop-log line (MAIN's `loop/` write would break the "MAIN untouched"
+  boundary).
+- 4c (dump twin) and the small tools (order 5-8) — separate specs.
+- Live v2 acceptance = maintainer domain.
 
-## Lessons (reusable)
+## Blockers
 
-Pin the verification leg you actually wire: the v2 event leg
-(`session.compaction.ended` / `.failed`) is deterministic under a mock
-AsyncIterable, so the DB-read fallback was unnecessary and stays unported —
-the smoke pins the leg that landed.
+None. Two notes for the planner: (a) the three teardown-EBUSY smokes should get
+their own TODO entry (already submitted to `todo_inbox.md`); (b) a dropped
+assistant row with UNEXECUTED tool items can leave an orphan `tool`-result
+entry (no `id`, so the filter keeps it) — flagged here; the floor-6 + human-
+in-loop discipline covers it; a stricter lane would need id propagation in
+`to-llm-message.ts` (fork code, out of scope).
+
+action: resume
+
+## Context state at close (gauge readout, verbatim)
+
+    SESSION=ses_e9de1b381ffeM4308gaIvhBgTk CTX=234727 | 6 compactions left
+

@@ -61,5 +61,35 @@ worker). REMAINING: the worker-prompt parts (task g primer bullet + task h
 Context-budget section + 1 stale pre-spec-2+11 line) — deferred, awaiting
 his prompt_agent_task.md commit; f2-cleanup = his 4 looprunner lines in
 AGENTS.md (wave spec lists them).
-What does NOT go here: launched specs' worker summaries (handover folder root),
+## Wave 2026-10-22 — the cross-repo access unit (TODO #140; maintainer GO 2026-10-22, config-driven roots + the path-field truncation fix)
+- `2026-10-22_cross-repo-roots-A.md` — `block_transfer` sandbox roots become CONFIG-DRIVEN (main repo + clone twin). Launch channel: copied into `agent/handover/handover_task.md` (2026-10-22).
+- `2026-10-22_path-field-truncation-B.md` — the intercept log NEVER cuts inside a single-path field (main repo + clone twin).
+- Order: A then B (independent changes; both fix TODO #140; #141 = the clone gate red baseline the clone numbers must be diffed against).
+
+## Wave 2026-10-22 — the v2 clone gate (TODO #141; maintainer priority item 2, first step)
+- `2026-10-22_v2-clone-gate-141.md` — repoint the clone probe + smoke v1-module paths to `.opencode/plugin-unported-v1/` (or v2 twins) until the clone gate prints real green counts. Launch channel: copied into `agent/handover/handover_task.md`.
+
+## Wave 2026-10-22 (planner-15, iter 15)
+- `2026-10-22_137u2-token-mass-legs.md` — TODO #137 unit 2: the clone gauge TOKEN-mass legs v2-aware (clone `migration` only; gate green; live v2 CTX acceptance = maintainer). Launch channel: copied to `agent/handover/handover_task.md`.
+- `2026-10-22_15-smoke-env-bt-regions.md` — two small pre-approved fixes: sandbox smoke ENV robustness (todo_inbox 01-34) + bt WRITE N-regions-with-1-text REJECT (todo_inbox 03-26; REJECT recommended end state), BOTH trees.
+- Order: unit 2 (clone gauge) first, then the small-fixes spec.
+
+## Wave 2026-10-22 (planner-16, iter 16) — TODO #137 unit 3, the v2 CONTEXT FAMILY (clone `migration`)
+- `2026-10-22_137u3a-context-family-core.md` — new clone plugin `.opencode/plugins/context_family.ts`: gauge readout via the shared v2-paired gauge core + the `ctx:` line injection at the v2 `session.context` hook (append-at-tail, cache discipline) + evidence lines + its own bun smoke + tsgo coverage. Launch channel: copy to `agent/handover/handover_task.md`.
+- `2026-10-22_137u3b-nudge-ladder.md` — extends the SAME plugin: 5-rung nudge ladder at `execute.after` (per-session read, verbatim v1 rungs, dedup, silence rules) delivered via `ctx.session.synthetic(delivery:"queue")` fire-and-forget + the `subagent` handover pre-flight warn. Launch AFTER 3a verifies (same file, additive).
+- Order: 3a then 3b; both clone-only, live v2 acceptance = maintainer (backend slot).
+
+## Wave 2026-10-22 (planner-19, iter 19) — TODO #137 orders 5-8, the small tools in the v2 clone
+- `2026-10-22_137u5a-small-write-tools.md` — loop_log + submit v2 plugin twins (LAUNCH FIRST).
+- `2026-10-22_137u5b-small-read-tools.md` — ctx_gauge + state_snapshot + dev helper v2 twins (queued after 5a).
+- `2026-10-22_137u5c-block-transfer-v2.md` — block_transfer v2 twin (queued after 5b; the clone's own feedback formats).
+- `session_info` = native, no port; auto_resume v2 (order 2) NOT in this wave — HELD.
+
+## Wave 2026-10-22 (planner-17, iter 17)
+- `2026-10-22_137u4a-compact-memory-v2.md` — clone `.opencode/plugins/compact_memory.ts` (v2 twin) + `.opencode/plugin/scripts/compaction_core_v2.mjs`: budget-gated manual compaction via `ctx.session.compact` + the U3 marker mode via `session.hook("compaction")` `result` override + native `delivery:"queue"`. Launch channel: copy to `agent/handover/handover_task.md` (LAUNCHING this session).
+- `2026-10-22_137u4b-context-trim-v2.md` — QUEUED (launch AFTER 4a verifies): report over v2 tables + tail = a persistent boundary store enforced by a `session.context`-hook assembly filter (no `tail_start_id` in v2).
+- 4c queued (spec to be written by the next planner): `agent/scripts/db/dump_session.cjs` v2-table twin + the v2 plugin's dump leg (the 4a plugin logs `dump-skipped` until then).
+- Order: 4a → 4b → 4c; all clone-only, live v2 acceptance = maintainer (backend slot).
+
+## What does NOT go here
 NAP, non-compaction specs.

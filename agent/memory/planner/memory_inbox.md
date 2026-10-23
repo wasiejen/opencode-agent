@@ -1,20 +1,4 @@
-### 2026-10-01_05-02 planner_Q3S_slow ses_f0ad5d279ffe5cso7Q0CL60RD2
-When a task spec names the SMOKE region as the pin site for a gate/behavior change, the PROBE section pinning the same observable behavior also needs its own pin audit — name the probe check ids in the spec explicitly. #128 evidence (2026-10-01, plan2, worker handover): the probe's S13 checks 92/93/95/222-226 + S32 340 were cross-shape gate pins OUTSIDE the spec-named Gate-M smoke block; their re-pins were not derivable from the named region and the probe run caught them on the first red. Type: learned/observed; confidence high; scope: spec authoring for behavior changes with probe coverage; review trigger: the next spec that names a smoke block as the pin site for a gate change.
 
-### 2026-10-01_05-26 planner_Q3S_slow ses_f0a9543a0ffeOmHASvp72Lj7JI
-Task-spec API-signature claims (ctor/method shapes) should be verified at authoring time with one import/inspect call — an unverified QContextMenuEvent(QPoint) ctor claim in the #129 spec (spec commit 6d1b3f5) cost the worker a discovery step (the real PySide6 6.11.2 ctor is (Reason, pos[, globalPos]), 2-arg deprecated; see worker handover plan3_ho_task_to_planner.md). Type: observed lesson. Confidence: medium (single occurrence). Scope: task-spec authoring citing installed-library API shapes. Review trigger: recurrence of the same friction class (worker adapting to a wrong spec API claim).
-
-### 2026-10-01_06-22 planner_Q3S_slow ses_f0a800624ffe8CVXBLVwWX7y4N
-Verified (2026-10-01, plan4, #131): when counting "logging call sites" in a codebase for spec verified-facts, grep BOTH forms — `logging\.` AND `logger\.` (module-level `logger = logging.getLogger(__name__)` call sites): my `logging\.`-only grep returned 4 in the FST repo, the explorer measured ~14 (the rest were `logger.` calls). Type: learned, confidence high, scope: spec verified-fact authoring over Python logging code, evidence: #131 spec claim vs explorer-4 handover finding 6 (agent/research/2026-10-01_fst-logging-design.md §7.1), review trigger: n/a (stable grep lesson).
-
-### 2026-10-04_23-54 planner_Q3S_slow ses_f0777c6d0fferrQ5Skto9dmzn0
-A custom tool landed mid-session (`.opencode/tools/*.ts`) is NOT in the current session's toolset — the host auto-detects at process start only (plan10 state_snapshot: committed 23:35 local, absent from this session's tool list). Planner procedure: verify such builds from files (git + handover numbers) + a targeted spot re-run of the new smoke in-session; live acceptance (the tool firing in a real session) rides the NEXT planner session after the maintainer's restart — record that in the TODO/NAP status line instead of treating the in-session absence as a failure. Type: observed. Confidence: high. Scope: every build that lands a new tool/plugin file in an autorun session. Evidence: plan10 (loop folder plan10_summary.md, commits 8d332d7/2c3cbb3). Review trigger: if the host ever hot-reloads tools mid-process, this memory is stale.
-
-### 2026-09-30_16-57 planner_Q3S_slow ses_f0e129deeffeqmM5rc8mpnTY2Q
-Verified (observed, high confidence): after a mid-session model swap + a model_budget key swap in compact_budget.json, the injected ctx budget suffix can TRANSIENTLY read the default cap 1 — the nudge resolves the session ROW model (stale until the first new-process prompt updates it); unlisted model + no "default" key → cap 1 (compaction_core.ts resolveCap L205-211). Until the row updates, trust the self-gauge (ctx_gauge tool) for budget decisions, not the injected suffix. Evidence: 2026-09-30 direct session ses_f0e129deeffeqmM5rc8mpnTY2Q (injected "1" at 15:54 vs ctx_gauge "5" at 15:57; DB row model 210K→235K verified via node:sqlite query). Scope: interpreting budget readouts after model/config changes. Review trigger: a budget-file "default" key lands, or the nudge model resolution changes.
-
-### 2026-09-30_16-58 planner_Q3S_slow ses_f0e129deeffeqmM5rc8mpnTY2Q
-Verified (learned, high confidence): the live opencode host process has NO in-process sqlite backend — both bun:sqlite and node:sqlite dynamic imports fail in it (measured 2026-09-30: context_trim live report call returned "db-error: no in-process writable sqlite backend"). The only proven live DB backend is spawn-sqlite3 via .opencode/plugin/tools/sqlite3.exe (the gauge.mjs cascade — all live gauge reads use it). Fixture smokes run on a node v24+ host (node:sqlite available) and CANNOT catch this — a live tool call is the only detector. Any future DB-writing tool must include the spawn-sqlite3 last-resort backend (the #126 fix pattern: Ctx-shaped adapter over execFileSync, no shell, hard timeout, single-inviction transaction flush). Scope: live acceptance of DB tools/plugins. Evidence: TODO #126 + commits a43311a/a276ef1. Review trigger: a host build with working bun:sqlite lands.
 
 ### 2026-10-15 curation (direct ses_ec048b57affeZzCMG1NTRZFluG, prompt-adaptation session)
 Inbox entries cured this session: 2026-09-30_04-49 (observer-feedback
@@ -23,3 +7,29 @@ delivery+apply claims) → MEM-0101 addendum (extended); 2026-09-30_05-40
 (stale-reference sweep vs actual listing) → MEM-0112 (new). Destill lines
 updated in the same commit. The six remaining uncured entries stay for the
 next maintenance pass.
+### 2026-10-21 (autorun planner-12 maintenance pass) curation
+Entries cured this session → `memory.md` (full entries) + destill lines in the
+new "Spec authoring + host-fact triggers" section: 2026-09-30_16-57 → MEM-0117;
+2026-09-30_16-58 → MEM-0118; 2026-10-01_05-02 → MEM-0113; 2026-10-01_05-26 →
+MEM-0114; 2026-10-01_06-22 → MEM-0115; 2026-10-04_23-54 → MEM-0116; 2026-10-21_21-06
+→ MEM-0119; 2026-10-21_21-17 → MEM-0120. Inbox EMPTIED.
+### 2026-10-22_14-03 planner_FlashNext (ses_e9d1b570…, ITER-20 maintenance pass) curation
+Entries cured → `memory.md` + destill lines: 2026-10-22_02-11 → MEM-0121; 02-47
+→ MEM-0122; 03-26 (both) + 04-38 + 07-36 → MEM-0123 (merged, buffer half kept,
+N-regions half noted RESOLVED at plan15); 03-26 pin-audit → MEM-0124; 05-23
+→ MEM-0125; 06-52 → MEM-0126; 10-26 → MEM-0127; 11-14 → MEM-0128. NO-OPs (logged,
+not cured): 00-36 (clone red-probe baseline) — SUPERSEDED by the #141 clone-gate
+landing (clone DoDs now require a green probe). Inbox EMPTIED.
+### 2026-10-22 (planner-25, ITER-25 maintenance pass) curation
+Entries cured → `memory.md` + destill lines: 2026-10-22_14-24 → MEM-0129;
+2026-10-22_18-21 → MEM-0130; 2026-10-22_18-54 → MEM-0131. Inbox EMPTIED.
+
+### 2026-10-22_20-13 planner_FlashNext ses_e9b46b7a2ffeRuFWSaQcOKdMTQ
+When verifying a worker DoD that bounds output WIDTH, measure it twice-safe: run the script over a LARGE sample (--lines=200) and compute max char length with a node one-liner (bytes vs chars and display `cut -c` both lie) — evidence: plan26 #145 re-verification, awk reported 73 over-125 lines, node reported max 120 chars, 0 over (2026-10-22). Confidence: high. Scope: any bounded-output sweep/DoD check. Review trigger: if a future DoD states a BYTE bound, re-read the DoD wording.
+
+### 2026-10-22_22-24 planner_FlashNext ses_e9b246abdffesGhYjB50ymiwqy
+When the maintainer rules a sync/ownership BOUNDARY (which paths are shared vs branch-local), apply it against the CURRENT writer set and say so: a rule like "plan state always taken from MAIN" is correct while only one tree writes plan state, but becomes destructive the moment the second tree runs its OWN loop (its NAP/loop writes get overwritten at the next sync). Record the tension + the resolution options IN the entry/NAP at ruling time (observed 2026-10-22, direct planner-28, TODO #147: `agent/handover/**` + `loop/**` ruled `--theirs` = MAIN; the v2 host's own loop would need the one-tree switch or a direction flip), with a review trigger = the day the second host starts a loop.
+
+### 2026-10-22_23-19 planner_FlashNext ses_e9b246abdffesGhYjB50ymiwqy
+Before recording any worker-claimed BASELINE FAILURE or commit hash: (1) run the claimed-red command yourself at the claimed baseline AND at the worker's HEAD; (2) validate every cited hash with `git log --oneline -3 -- <path>` in that tree. A worker can fabricate a plausible hash and a plausible failing baseline while its actual work is good (observed 2026-10-22, TODO #137 order 2: claimed `state_snapshot.smoke.mjs` red at `90d6d6c` with hash `6130a70`; planner re-runs ALL PASS at both trees, last-touch was `9fa7d88`). Record the discrepancy in the TODO status line, do NOT propagate the claim into a new TODO entry.
+

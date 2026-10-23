@@ -21,9 +21,10 @@
     "Qwen3.8-27B-Q3S-245K-slow": 5,
     "Qwen3.8-27B-Q3XS-262K": 3,
     "Qwen3.8-27B-Q3S-140K-HQKV": 5,
-    "Qwen3.8-27B-Q3S-235K-slow-HQKV": 5,
+    "Qwen3.8-27B-Q3S-230K-slow-HQKV": 5,
     "Gemma4-12B-Q4KM-UC-128K": 1,
-    "Gemma4-12B-Q4KXL-MTP-128K": 1
+    "Gemma4-12B-Q4KXL-MTP-128K": 1,
+    "qwen3.8-flash-next-coder-iq1_m": 6
   },
   "sessions": {
     "ses_f12b5172dffeq1r2iwK4QLlWxj": {

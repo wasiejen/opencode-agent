@@ -5,6 +5,19 @@ authoritative record — the change record is `git log`, the live backlog is
 `TODO.md`, agent-facing rules are `AGENTS.md` / `.opencode/agent/handover/handover_planner.md`.
 May be stale; nothing here is required to be maintained.
 
+2026-10-22_15-55
+Serving shape: llama-swap → serve/server.py --engine strata, one slot per line, --max-context 262144 --kv int8 --kv-resident 32768 --spec 6 --spec-min-p 0.5 --prefill auto:32768 --conversation-cache-mib 4096 --adapt-every 1 --adapt-swaps 80 --adapt-decay 0.97 --adapt-async 1 --vram-reserve-mib 700, plus --vision --vram-elastic on the vision line. Expert cache self-reports 5514 slots, 8.93 GiB of VRAM; KV streaming 32768 of 262144 cells … 3.09 GiB pinned RAM.
+
+
+2026-10-22_09-21: another pattern to trigger the sandbox
+- node .opencode/plugin/probes/handover_probe.mjs 2>&1 | tail -2; cd .opencode/plugins/tests && bun run context_trim_v2.smoke.mjs 2>&1 | tail -2; cd ../../plugin/tests && node gauge_core.smoke.mjs 2>&1 | tail -4; echo "EXIT=$?"
+- "cd ../../plugin/tests" this was the cause for it
+- need to find a way to auto-reject any access attemps outside sandbox. this cannot be that there is no ready made functionality for it - this is one of the biggest problems for autorun agents to secure an uninterrupted execution.
+- 2026-10-22_13-45: another strange case - does the intercept change it to this strange path?
+  - △Permission required
+  ←Access external directory ~\Repos\Opnenenen2
+  Patterns
+  - C:\Users\Wasiejen\Repos\Opnenenen2\*
 
 
 

@@ -606,4 +606,73 @@ instructions/protocol — facts that save lookups. Format per the README:
 - **Ref:** `.opencode/tools/context_trim.ts` (execute + the keepMessages
   arg); `.opencode/plugin/tests/context_trim.smoke.mjs` section 10.
 - **Keys:** context_trim, keepMessages, tailSetKeep, tail-set, keep-N,
-  retained tail, post-compaction shrink, setDbPath.
+   retained tail, post-compaction shrink, setDbPath.
+
+## block_transfer 2026-10-21 hardening: the changed surface (worker_FlashNext, knowledge_inbox 2026-10-21_21-59)
+- **Do:** expect the hardened shapes in `.opencode/tools/block_transfer.ts`:
+  MOVE/PASTE return lines append ` (inserted after line K in '<dstFile>')`
+  or ` (at EOF)`; REPLACE/WRITE replace the group with `old A..B -> new
+  C..D, file now K line(s)` (WRITE's NEW span is in POST-op numbering;
+  an EMPTY-text WRITE prints `new (empty)`); a successful MOVE stashes
+  the block in buffer `last_move_source` BEFORE the cut; a same-file
+  MOVE (srcFile/dstFile resolve equal) is a move-with-shift (a target
+  inside the span = teaching error); EOF insertion uses `countLines()`
+  (a trailing-newline file never gains a blank line); `detectEol()` runs
+  once per file and `joinLines()` re-attaches `\r` to every line EXCEPT
+  the last element; WRITE never creates a file; PEEK `from`/`count`
+  accept digit-strings; empty `refs`/`regions` lists are rejected;
+  COPY/APPEND bare calls teach the three input forms; MAP caps each
+  echoed line at 200 chars + `…`. `mode` is STRICTLY REQUIRED (no MOVE
+  default; unknown mode = loud error, lower-case modes still work).
+- **Why (evidence):** the 2026-10-21 hardening unit (commit ca3c710) +
+  the micro-fix (a137b07); mode guard FULLY LIVE-ACCEPTED after the
+  maintainer restart. Suite counts as of 2026-10-21, post-change: block_transfer
+  smoke 150/150, sandbox smoke 64/64, probe 360/360, SUBMIT_SMOKE 32/32
+  — the 112/112 + 61/61 in the 2026-09-26 v2/S3 note are HISTORICAL
+  landing counts, superseded.
+- **Ref:** `.opencode/tools/block_transfer.ts`; `.opencode/plugin/tests/block_transfer.smoke.mjs`
+  + `block_transfer.sandbox.smoke.mjs`; commits ca3c710 / a137b07.
+- **Keys:** block_transfer, return lines, inserted after line, last_move_source,
+  same-file MOVE, detectEol, joinLines, PEEK digit-string, mode required.
+
+## block_transfer sandbox roots are CONFIG-DRIVEN + the smoke self-sets its TEMP env (2026-10-22, TODO #140 unit A + the plan15 small-fixes unit)
+- **Do:** expect `.opencode/tools/block_transfer.ts` to resolve its sandbox
+  roots as `[cwd, ...CONFIG_ROOTS, TEMP ?? TMP, os.tmpdir()]` where
+  `CONFIG_ROOTS` = the root `opencode.jsonc` `permission.external_directory`
+  allow-entries (stripped of trailing `/**`, deduped, fail-open), loaded ONCE
+  at tool start resolved from the tool's OWN repo root via `import.meta.url`
+  — a NEW allow-root needs a HOST RESTART (both the tool file and the roots
+  list load at process start). The JSONC loader needs BOTH comment-strip AND
+  trailing-comma removal (the live config has a trailing comma ~line 77 —
+  strict `JSON.parse` fails). Do NOT read ambient `TEMP`/`TMP` in smokes:
+  `block_transfer.sandbox.smoke.mjs` (both trees) now SELF-SETS
+  `process.env.TEMP`/`TMP` to `<Temp>/bt_sandbox_env_temp` (self-cleaned,
+  ambient values restored in the exit finally) and derives the byte-exact
+  roots-list expectations from the tool's live message/env at call time —
+  run the gate with `env -u TEMP -u TMP node …` and WITH env set; both land
+  76/76. A mirror of a tool's roots expression must mirror THAT tree's
+  expression exactly (the clone tool lacks the `os.tmpdir()`/dedupe terms —
+  an extra-term mirror is the classic false-fail; clone commit 8d6bbd5 fixed
+  that). Cross-repo file access: `edit`/`write` reach allow-listed siblings
+  (e.g. the v2 clone); ALWAYS pass ABSOLUTE paths to file tools — a RELATIVE
+  path resolves against the SESSION CWD (a clone-targeted edit misfired into
+  the main repo 2026-10-22; reverted via `git checkout`).
+- **Why (evidence):** worker-12 (2026-10-22, knowledge_inbox 01-34/01-40
+  pair — the 01-40 CORRECTION holds: the clone-run bash DID export TEMP; the
+  3 byte-pin fails were the smoke MIRROR over-mirroring the main tool's
+  expression) + worker-14 (`05df70f` MAIN / `2a3759f` clone — env-free gate
+  runs green 76/76 BOTH forms, planner re-ran both forms both trees) +
+  worker-13 live acceptance 2026-10-22 (config roots work end-to-end;
+  no `C:\Users\*` ask).
+- **Ref:** `.opencode/tools/block_transfer.ts` (`CONFIG_ROOTS` + JSONC loader);
+  `.opencode/plugin/tests/block_transfer.sandbox.smoke.mjs` (both trees);
+  commits 5ce85b3 (main), 8d6bbd5 (clone), 05df70f + 2a3759f; TODO #140.
+- **Keys:** CONFIG_ROOTS, sandbox roots, external_directory, /**, host restart,
+  JSONC trailing comma, self-set TEMP, env -u TEMP, ambient env, absolute
+  path, clone edit misfire, mirror over-term, bt_sandbox_env_temp.
+
+## Marker-sweep emit order + discriminating fixtures for state_snapshot ordering pins (worker_FlashNext, knowledge_inbox 2026-10-22_18-41)
+- **Do:** when adding a smoke pin for the `state_snapshot` `## markers` digest ordering, pick a fixture path that sorts AFTER the DOC-class comparator in the raw sweep output: `TODO.md` / `README.md` / `WIKI.md`.
+- **Why (measured 2026-10-22, MAIN + clone):** `grep -rn` emits hits in its PATH ARGUMENT order (`.opencode/ agent/ maintainer/ loop/ proposals/ TODO.md README.md WIKI.md`), NOT lexicographically across groups — `agent/` DOC hits print first (live markers fall out of the 20-line window), while `WIKI.md`/`TODO.md`/`README.md` hits print AFTER `loop/`. A LIVE-class fixture under `maintainer/` is a NON-discriminating comparator for a `loop/` DOC line (it precedes it raw).
+- **Ref:** the marker-order unit (MAIN `97714b5`, clone `aabc705`); `state_snapshot.smoke.mjs` FX1 (exact 60-line digest pin — replace a fixture line, never add).
+- **Keys:** marker sweep, grep argument order, LIVE-CLASS/DOC-CLASS, WIKI.md fixture, discriminating pin, FX1 cap math.

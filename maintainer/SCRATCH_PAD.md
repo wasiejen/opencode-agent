@@ -5,7 +5,23 @@ authoritative record — the change record is `git log`, the live backlog is
 `TODO.md`, agent-facing rules are `AGENTS.md` / `.opencode/agent/handover/handover_planner.md`.
 May be stale; nothing here is required to be maintained.
 
+2026-10-22_09-21: another pattern to trigger the sandbox
+- node .opencode/plugin/probes/handover_probe.mjs 2>&1 | tail -2; cd .opencode/plugins/tests && bun run context_trim_v2.smoke.mjs 2>&1 | tail -2; cd ../../plugin/tests && node gauge_core.smoke.mjs 2>&1 | tail -4; echo "EXIT=$?"
+- "cd ../../plugin/tests" this was the cause for it
+- need to find a way to auto-reject any access attemps outside sandbox. this cannot be that there is no ready made functionality for it - this is one of the biggest problems for autorun agents to secure an uninterrupted execution.
+- 2026-10-22_13-45: another strange case - does the intercept change it to this strange path?
+  - △Permission required
+  ←Access external directory ~\Repos\Opnenenen2
+  Patterns
+  - C:\Users\Wasiejen\Repos\Opnenenen2\*
 
+2026-10-16_00-26
+- worker has shown no awareness for the closing context window limit at all in his thinking. no thoughts about compaction or even an emergency handover. seem prompt rework stripped to much.
+
+2026-10-15_23-47
+- worker actually rewrote entire intercept plugin instead of using the backup in temp folder. 12k token doubled. did he not know of it? and the format with \n did not work for me to easily copy and past it also.
+  - we might need a return information on failed write tool to medigate the issue
+  - might be caused because the path did not exist yet and thus the intercept plugin itself blocked the access despide the folder to be created was in a permitted folder. so more like a fix also needed in the intercept plugin sandbox path handling.
 
 
 260912-0953

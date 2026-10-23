@@ -518,3 +518,55 @@ session); only the in-scope recovery path (planner-39) ever delivered.
   id-tally).
 - **Keys:** probe, handover_probe, check ids, section tally, 355, sparse
   ids, re-pin in place.
+
+## Intercept log observation rules — the current consolidated form (2026-10-22, TODO #140 unit B + #142 + #138 cluster; live-accepted planner-13)
+- **Do:** read the intercept line rules as: (1) FIELD rule — a single
+  path-shaped log field prints WHOLE (the `MAX_PATH_FIELD_CHARS = 1024` leg
+  in `flattenField`, `intercept_observer_core.ts`); a mixed prose+path field's
+  cut moves BACK to a position that keeps every path substring whole, else
+  the short-summary fallback; the 8-field shape, order, and the ASCII `...`
+  marker are byte-unchanged — a mid-word path echo means a LOG-FIELD
+  truncation NEVER (a truncated `C:/Users/Wasi` in the log was the old field
+  rule, not a truncated call). (2) SCAN rule — the path/fuzzy verdict channels
+  (path-anomaly, out-of-sandbox) scan only the TOOL'S TYPED path fields
+  (`filePath` v1 / `path` v2; block_transfer `srcFile`/`dstFile`), NEVER the
+  args string — a path-looking substring inside a bash `command` or an edit
+  payload logs NOTHING. (3) NOTE rule — the `out-of-sandbox` note fires only
+  for spans under NO allowed root (workspace + scratchpad + config
+  `external_directory` roots + references); an allow-listed cross-repo path
+  logs no note (the B' hard-stop site was already full-roots — unaffected).
+- **Why (evidence):** unit B LANDED 2026-10-22 (main `a46ca9b` / clone
+  `bdbf663`) + the #142 note fix (main `dd5b63b` / clone `622e75e`, smoke
+  96/96 + 52/52) + #138 scan narrowing (same unit); live acceptance via the
+  3-tool cross-repo probe (intercept.log 3634-3640: whole path fields
+  incl. 74-char clone paths, cut-back-before-path, `fuzzy-rejected`
+  fail-closed; no false notes on allowed clone paths).
+- **Ref:** `.opencode/plugin/intercept_observer_core.ts` (`isPathShapedValue`/
+  `safeCutLen`/`flattenField`, `observeArg` `extraRoots`+`pathScanText`);
+  `.opencode/plugin/intercept_observer.ts` (`pathFieldText`, `allowedRoots`
+  at observation + redirect recompute); smoke pins (16a)-(16e), (B3), probe
+  295/303/304; TODO #138/#140/#142 close notes.
+- **Keys:** flattenField, MAX_PATH_FIELD_CHARS, path-shaped, cut moves back,
+  typed path fields, args string, extraRoots, allowedRoots, out-of-sandbox
+  note, fuzzy-rejected, 8-field byte-compat, log-field truncation.
+
+## intercept.log lines can carry a session id + TIMESTAMP that do NOT match the CALL (#139 — DOCUMENTED leg LANDED 2026-10-22)
+- **Do:** treat an intercept line as authoritative for the CALL PAYLOAD +
+  verdict, NOT for WHO made it or WHEN it landed: sid + timestamp are stamped
+  at FLUSH time, and a flush crossing a process restart labels the line with
+  the NEXT process's session. To attribute a line to a session, match the
+  payload (the file/command/content), never the sid field; to time-order
+  lines, use payload causality, not the stamp. Do not build live-acceptance
+  verdicts on a line's sid. (The FIX option — sid resolved at call time —
+  was NOT built; the entry TODO #139 closed on this documented leg per its
+  own acceptance criteria.)
+- **Why (evidence):** two measured occurrences: intercept.log 2026-10-21_23-
+  04 lines (local ~21:04Z) carry `ses_e9fb4e611ffe…` while the payload is
+  the PREVIOUS direct session's NAP edit (before the sid's session's first
+  tool call at 21:15:40Z); plan10 (2026-10-04) line 2089 — plan9-era payload
+  with the current sid. Flush-time labeling across a restart.
+- **Ref:** TODO.md #139 (CLOSED 2026-10-22); `.opencode/plugin/
+  intercept_observer.ts` (the sid read + flush/queue path — investigation
+  trail in the TODO entry).
+- **Keys:** intercept.log, sid, timestamp, flush-time labeling, restart,
+  payload attribution, log authority, #139.

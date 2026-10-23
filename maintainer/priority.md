@@ -35,3 +35,6 @@
   - e.g. think about how to improve the set of prompts we have. are their ways to better organize them. to make them more succinct and clear. are there redundant instructions or badly worded (only examples)
 - you are intelligent - you will find something to do
   - go through my ideas for new research on functions. create a folder in research for each if you find something worthwhile
+
+1. migration+adaptation of all the tools/plugins to v2
+- migration based on current state of the plugins/tools in v1 repo

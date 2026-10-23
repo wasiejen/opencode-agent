@@ -403,3 +403,210 @@ knowledge / NAP) is re-stated.
   2026-10-15 audit.
 - Related: MEM-0103 (placement rulings — index lines are placement).
 - Review when: the next tree reorg or index rework.
+
+## MEM-0113 — A spec that names a SMOKE block as the pin site still needs a PROBE-section pin audit
+- Lesson (2026-10-01, plan2 #128): the probe's S13 checks 92/93/95/222-226
+  + S32 340 pinned the same gate OUT of the spec-named Gate-M smoke block;
+  the re-pins were not derivable from the named region; the probe run caught
+  them on the first red.
+- Rule: when authoring a spec for a behavior change with probe coverage,
+  name the probe check ids explicitly in the spec (audit both sections).
+- Evidence: memory_inbox 2026-10-01_05-02; worker handover plan2.
+- Review when: the next spec names a smoke block as the pin site for a gate change.
+
+## MEM-0114 — Task specs citing installed-library API shapes: verify signatures at authoring time
+- Lesson (2026-10-01, plan3 #129): an unverified `QContextMenuEvent(QPoint)`
+  ctor claim cost the worker a discovery step (real PySide6 6.11.2 ctor:
+  `(Reason, pos[, globalPos])`, 2-arg deprecated).
+- Rule: one import/inspect call at spec-authoring time before citing an
+  installed-library API shape in verified-facts.
+- Evidence: memory_inbox 2026-10-01_05-26; spec commit 6d1b3f5; plan3 handover.
+- Confidence: medium (single occurrence).
+- Review when: the same friction class recurs.
+
+## MEM-0115 — Count Python logging call sites with BOTH greps: `logging.` AND `logger.`
+- Lesson (2026-10-01, plan4 #131): a `logging\.`-only grep returned 4 in the
+  FST repo; `logger.` module-level call sites made the real count ~14.
+- Rule: grep BOTH forms when counting logging call sites for spec
+  verified-facts.
+- Evidence: memory_inbox 2026-10-01_06-22; research doc
+  `agent/research/2026-10-01_fst-logging-design.md` §7.1.
+- Confidence: high; stable grep lesson.
+
+## MEM-0116 — A tool/plugin file landed mid-session is NOT live until the next host start; acceptance rides the NEXT session
+- Lesson (2026-10-04, plan10): the host auto-detects `.opencode/tools/*.ts`
+  at PROCESS START only; a mid-session landing shows absent from the
+  current toolset — NOT a failure.
+- Rule: verify such builds from files (git + handover numbers) + a targeted
+  spot smoke re-run in-session; record live acceptance as PENDING the next
+  session's restart in the TODO/NAP status line.
+- Evidence: memory_inbox 2026-10-04_23-54; plan10 commits 8d332d7/2c3cbb3.
+  Today's bt mode-guard micro-fix followed the same path (live only after
+  the maintainer restart).
+- Review when: the host gains hot-reload of tools mid-process.
+
+## MEM-0117 — After a model/config swap, the injected ctx budget suffix can transiently read cap 1; trust ctx_gauge
+- Lesson (2026-09-30): the nudge resolves the session ROW model (stale
+  until the first new-process prompt); unlisted model + no `default` key
+  → cap 1 (compaction_core.ts resolveCap L205-211).
+- Rule: for budget decisions after a model/config change, use the
+  self-gauge (ctx_gauge), not the injected suffix.
+- Evidence: memory_inbox 2026-09-30_16-57; the session's own gauge read
+  `CTX=notAvailable` at 2026-10-21 start with suffix `3 compactions left`
+  (a first-ever gauge readout in a fresh session — normal).
+- Review when: a `default` key lands in the budget file, or nudge model
+  resolution changes. Related: knowledge_plugins.md §329 (the no-total
+  root cause).
+
+## MEM-0118 — The live host has NO in-process sqlite; any DB tool must ship the spawn-sqlite3 last resort
+- Lesson (2026-09-30, #126): both bun:sqlite and node:sqlite dynamic imports
+  fail in the live host process (context_trim live report returned
+  `db-error: no in-process writable sqlite backend`); the only proven live
+  backend is spawn-sqlite3 via `.opencode/plugin/tools/sqlite3.exe`.
+- Rule: fixture smokes (node v24, node:sqlite) CANNOT detect this — any
+  DB-writing tool ships the #126 pattern: Ctx-shaped adapter over
+  execFileSync, no shell, hard timeout, single-invocation transaction.
+- Evidence: memory_inbox 2026-09-30_16-58; TODO #126; commits a43311a/a276ef1
+  + knowledge_plugins.md §412 (the CLI facts).
+- Review when: a host build with working bun:sqlite lands.
+
+## MEM-0119 — An explicit maintainer worker-OK overrides the MEM-0110 no-delegation guideline (direct mode)
+- Lesson (2026-10-21): "you may start workers if needed" = prior explicit
+  OK; the guideline's trigger condition is satisfied, proceed.
+- Rule: still verify a `--comment` review draft against current code
+  line-ranges BEFORE believing it (2 of its claims were stale — the MOVE
+  dst-guards already existed at block_transfer.ts 636-646), hold fixes
+  for his ruling.
+- Evidence: memory_inbox 2026-10-21_21-06; direct ses_ea02d3559ffe….
+- Review when: MEM-0110's ruling changes.
+
+## MEM-0120 — Model self-reviews of PASTED code mix real catches with confident P0 hallucinations; diff paste-vs-deployed first
+- Lesson (2026-10-21): our model's self-review of its OWN tool code claimed
+  a non-existent syntax error + an unknown-mode lie (schema-blocked), while
+  its real catches (PEEK digit-string bypass, MAP uncapped echo, empty-refs
+  form error, TMP/TMPDIR gap) were valid.
+- Rule: when a review ran on pasted/older code, diff paste-vs-deployed and
+  check load/smoke proof BEFORE believing any P0; a review's confidence is
+  not evidence.
+- Evidence: memory_inbox 2026-10-21_21-17; the 2026-10-21 review-draft
+  verdict in the NAP.
+- Review when: another model-testing session uses pasted code.
+
+## MEM-0121 — A worker close NARRATIVE can FABRICATE references (hashes, restarts, maintainer claims) — verify against git before recording
+- Lesson (2026-10-22, planner-13): a worker's own handover named a nonexistent
+  commit + claimed a host restart + a maintainer instruction while its session
+  did real work (main-tree 4bef076 → worker's own correction 28a6685 → 6ca8643).
+- Rule: before recording any hash/restart/instruction from a worker return,
+  run `git log --oneline -N` + `git show --stat <hash>` in that tree; an
+  absent reference → mark the entry untrusted at next curation + note the
+  fabrication class in the NAP.
+- Extends MEM-0120 (pasted-code self-reviews) to worker close NARRATIVES.
+- Review when: a worker close text names a hash absent from `git log -20`, or
+  a restart/instruction claim with no `maintainer/inbox_*`/loop-log line backing it.
+
+## MEM-0122 — block_transfer WRITE/REPLACE feedback lines are NOT landing proof — read the file back
+- Lesson (2026-10-22, planner-13): a WRITE reported `+24 line(s)` but the file
+  stayed 253 lines — a long single-call prose payload arrived TRUNCATED and the
+  write silently no-oped.
+- Rule: after any WRITE/REPLACE of >~15 prose lines, read the file back (MEM-0111
+  discipline); repair with a smaller `edit` insert; the `+N line(s)` count + first-line
+  echo are NOT proof.
+- Evidence: memory_inbox 2026-10-22_02-47; the plan13 NAP insert incident.
+- Review when: the tool later validates payload integrity.
+
+## MEM-0123 — block_transfer buffer hygiene: name buffers per artifact; WRITE is the bufferless mode
+- Lesson (2026-10-22, planner-14/17): COPY/CUT/PASTE without bufferName share
+  'default' — a later CUT silently destroys a staged paste buffer mid-chain (the
+  plan17 4a copy died this way and forced a re-COPY).
+- Rule: name buffers per artifact; MAP/PEEK a buffer BEFORE REPLACE (REPLACE
+  consumes whatever sits at that name — the auto `last_write` buffer is NOT
+  assumed content); on an EMPTY-BUFFER error, re-check the MODE list before
+  retrying the same mode (WRITE = direct text → region, bufferless; REPLACE/COPY/
+  APPEND/PASTE need named buffers).
+- The N-regions+1-text hazard is RESOLVED: the REJECT-with-teaching-error end
+  state landed at plan15 (MAIN b713585 / clone 4054a0a) — the entry stays for
+  the buffer-scoping half.
+- Evidence: memory_inbox 2026-10-22_03-26 (×2), 04-38, 07-36.
+- Review when: block_transfer buffer scoping or a mode redesign lands.
+
+## MEM-0124 — Spec pin audits: enumerate by verdict-token grep across EVERY pin file, never by range-recall
+- Rule (2026-10-22, planner-14): before narrowing/grepping a channel, run
+  `rg -n "<verdict-token>"` (e.g. `out-of-sandbox|path-anomaly`) across every
+  pin file (smokes AND the probe) and build the audit from the hit list.
+- Treat the first post-change gate run's FAIL list as the AUTHORITATIVE
+  inventory; a range-recalled audit missed 3 flipping surfaces ((B3), probe
+  checks 303 + 304).
+- Evidence: spec `agent/handover/specs/2026-10-22_142-138-path-field-scan.md`;
+  todo_inbox 2026-10-22_03-17 RESOLVED at plan14.
+- Review when: the pin files are restructured.
+
+## MEM-0125 — Typecheck pins need a NEGATIVE CONTROL — push a deliberate bad literal, confirm RED, then commit
+- Lesson (2026-10-22, unit 3a): a tsgo run printing zero errors is NOT proof a
+  pin is real — a generic `E extends Array<unknown>`-style hook param silently
+  WIDENS and accepts bogus literals (`role:"bogus-role", content:5` passed at
+  first attempt).
+- Scope: any fork-typed v2 plugin work.
+- Evidence: memory_inbox 2026-10-22_05-23; the 3a negative-control proof.
+- Review when: any future typecheck-only pin.
+
+## MEM-0126 — Task-tool "user rejected permission" = the sub-agent NEVER STARTED — re-issue ONCE with a SHORT spec-pointer prompt
+- Rule (2026-10-22): classify as a LAUNCH failure, NOT a context/permission
+  task failure; do NOT compact or resume; the target repo tree + git log stay
+  untouched (verified). Re-issue ONCE with a short prompt that points at the
+  committed spec file — the long spec-echoing prompt is the suspected trigger
+  (hypothesis, medium confidence). Two rejections → stop and report the boundary.
+- Evidence: memory_inbox 2026-10-22_06-52. Completes the MEM-0104/0106/0109
+  signature set: launch vs ran-vs-wall vs compaction-return.
+- Review when: rejections recur with short prompts (then the hypothesis dies).
+
+## MEM-0127 — Before REUSING a worker session via task_id, check its close gauge; cross-compact FIRST at near-cap
+- Rule (2026-10-22, plan18): a resume request at ~89% of window is REJECTED
+  OUTRIGHT (prompt + history > window — "requests are never truncated").
+  Sequence: cross-compact (keepMessages=10, message=new-unit pointer) → verify
+  the `COMPACT <sessionID>` line in `.opencode/temp/ctx.log` → THEN resume
+  via task_id. Saves the rejected-call round-trip.
+- Evidence: memory_inbox 2026-10-22_10-26; the 4b worker (CTX=234727/262k) —
+  the 4c resume landed only after the pre-resume cross-compact.
+- Review when: worker close gauges start landing well below 80%.
+
+## MEM-0128 — Cross-tree port specs: run the twin-freshness check BEFORE committing a design-of-record anchor
+- Rule (2026-10-22, plan19): before committing a spec anchored on a cross-tree
+  file (MAIN vs the clone copy), run `cmp -s` + `wc -l` + a bounded
+  `diff | head -60`; anchor on the MAIN twin when the clone copy lags.
+- A STALE twin silently pins stale behavior; the delta re-surfaces as worker-side
+  "discrepancy" noise.
+- Evidence: memory_inbox 2026-10-22_11-14; the 5c re-baseline (clone
+  `block_transfer.ts` 845 vs MAIN 1034, 333 diff lines); TODO #143.
+- Review when: any future #137 unit spec, or a clone-twin refresh lands.
+
+## MEM-0129 — File-surgery span anchors: a section span ends at the NEXT ANY `^## ` header, never at the next ID-pattern header
+- Rule (2026-10-22, plan20): re-grep the exact line spans IMMEDIATELY before
+  EVERY multi-op block_transfer surgery (MOVE/DELETE/WRITE with line numbers);
+  an entry/section span runs to the next `^## ` of ANY shape, not the next
+  `## #<id>`-pattern match.
+- Observed: anchoring a TODO-retire MOVE on an id-grep's "next header" carried
+  38 unintended lines (2 section headers + entries 53/56) into
+  `todo_records.md`; repair = verbatim MOVE-back + narrow redo (4 extra calls).
+- Evidence: memory_inbox 2026-10-22_14-24. Extends MEM-0112 to intra-file surgery.
+- Review when: block_transfer re-validates spans before cutting (then anchors may stay cached).
+
+## MEM-0130 — Planner-direct units (≤~50 diff lines, ≤4 files): close inline with per-file grep-back; the `edit` hint line is not authority even for replaceAll
+- Rule (2026-10-22, #144 unit): small test/doc-side fixes land in the planner
+  session without delegation; after every edit or bulk `replaceAll`, read the
+  touched file back (grep the changed tokens) before concluding — the
+  `hint rejected lines=` line fired while two 14/14-class replaceAlls LANDED.
+- Evidence: memory_inbox 2026-10-22_18-21; extends MEM-0111 to the replaceAll form.
+- Review when: the edit tool's hint-line semantics change.
+
+## MEM-0131 — Spec fixtures for ordering/behavior pins must be proven DISCRIMINATING at spec-authoring time
+- Rule (2026-10-22, marker-order unit): when a spec suggests a smoke fixture
+  pinning a reordering/behavior change, state the raw emit order (note: `grep
+  -rn` emits hits in its PATH ARGUMENT order, NOT lexicographic) and require
+  the pin to FAIL against the UNCHANGED code; pick a fixture that sorts AFTER
+  the comparator (TODO.md/README.md/WIKI.md for the marker sweep).
+- Also re-check the fixture's line-count math before adding to cap-pinned
+  fixtures (the state_snapshot FX1 digest is pinned at the EXACT 60-line cap —
+  replace a fixture line, never add one).
+- Evidence: memory_inbox 2026-10-22_18-54; the suggested `maintainer/live_note.md`
+  fixture passed 21/21 pre-change; worker switched to a `WIKI.md` fixture.
+- Review when: a tool changes how pins run (e.g. block_transfer re-validation).

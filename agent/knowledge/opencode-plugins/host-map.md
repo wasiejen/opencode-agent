@@ -303,6 +303,20 @@ SHADOW it:
   research limit). The exact host-side enforcement algorithm (pattern
   matching, ask flow, TUI prompt behavior) is **unverified — live behavior
   only**.
+- **Guard chain of an out-of-sandbox WRITE (measured 2026-10-01, plan9,
+  TODO #134 OPEN — cured from the knowledge_inbox residue of that date):**
+  (1) the intercept plugin's `tool.execute.before` hook covers host
+  write/edit/read filePath fields via the R8 typed-path redirect
+  (intercept_observer.ts REDIRECT_PATH_FIELDS L574-578) but is FAIL-CLOSED
+  PASS-THROUGH on unmappable forms (runRedirect: resolveRedirect → null →
+  continue) — it logs the `out-of-sandbox` note, NEVER blocks; the only
+  hard rejection is block_transfer's own core sandboxCheck; (2) the host
+  write flow (fork tool/write.ts): assertExternalDirectoryEffect (L44, the
+  external_directory ask) → ctx.ask permission "edit" (L54) → fs.writeWithDirs
+  (L64); unlisted external paths resolve to the DEFAULT `action: "ask"`
+  (fork permission/index.ts L28-38) — which in a plugin-spawned session did
+  NOT stop the call (observed: it proceeded to fs and died at makeDirectory
+  only because the typo'd root doesn't exist).
 
 ## 5. Compaction / summarize path
 
@@ -493,3 +507,22 @@ worker need the same model to allow fast switching from cache). The
 context-trim proposal's "model toggling" item is CLOSED on this basis —
 the intended use is a **STATIC** switch to a faster model (whole
 session), not per-step toggling.
+
+## 8. Host provider/model config snapshot — as of 2026-10-22 (planner-24, knowledge_inbox 2026-10-22_18-55)
+- The `strata` provider block is COMMENTED OUT in the live `opencode.jsonc`
+  working tree — its ids (`qwen3.8-flash-next-coder-iq1_m`,
+  `qwen3.8-flash-next-gyro-gyro-s`) are INACTIVE; stop citing them in
+  budgets or session labels.
+- Every model id now sits under provider `llama-swap-v2`
+  (baseURL `http://192.168.178.20:8033/v1`), incl. `Qwen3.8-NEXT-Coder`
+  (name `Qwen3.8-Flash-Next (local)`, limits context 262144 / input 258048 /
+  output 20480).
+- The three active role models `planner_FlashNext` / `worker_FlashNext` /
+  `explorer_FlashNext` all = `llama-swap/Qwen3.8-NEXT-Coder` →
+  same-model delegation is currently satisfied for all roles.
+- Compaction budget resolution keys on the BARE model id — the
+  `model_budget` map in `compact_budget.json` may need re-keying if it
+  still lists an old id; watch the `N compactions left` suffix for the
+  ` (unlisted)` marker.
+- **Keys:** llama-swap-v2, strata retired, Qwen3.8-NEXT-Coder, role models,
+  budget re-key, unlisted marker.

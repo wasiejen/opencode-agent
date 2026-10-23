@@ -21,9 +21,10 @@
     "Qwen3.8-27B-Q3S-245K-slow": 5,
     "Qwen3.8-27B-Q3XS-262K": 3,
     "Qwen3.8-27B-Q3S-140K-HQKV": 5,
-    "Qwen3.8-27B-Q3S-235K-slow-HQKV": 5,
+    "Qwen3.8-27B-Q3S-230K-slow-HQKV": 5,
     "Gemma4-12B-Q4KM-UC-128K": 1,
-    "Gemma4-12B-Q4KXL-MTP-128K": 1
+    "Gemma4-12B-Q4KXL-MTP-128K": 1,
+    "qwen3.8-flash-next-coder-iq1_m": 6
   },
   "sessions": {
     "ses_f12b5172dffeq1r2iwK4QLlWxj": {
@@ -65,6 +66,31 @@
       "count": 1,
       "updated": "2026-10-04T23:24:10.996Z",
       "model": "Qwen3.8-27B-Q3S-235K-slow-HQKV"
+    },
+    "ses_ebea1bd3cffe3ktwt4MRmehe6a": {
+      "count": 2,
+      "updated": "2026-10-15T22:45:34.198Z",
+      "model": "Qwen3.8-27B-Q3S-230K-slow-HQKV"
+    },
+    "ses_e9fa32e59ffemX2wEPTSI2WMYJ": {
+      "count": 1,
+      "updated": "2026-10-21T22:19:48.443Z",
+      "model": "qwen3.8-flash-next-coder-iq1_m"
+    },
+    "ses_e9fb4e611ffeQmrH3PkDK6r4Ct": {
+      "count": 1,
+      "updated": "2026-10-21T22:59:55.265Z",
+      "model": "qwen3.8-flash-next-coder-iq1_m"
+    },
+    "ses_e9de1b381ffeM4308gaIvhBgTk": {
+      "count": 1,
+      "updated": "2026-10-22T07:37:11.265Z",
+      "model": "qwen3.8-flash-next-coder-iq1_m"
+    },
+    "ses_e9b75d138ffepge05jIQDjcRnU": {
+      "count": 1,
+      "updated": "2026-10-22T17:34:26.803Z",
+      "model": "Qwen3.8-NEXT-Coder"
     }
   },
   "version": 2

@@ -1,126 +1,55 @@
-# Worker handover — TODO #137 order 2: the `auto_resume` v2 port
+# Worker summary — #147 gauge-core unification (MAIN adopts the clone's table-aware core)
 
-Status: COMPLETE (this unit) — one baseline discrepancy reported, deliberately
-not fixed.
+Status: COMPLETE (green, committed). Task spec `agent/handover/handover_task.md` (spec commit `f9baff6`).
+Work tree: `C:/Users/Wasiejen/Repos/opencode-agent`, branch `main`. No merge performed, no `port_sync --apply` run — those stay the planner's/maintainer's act.
 
-## Task and scope
+## Files changed (MAIN)
 
-Port the v1 `auto_resume` plugin's LOOP legs onto the v2 plugin surfaces, in the
-v2 clone `C:/Users/Wasiejen/Repos/opencode-agent-v2` (branch `migration`), so the
-autorun loop works on a v2 host without the CLI. Assigned: `worker_FlashNext`.
-Scope: `.opencode/plugins/auto_resume.ts`, `.opencode/plugins/tests/auto_resume
-.smoke.mjs`, `.opencode/plugins/tests/tsconfig.json`, `.opencode/plugins/tests
-/README.md`, `TODO.md`, `agent/handover/handover_task_to_planner.md`.
+| File | Change |
+|---|---|
+| `.opencode/plugin/scripts/gauge.mjs` | REPLACED verbatim with the clone's table-aware core (769 → 1015 lines). Blob `b4bb98eb8b064294d3d38445dd937236ebc23694` = byte-identical to the clone's `HEAD:.opencode/plugin/scripts/gauge.mjs`. |
+| `.opencode/plugin/probes/handover_probe.mjs` | 3 gauge-pin hunks taken from the clone probe, nothing else: the bun:sqlite unit-mock `get()` (mass prepare keys on `tokens.total` OR `session_message`), check 32's 7-ordered-prepares assertion, `MockBunNoStep` `get()`. 8677 → 8691 lines. The other 20 diverging hunks (path repoints + clone lag) untouched. |
+| `.opencode/plugin/tests/gauge_core.smoke.mjs` | := the clone's superset (v1 pins + the v2 table-aware read/mass/spawn pins, 370 lines) with MAIN's two `// #144 retry-on-EBUSY` annotations re-added at the `rmTear(tmpC…)` / `rmTear(tmpB…)` lines. |
+| `agent/scripts/git/port_sync.cjs` | `TAKE_MAIN` += `.opencode/plugin/scripts/`. |
+| `agent/scripts/git/port_sync.selftest.cjs` | +5 checks: the gauge-core take-main pin, `classify(...) === "take-main"`, a fixture `gauge.mjs` conflicting on BOTH sides (base → clone v2 / main unified) with the dry conflict + `plan:` pin, the apply assertion that MAIN's bytes land in the clone copy, and the abort-restore pin. 82 → 87 `ck(` sites. |
+| `TODO.md` | two bullets appended to the `#147` entry (LANDED status + the measured spec discrepancies). |
 
-## Files changed
+Unchanged, verified still green: `.opencode/plugin/tests/ctx_gauge.smoke.mjs` (live-db pins — no schema pin to move) and the other 10 `.opencode/plugin/tests/*.smoke.mjs`.
 
-1. `.opencode/plugins/auto_resume.ts` (NEW, 1084 lines) — `{ id: "auto_resume
-   ", setup(ctx) }`, DEFAULT export only. Legs: UNIT 1 event log (`<ISO> event
-   =<type> sid=<sid> <key fields>`, the delta classes never logged) + the
-   `surface=` probe + the #96 log-size guard; UNIT 3 successor spawn (the
-   trigger file, the FLAT `SessionCreateInput` with `title`/`agent`/`model`,
-   ONE `delivery:"queue"` prompt, `spawn=`/`spawn-fail=`, consume-even-on-failure);
-   UNIT 4 watchdog (the `context`-hook verdict carrier, the LINE-ANCHORED
-   `action:` scan over `session.text.ended` accumulation, stop/ask routes, the
-   recovery budget + dead-mark, the successor check, the LINEAGE-DEPTH cap,
-   STICKY deactivation, the loop counter + `ident=`, `tailCompactRearm`, the
-   #90 part-C log RESTORE); #109 detector (5 clauses, `limit-stop=` + the
-   `-WARNING` line in `loop/<folder>/loop_log.md`, the per-episode latch).
-   Deviations (a)-(g) in the header block.
-2. `.opencode/plugins/tests/auto_resume.smoke.mjs` (NEW, 432 lines, 45 checks).
-3. `.opencode/plugins/tests/tsconfig.json` — `files` += `"../auto_resume.ts"`.
-4. `.opencode/plugins/tests/README.md` — the new smoke section.
-5. `TODO.md` — the `#137` entry with the order-2 status line + the code hashes.
-6. This handover.
+## Behavior changed
 
-UNIT 2 (the PASSIVE ctx-line nudge) was NOT re-ported — it already lives in
-`plugins/context_family.ts`.
+One gauge core serves both trees. Against a v1-only DB (no `session_v2`) the unified core emits the v1 SQL byte-identically, so every pre-existing MAIN pin (S6 21-28, S7 29/30/31/33-39, S33/S34, the 12 smokes) passes unchanged. The unit-mock pins now script the coexisting catalog, so they assert the table-aware prepare order in BOTH trees (tree-independent pins). The clone's v2 smoke pins now live in MAIN, so `port_sync` (tests + scripts take MAIN) cannot drop them at merge.
 
-## Behavior changed (measured, per leg)
+## Verification (exact commands, run in MAIN, post-change)
 
-- Every hook/event handler swallows (fail-open); the tick is the only decision
-  +send funnel; `setInterval` is `unref`'d and cleared by the setup cleanup.
-- Test levers ride `ctx.options` (`tickMs`, `maxLogBytes`, `logTailBytes`,
-  `limitStopIdleMs`); absent → the v1 defaults (5000 / 20 MiB / 2 MiB / 60_000)
-  — live behavior unchanged. `runTick()` is the smoke-only single-tick export.
-- No `opencode.jsonc` change (auto-discovery); no v2 host start; no backend
-  request; the inert v1 estate untouched; `port_sync.cjs` NEVER run.
+| Command | Result |
+|---|---|
+| `node .opencode/plugin/probes/handover_probe.mjs` | `PROBE handover: 360/360 PASS`, exit 0 — PASS |
+| `node .opencode/plugin/tests/gauge_core.smoke.mjs` | `GAUGE_CORE_SMOKE: ALL PASS`, exit 0 — PASS |
+| `node .opencode/plugin/tests/ctx_gauge.smoke.mjs` | `CTX_GAUGE_SMOKE: ALL PASS (3/3)`, exit 0 — PASS |
+| `for f in .opencode/plugin/tests/*.smoke.mjs; do node "$f"; done` | 12/12 exit 0 (`ok=12 fail=0`) — PASS |
+| `node agent/scripts/git/port_sync.selftest.cjs` | `checks: 106 pass=106 fail=0` + `SELFTEST: ALL PASS`, exit 0 — PASS |
+| `node agent/scripts/git/port_sync.cjs` (dry) | exit 0, `zero-mutation: PROVEN (both trees: HEAD + status --porcelain identical)`, `merge-tree: 9 conflict(s)`, 8 `take MAIN (--theirs)` plan lines + `config: kept branch-local (host-owned)` — PASS (see delta below) |
+| `git -C C:/Users/Wasiejen/Repos/opencode-agent-v2 show HEAD:.opencode/plugin/scripts/gauge.mjs \| wc -l` | `1015` — PASS (core size per spec) |
 
-## Verification (exact commands, run in the CLONE tree)
+Before the pin move, the same probe run failed exactly 2 checks — `[32] unit-mock bun:sqlite …` and `[38] fallback: …` — the spec's predicted pair; after the move 0 FAIL. No core defect: the unified core never returned `no-total`/`notAvailable`/a throw against the v1-only fixtures (all 360 green).
 
-- `C:/Users/Wasiejen/Repos/opencode/node_modules/.bin/tsgo.exe -p .opencode/plug
-  ins/tests/tsconfig.json` → **PASS** (exit 0, no output). Wiring pinned: a
-  deliberate type error appended to `auto_resume.ts` produced
-  `error TS2322 … auto_resume.ts(1076,7)`, then reverted → exit 0 again.
-- `cd .opencode/plugins/tests && bun run auto_resume.smoke.mjs` → **PASS**
-  (`SMOKE: ALL PASS`, `FAILURES=0`, 45 checks).
-- `for f in .opencode/plugins/tests/*.smoke.mjs; do bun run "$f" | tail -1;
-  done` → **PASS** (11 files, each `SMOKE: ALL PASS`).
-- `node .opencode/plugin/probes/handover_probe.mjs` → **PASS**
-  (`PROBE handover: 360/360 PASS`).
-- v1 node smokes, `for f in .opencode/plugin/tests/*.smoke.mjs; do node "$f"
-  | tail -1; done` → **PARTIAL: 11 of 12 PASS**. `state_snapshot` FAILS 4
-  checks (`60-line digest` → 59; the fixture `--now` marker line → `(none)`;
-  `proposals 24 of 30`). Reproduced with that smoke run ALONE on a clean tree;
-  the smoke's own last-touch commit is `6130a70` and this unit's diff is 3
-  files (`git diff --stat 90d6d6c..HEAD`) → PRE-EXISTING at baseline
-  `90d6d6c`, not caused by this unit.
+Delta vs the spec's DoD-2 wording: the real-tree dry run prints NO `plan:` line for `.opencode/plugin/scripts/gauge.mjs`, because after the swap both sides hold the SAME blob (verified: clone `git rev-parse HEAD:…` == `git hash-object` MAIN's file) so `merge-tree` auto-merges it — a `plan:` line prints only for conflicted paths. The rule is pinned instead in the selftest fixture (a conflicting `gauge.mjs` both sides). The dry run now lists 9 conflicts (the unit-1 record said 7): `TODO.md` and `loop/autorun-2026-10-01_03-27/loop_log.md` joined the set because both trees edited them; both take MAIN by rule.
 
-## Working tree / commits
+## Commits
 
-- Working tree: **clean** after the final commit (`git status --porcelain`
-  empty; branch `migration`).
-- Checkpoint commits: `d2f7cff` (plugin + tsconfig line), `34b27f8` (smoke
-  levers), `accd960` (smoke). FINAL (this bookkeeping): TODO.md status line +
-  README section + handover — hash reported below by the planner, NOT here
-  (a commit cannot contain its own hash).
-- NOTHING pushed (agents never push).
+1. `ac7c468` (this worker) — the core swap + the 3 probe pins + the unified gauge_core smoke.
+2. the port_sync glob + selftest pins + TODO.md + this handover = THIS commit (its own hash cannot appear here; the planner reads it from `git log`).
 
-## TODO.md entries
+Working tree after the commits: clean for the task files; the only residue is host/runtime noise deliberately left unstaged — `opencode.jsonc`, `maintainer/SCRATCH_PAD.md`, `.opencode/temp/compact_budget.json`, `todo_inbox.md`, and two untracked `archive/sessions/compaction_dumps/ses_e9b246…_*` files (never staged per the access rules).
 
-- `#137` entry appended in the CLONE with the order-2 status line + the three
-  code hashes; the entry carries the `state_snapshot` baseline discrepancy (with
-  evidence) and the two deferred no-carrier v1 legs. MAIN-side curation is the
-  planner's own commit (this unit never writes the MAIN tree).
-- No new TODO entry was invented for the deviations: the v1 legs with no v2
-  carrier are recorded in-file (deviations (c)+(d)) and in the #137 entry.
+## Deliberately omitted / not done
 
-## Deliberately omitted
+- No `--apply`, no merge commit, no clone-tree write — the planner/maintainer owns that (spec approval boundary).
+- MAIN's probe path-repoint hunks NOT taken from the clone (the #141 `plugin-unported-v1` repoint stays clone-side; `port_sync`'s Rule-A patch applies it post-merge).
+- No second gauge module, no fork of the core (spec step 4); `.opencode/plugin-unported-v1/scripts/gauge.mjs` (clone 7-line shim) untouched.
+- The clone tree's own files stay as they are until the merge lands them.
 
-- UNIT 2 (already ported); the #120 TAIL-SET write lane (the v2 twin
-  `context_trim_v2.ts` owns that surface — a separate unit); the
-  `compact_message_*` relay/intent/sweep legs (no v2 file store — the native
-  inbox queue); abort escalation, subagent special-casing, busy-silence stall
-  detection (v1 "DELIBERATELY ABSENT" list); the `state_snapshot` smoke repair
-  (out of scope, own unit); NO `opencode.jsonc` edit; NO `switchAgent`/`switchM
-  odel` (would be a behavior change → a maintainer call).
+## Lesson
 
-## Blockers
-
-None for the code. LIVE acceptance is PENDING by design: it needs the maintainer
-'s v2 host runs (the backend slot); registration/config stays maintainer domain.
-
-## Deviation from the suggested procedure (explain)
-
-The spec listed `spawn=`/`actionRe`/`limitStopCheck` greps against the v1 file
-plus its header block; I read those slices ONLY (never the whole 2191-line file)
-and additionally confirmed each v2 surface in the fork (the status-event key,
-`session.text.ended`, `session.step.ended` finish+tokens, `SessionCreateInput`,
-`SessionPromptInput`, `ModelDomain`, `EventDomain.subscribe`, `App`) so no leg
-rests on assumption. Two findings differ from the spec's stated facts and are
-recorded, not patched over: (1) the v2 `session.status` event (NOT the deprecated
-`session.idle`) is the arm/idle carrier — the plugin accepts both; (2) the
-`state_snapshot` baseline RED above.
-
-## Friction
-
-- The spec's `SessionCreateInput` sketch (`id?: { … }`) reads as a NESTED object
-  ; the generated type is FLAT (each field declared via the `{ <field>: <type> }
-  ["<field>"]` idiom, types.ts:3064-3134). The smoke pins the FLAT body; the
-  plugin header records it. Worth a knowledge-line from the planner/curation.
-
-## Lessons
-
-- A baseline gate claim must be re-measured per suite and per file: a RED that
-  pre-dates the unit must be REPORTED with its own evidence (last-touch commit,
-  alone re-run, diff stat), not absorbed into the unit's gate.
+A gauge-core swap needs the MOCK catalog pinned before the SQL pins: the probe's unit-mock `get()` decides which catalog the core sees, so a pin that keys only on `tokens.total` silently turns a table-aware core into a `no-total` reader (that is what made check 38, a fallback-chain pin, fail for a schema reason).
